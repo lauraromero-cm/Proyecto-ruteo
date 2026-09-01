@@ -24,15 +24,14 @@ PostGIS/pgRouting) hacia la zona afectada.
 
 | | Metadata #1 | Metadata #2 | Metadata #3 | Amenaza #1 | Amenaza #2 | Amenaza #3 |
 |---|---|---|---|---|---|---|
-| **Fuente** | Open-Meteo | OSM local (Geofabrik) | INE Censo 2017 (vía Observatorio de Ciudades UC) | NASA FIRMS | CONAF | USGS / CSN |
-| **Qué mide** | Viento y rachas | Altura de edificación | Población por manzana censal | Focos de incendio activo | Probabilidad de ignición (5 días) | Sismicidad |
-| **Resultado verificado** | Rachas hasta 45 km/h | 74.550 edificios, 17.961 con altura | 10.750 manzanas, 1.005.013 habitantes | 7 focos reales en Chile | Polígonos de riesgo + áreas protegidas | 105 sismos M≥2 desde 2015 |
+| **Fuente** | Open-Meteo | Google Open Buildings 2.5D Temporal (Google Research) | INE Censo 2017 (vía Observatorio de Ciudades UC) | NASA FIRMS | CONAF | USGS / CSN |
+| **Qué mide** | Viento y rachas | Altura de edificación/estructuras | Población por manzana censal | Focos de incendio activo | Probabilidad de ignición (5 días) | Sismicidad |
+| **Resultado verificado** | Rachas hasta 45 km/h | 85.268 estructuras con altura real, 100% de cobertura (vs. 24,1% con OSM/Overpass) | 10.750 manzanas, 1.005.013 habitantes | 7 focos reales en Chile | Polígonos de riesgo + áreas protegidas | 105 sismos M≥2 desde 2015 |
 
 Detalle completo de cada prueba en [`codigo/RESULTADOS.md`](codigo/RESULTADOS.md).
 
 ## Estructura del repositorio
 
-- **`Informe-Ruteo-Resiliente-Drones.docx`** — informe de la Tarea 1.
 - **`codigo/`** — scripts de prueba de cada fuente (`test_*.py`), scripts de
   construcción del grafo vial y de generación de mapas/gráficos.
 - **`codigo/evidencia/datos/`** — datos crudos descargados (JSON, GeoJSON, CSV).
