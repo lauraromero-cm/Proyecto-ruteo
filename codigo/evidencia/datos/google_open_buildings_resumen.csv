@@ -1,0 +1,7 @@
+sector,tile,bounds_utm,pixels_edificados,altura_min_m,altura_media_m,altura_mediana_m,altura_p75_m,altura_p90_m,altura_p95_m,altura_p99_m,altura_max_m,estructuras_mas_15m,estructuras_mas_30m
+"Valparaiso (Puerto, Plan y Cerros)",89c_2023_06_30/tile_w52Xevr5k2s.tif,"(246184, 6337748, 258684, 6350248)",15124,0.5,9.97,7.42,10.96,17.52,24.4,48.11,87.94,2033,486
+Vina del Mar / Renaca,89c_2023_06_30/tile_p_xpNzmZpaM.tif,"(258684, 6337748, 271184, 6350248)",30856,0.19,8.6,5.94,8.78,14.61,22.8,52.61,91.56,2958,1024
+Concon y Borde Costero Norte,89c_2023_06_30/tile_30xpf7LlXHg.tif,"(258684, 6350248, 271184, 6362748)",6928,0.49,9.47,5.26,8.49,15.8,38.3,74.0,90.24,755,408
+Quilpue y Villa Alemana,89c_2023_06_30/tile_YPNnUzBNOmU.tif,"(271184, 6337748, 283684, 6350248)",27390,0.04,5.13,4.34,5.36,7.49,10.26,16.44,77.04,380,78
+Placilla / Curauma / Valparaiso Sur,89c_2023_06_30/tile_OJbkkilgPZM.tif,"(246184, 6325248, 258684, 6337748)",901,2.0,5.91,4.73,6.45,10.07,13.08,24.38,36.91,33,1
+Quilpue Sur / Marga Marga,89c_2023_06_30/tile_jFl5wtLDk0A.tif,"(258684, 6325248, 271184, 6337748)",4069,0.84,6.51,5.21,6.94,11.37,14.01,22.34,66.83,162,12

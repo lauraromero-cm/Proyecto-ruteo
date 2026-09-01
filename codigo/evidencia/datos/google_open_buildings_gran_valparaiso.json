@@ -1,0 +1,152 @@
+{
+  "fuente": "Google Open Buildings 2.5D Temporal Dataset (v1, 2023)",
+  "cobertura": "Gran Valparaiso (Valparaiso, Vina del Mar, Concon, Quilpue, Villa Alemana)",
+  "resolucion_efectiva_m": 4.0,
+  "total_estructuras_detectadas": 85268,
+  "cobertura_espacial_pct": 100.0,
+  "estadisticas_globales": {
+    "min_m": 0.04,
+    "media_m": 7.67,
+    "mediana_m": 5.38,
+    "std_m": 7.77,
+    "p25_m": 4.2,
+    "p50_m": 5.38,
+    "p75_m": 7.92,
+    "p90_m": 12.94,
+    "p95_m": 18.63,
+    "p99_m": 47.14,
+    "max_m": 91.56,
+    "conteo_baja_altura_menor_6m": 50427,
+    "conteo_media_altura_6_15m": 28520,
+    "conteo_alta_altura_15_30m": 4312,
+    "conteo_torres_mayor_30m": 2009
+  },
+  "sectores": [
+    {
+      "sector": "Valparaiso (Puerto, Plan y Cerros)",
+      "tile": "89c_2023_06_30/tile_w52Xevr5k2s.tif",
+      "bounds_utm": [
+        246184,
+        6337748,
+        258684,
+        6350248
+      ],
+      "pixels_edificados": 15124,
+      "altura_min_m": 0.5,
+      "altura_media_m": 9.97,
+      "altura_mediana_m": 7.42,
+      "altura_p75_m": 10.96,
+      "altura_p90_m": 17.52,
+      "altura_p95_m": 24.4,
+      "altura_p99_m": 48.11,
+      "altura_max_m": 87.94,
+      "estructuras_mas_15m": 2033,
+      "estructuras_mas_30m": 486
+    },
+    {
+      "sector": "Vina del Mar / Renaca",
+      "tile": "89c_2023_06_30/tile_p_xpNzmZpaM.tif",
+      "bounds_utm": [
+        258684,
+        6337748,
+        271184,
+        6350248
+      ],
+      "pixels_edificados": 30856,
+      "altura_min_m": 0.19,
+      "altura_media_m": 8.6,
+      "altura_mediana_m": 5.94,
+      "altura_p75_m": 8.78,
+      "altura_p90_m": 14.61,
+      "altura_p95_m": 22.8,
+      "altura_p99_m": 52.61,
+      "altura_max_m": 91.56,
+      "estructuras_mas_15m": 2958,
+      "estructuras_mas_30m": 1024
+    },
+    {
+      "sector": "Concon y Borde Costero Norte",
+      "tile": "89c_2023_06_30/tile_30xpf7LlXHg.tif",
+      "bounds_utm": [
+        258684,
+        6350248,
+        271184,
+        6362748
+      ],
+      "pixels_edificados": 6928,
+      "altura_min_m": 0.49,
+      "altura_media_m": 9.47,
+      "altura_mediana_m": 5.26,
+      "altura_p75_m": 8.49,
+      "altura_p90_m": 15.8,
+      "altura_p95_m": 38.3,
+      "altura_p99_m": 74.0,
+      "altura_max_m": 90.24,
+      "estructuras_mas_15m": 755,
+      "estructuras_mas_30m": 408
+    },
+    {
+      "sector": "Quilpue y Villa Alemana",
+      "tile": "89c_2023_06_30/tile_YPNnUzBNOmU.tif",
+      "bounds_utm": [
+        271184,
+        6337748,
+        283684,
+        6350248
+      ],
+      "pixels_edificados": 27390,
+      "altura_min_m": 0.04,
+      "altura_media_m": 5.13,
+      "altura_mediana_m": 4.34,
+      "altura_p75_m": 5.36,
+      "altura_p90_m": 7.49,
+      "altura_p95_m": 10.26,
+      "altura_p99_m": 16.44,
+      "altura_max_m": 77.04,
+      "estructuras_mas_15m": 380,
+      "estructuras_mas_30m": 78
+    },
+    {
+      "sector": "Placilla / Curauma / Valparaiso Sur",
+      "tile": "89c_2023_06_30/tile_OJbkkilgPZM.tif",
+      "bounds_utm": [
+        246184,
+        6325248,
+        258684,
+        6337748
+      ],
+      "pixels_edificados": 901,
+      "altura_min_m": 2.0,
+      "altura_media_m": 5.91,
+      "altura_mediana_m": 4.73,
+      "altura_p75_m": 6.45,
+      "altura_p90_m": 10.07,
+      "altura_p95_m": 13.08,
+      "altura_p99_m": 24.38,
+      "altura_max_m": 36.91,
+      "estructuras_mas_15m": 33,
+      "estructuras_mas_30m": 1
+    },
+    {
+      "sector": "Quilpue Sur / Marga Marga",
+      "tile": "89c_2023_06_30/tile_jFl5wtLDk0A.tif",
+      "bounds_utm": [
+        258684,
+        6325248,
+        271184,
+        6337748
+      ],
+      "pixels_edificados": 4069,
+      "altura_min_m": 0.84,
+      "altura_media_m": 6.51,
+      "altura_mediana_m": 5.21,
+      "altura_p75_m": 6.94,
+      "altura_p90_m": 11.37,
+      "altura_p95_m": 14.01,
+      "altura_p99_m": 22.34,
+      "altura_max_m": 66.83,
+      "estructuras_mas_15m": 162,
+      "estructuras_mas_30m": 12
+    }
+  ]
+}
