@@ -88,6 +88,15 @@ Para resolver la limitación de OpenStreetMap donde solo el **24,1% de los edifi
 - `evidencia/imagenes/comparativa_osm_vs_google_open_buildings.png` (gráfico de cobertura 24,1% vs 100% y perfiles por comuna).
 - `evidencia/imagenes/mapa_google_open_buildings_2_5d.png` (mapa ráster espacial 2.5D de obstáculos de altura para drones).
 
+## Para la Tarea 2: la sismicidad no debe tratarse como "excluir zona", sino como prioridad
+
+Al diseñar el uso de cada amenaza en el grafo, se detectó una inconsistencia conceptual que hay que corregir antes de implementar el ruteo: no todas las amenazas deberían penalizar/eliminar aristas de la misma forma.
+
+- **Foco de incendio activo (FIRMS) y probabilidad de ignición (CONAF)**: son un **peligro físico inmediato** para el dron y no aportan nada evaluar "desde adentro". Ahí sí corresponde penalizar/eliminar las aristas cercanas y recalcular una ruta alternativa (k-shortest-paths / pgr_KSP) que evite la zona.
+- **Sismicidad reciente (USGS/CSN)**: es distinta porque **define el objetivo mismo de la misión** (evaluar daños post-terremoto). Tratarla como "excluir la zona" contradice el propósito completo del proyecto. Lo correcto es usarla para **priorizar hacia dónde volar primero** (mayor magnitud/recencia = mayor urgencia de evaluación), y penalizar únicamente **tramos puntuales con riesgo estructural derivado del sismo** (puentes, taludes potencialmente inestables) — no la zona completa.
+
+Implicancia para el diseño del algoritmo de la Tarea 2: el peso/penalización de una arista no puede depender solo de "¿hay una amenaza cerca?", sino de si esa amenaza es del tipo "evitar" (incendio) o del tipo "priorizar con precaución puntual" (sismo). Conviene modelarlo como dos mecanismos separados en la función de costo del grafo, en vez de una única función de penalización genérica por cercanía a cualquier amenaza.
+
 ## Archivos de evidencia
 
 Ver `evidencia/` (o `codigo/evidencia/`): `open_meteo_response.json`, `overpass_response.json`, `usgs_response.json`, `conaf_probabilidad_ignicion.geojson`, `conaf_areas_protegidas.geojson`, `mapa_grafo_valparaiso.png`, `grafico_edificacion_valparaiso.png`, `overpass_local_edificacion.{json,csv}`, `google_open_buildings_gran_valparaiso.json`, `google_open_buildings_resumen.csv`, `grafico_google_open_buildings_alturas.png`, `comparativa_osm_vs_google_open_buildings.png`, `mapa_google_open_buildings_2_5d.png`.
