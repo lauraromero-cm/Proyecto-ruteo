@@ -17,8 +17,8 @@ data = resp.json()
 print("HTTP", resp.status_code)
 print("URL final:", resp.url)
 print(json.dumps({k: data[k] for k in ("latitude", "longitude", "hourly_units")}, indent=2, ensure_ascii=False))
-print("Primeras 3 horas de viento (m/s):", data["hourly"]["wind_speed_10m"][:3])
-print("Primeras 3 horas de rachas (m/s):", data["hourly"]["wind_gusts_10m"][:3])
+print("Primeras 3 horas de viento (km/h):", data["hourly"]["wind_speed_10m"][:3])
+print("Primeras 3 horas de rachas (km/h):", data["hourly"]["wind_gusts_10m"][:3])
 
 with open("evidencia/datos/open_meteo_response.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
