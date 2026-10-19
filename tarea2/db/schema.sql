@@ -55,8 +55,8 @@ CREATE TABLE metadata_viento (
     sector              TEXT,
     elevacion_m         DOUBLE PRECISION,
     viento_medio_kmh    DOUBLE PRECISION,
-    racha_media_kmh     DOUBLE PRECISION,
-    racha_max_kmh       DOUBLE PRECISION,
+    racha_media_kmh     DOUBLE PRECISION,  -- usada como restriccion operacional (umbral viento)
+    racha_max_kmh       DOUBLE PRECISION,  -- peor instante del pronostico, solo informativo
     direccion_deg       DOUBLE PRECISION,  -- de donde sopla, en grados
     geom                GEOMETRY(Point, 4326) NOT NULL
 );
@@ -148,6 +148,25 @@ CREATE INDEX idx_amenaza_sismos_geom ON amenaza_sismos USING GIST (geom);
 -- Reemplaza un umbral fijo de distancia (version anterior) por uno que
 -- combina dos criterios reales, no arbitrarios:
 
+-- Racha de viento estimada en un punto cualquiera, interpolando las 6
+-- estaciones de metadata_viento por ponderacion inversa a la distancia al
+-- cuadrado (IDW, Shepard 1968, "A two-dimensional interpolation function
+-- for irregularly-spaced data", Proc. 23rd ACM National Conference). Evita
+-- que el viento sea constante por zona (estacion mas cercana) y cambie de
+-- golpe en el borde entre zonas. Es una ESTIMACION con solo 6 puntos, no
+-- una medicion en cada calle. Piso de 100m a la distancia para no dividir
+-- por ~0 si el punto coincide con una estacion. Usa racha_media_kmh (ver
+-- justificacion en metadata/viento.schema.md).
+CREATE OR REPLACE FUNCTION viento_racha_interpolada_kmh(p geometry)
+RETURNS double precision AS $$
+    SELECT SUM(t.racha / POWER(t.d, 2)) / SUM(1.0 / POWER(t.d, 2))
+    FROM (
+        SELECT v.racha_media_kmh AS racha,
+               GREATEST(ST_Distance(v.geom::geography, p::geography), 100.0) AS d
+        FROM metadata_viento v
+    ) t;
+$$ LANGUAGE SQL STABLE;
+
 CREATE OR REPLACE FUNCTION radio_relevancia_sismo_km(magnitud double precision)
 RETURNS double precision AS $$
     -- Wells & Coppersmith (1994), "New Empirical Relationships among
@@ -164,6 +183,13 @@ RETURNS double precision AS $$
 $$ LANGUAGE SQL IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION radio_operacional_viento_km(
+    -- racha_zona_kmh debe ser un valor REPRESENTATIVO del viento actual de
+    -- la zona (ej. metadata_viento.racha_media_kmh, el promedio del
+    -- pronostico), nunca un extremo puntual como la racha maxima de varios
+    -- dias de pronostico: en el Gran Valparaiso real esa racha maxima
+    -- supera siempre el techo fisico del dron en las 6 estaciones, lo que
+    -- volveria esta funcion un umbral constante (0.15x del radio base) sin
+    -- capacidad de discriminar entre zonas.
     racha_zona_kmh double precision,
     umbral_usuario_kmh double precision DEFAULT 43.2,
     radio_base_km double precision DEFAULT 15.0
