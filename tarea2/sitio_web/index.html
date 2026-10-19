@@ -106,10 +106,13 @@
 
   <div class="section-title">2b. Despliegue de flota ante sismo</div>
   <div class="form-group">
+    <label>Sismo:</label>
+    <select id="sel-flota-sismo" class="form-control"><option value="">Cargando sismos...</option></select>
     <label>Drones por cuartel: <input type="number" id="inp-flota-n" value="1" min="1" max="5" style="width:48px;">
       &nbsp;Autonomía (km): <input type="number" id="inp-flota-aut" value="30" min="5" max="100" style="width:56px;"></label>
-    <button id="btn-flota" class="form-control" style="cursor:pointer; margin-top:4px;">🚁 Desplegar todos los drones (sismo seleccionado)</button>
+    <button id="btn-flota" class="form-control" style="cursor:pointer; margin-top:4px;">🚁 Desplegar todos los drones</button>
   </div>
+  <button id="btn-flota-limpiar" class="form-control" style="cursor:pointer; margin-bottom:4px;">Quitar despliegue</button>
   <div class="info-trayecto" id="info-flota" style="display:none;"></div>
 
   <div class="section-title">3. Comparación de Rutas (Puntos 8, 9, 10, 11)</div>

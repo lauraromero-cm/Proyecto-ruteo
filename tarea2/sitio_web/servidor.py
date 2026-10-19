@@ -14,7 +14,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import psycopg2
 from psycopg2 import pool
 
-from despliegue import calcular_despliegue_sismo
+from despliegue import calcular_despliegue_sismo, listar_sismos
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
@@ -546,7 +546,19 @@ class RuteoRequestHandler(SimpleHTTPRequestHandler):
                 self._send_json({"error": str(e)}, 500)
             return
 
-        # 3b. API: Despliegue de flota completa ante un sismo
+        # 3b. API independiente de la ruta punto a punto: despliegue de flota ante un sismo
+        #     (sin origen ni destino; usa todos los cuarteles y toda la zona del sismo)
+        if path == "/api/despliegue_sismos":
+            conn = get_db_connection()
+            try:
+                self._send_json(listar_sismos(conn.cursor()))
+            except Exception as e:
+                self._send_json({"error": str(e)}, 500)
+            finally:
+                release_db_connection(conn)
+            return
+
+        # 3c. API: Despliegue de flota completa ante un sismo
         if path == "/api/despliegue_sismo":
             try:
                 def num(nombre, default, lo, hi):

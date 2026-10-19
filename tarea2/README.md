@@ -250,7 +250,7 @@ La tabla de métricas del panel lateral muestra, lado a lado, Dijkstra vs. Resil
 
 ## 12. Despliegue de flota ante un sismo
 
-Cuando el objetivo es un sismo, además de la ruta punto a punto, el botón *Desplegar todos los drones* (`/api/despliegue_sismo`, lógica en `sitio_web/despliegue.py`) lanza todos los drones de todos los cuarteles a la vez para cubrir la mayor parte posible de la zona afectada, priorizando según los datos de la plataforma.
+Cuando el objetivo es un sismo, además de la ruta punto a punto, el botón *Desplegar todos los drones* (`/api/despliegue_sismo`, independiente de la ruta origen/destino y sin punto de partida; sismos en `/api/despliegue_sismos`; lógica en `sitio_web/despliegue.py`) lanza todos los drones de todos los cuarteles a la vez para cubrir la mayor parte posible de la zona afectada, priorizando según los datos de la plataforma.
 
 - **Zona:** manzanas censales pobladas (`metadata_poblacion`) a ≤ radio del epicentro. Radio según magnitud: M<4 → 5 km, <5 → 10 km, <6 → 20 km, ≥6 → 50 km (supuesto).
 - **Prioridad por manzana:** `total_pers × (1 + indice_antiguedad) / (1 + dist_epicentro / radio)`.

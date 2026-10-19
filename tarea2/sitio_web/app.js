@@ -278,7 +278,6 @@ function renderizarRuta(rutaData) {
   capasRutas.dijkstra.clearLayers();
   capasRutas.resiliente.clearLayers();
   capaMarcadoresRuta.clearLayers();
-  capaFlota.clearLayers();
 
   const orig = rutaData.origen;
   const dest = rutaData.destino;
@@ -563,26 +562,37 @@ if (rngViento) {
 // Despliegue de flota completa ante un sismo (/api/despliegue_sismo)
 const COLORES_FLOTA = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4", "#008080", "#9a6324", "#800000", "#808000", "#000075", "#f032e6", "#469990"];
 
+fetch("/api/despliegue_sismos")
+  .then((r) => r.json())
+  .then((lista) => {
+    const sel = document.getElementById("sel-flota-sismo");
+    sel.innerHTML = lista.map((s) => `<option value="${s.id}">M${s.magnitud} - ${s.lugar} (zona ${s.radio_km} km)</option>`).join("");
+  })
+  .catch(() => (document.getElementById("sel-flota-sismo").innerHTML = "<option value=''>No disponible</option>"));
+
+document.getElementById("btn-flota-limpiar")?.addEventListener("click", () => {
+  capaFlota.clearLayers();
+  document.getElementById("info-flota").style.display = "none";
+});
+
 document.getElementById("btn-flota")?.addEventListener("click", () => {
   const info = document.getElementById("info-flota");
   info.style.display = "block";
-  if (!destinoActivo.startsWith("sismo_")) {
-    info.textContent = "Selecciona un sismo como objetivo para desplegar la flota.";
+  const sismo = document.getElementById("sel-flota-sismo").value;
+  if (!sismo) {
+    info.textContent = "Selecciona un sismo.";
     return;
   }
   info.innerHTML = "<b>Calculando despliegue de toda la flota...</b> (puede tardar ~10-20 s)";
   const n = document.getElementById("inp-flota-n").value;
   const aut = document.getElementById("inp-flota-aut").value;
-  fetch(`/api/despliegue_sismo?sismo=${encodeURIComponent(destinoActivo)}&drones_por_cuartel=${n}&autonomia_km=${aut}&viento_max=${vientoMaxActivo}`)
+  fetch(`/api/despliegue_sismo?sismo=${encodeURIComponent(sismo)}&drones_por_cuartel=${n}&autonomia_km=${aut}&viento_max=${vientoMaxActivo}`)
     .then((r) => r.json().then((d) => (r.ok ? d : Promise.reject(new Error(d.error || r.status)))))
     .then((d) => renderizarFlota(d, info))
     .catch((err) => (info.textContent = "Error: " + err.message));
 });
 
 function renderizarFlota(d, info) {
-  capasRutas.dijkstra.clearLayers();
-  capasRutas.resiliente.clearLayers();
-  capaMarcadoresRuta.clearLayers();
   capaFlota.clearLayers();
 
   L.circle([d.sismo.lat, d.sismo.lon], { radius: d.parametros.radio_km * 1000, color: "#c0392b", weight: 1, fillOpacity: 0.05, dashArray: "6,6" })

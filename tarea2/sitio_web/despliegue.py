@@ -94,6 +94,13 @@ def asignar_flota(drones, candidatas, costo, largo, ruta_fn, cubre_fn, autonomia
     return est, cubiertas
 
 
+def listar_sismos(cur):
+    """Todos los sismos son validos: el despliegue cubre una zona, no llega a un punto de la red."""
+    cur.execute("SELECT id, magnitud, lugar FROM amenaza_sismos ORDER BY magnitud DESC, id")
+    return [{"id": i, "magnitud": float(m), "lugar": l, "radio_km": radio_zona_km(float(m))}
+            for i, m, l in cur.fetchall()]
+
+
 def calcular_despliegue_sismo(cur, sismo_id, costo_sql, drones_por_cuartel=1,
                               autonomia_km=AUTONOMIA_KM_DEFAULT,
                               alcance_camara_m=ALCANCE_CAMARA_M_DEFAULT,
