@@ -14,6 +14,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import psycopg2
 from psycopg2 import pool
 
+from despliegue import calcular_despliegue_sismo
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
 DB_HOST = os.getenv("DB_HOST", "db")
@@ -72,6 +74,7 @@ except Exception as e:
 
 # Caché en memoria para respuestas de rutas instantáneas (<5ms)
 CACHE_RUTAS = {}
+CACHE_DESPLIEGUES = {}
 
 # Mapeo de alias a IDs de cuarteles
 ALIAS_CUARTEL = {
@@ -539,6 +542,37 @@ class RuteoRequestHandler(SimpleHTTPRequestHandler):
                 # Empaquetar como respuesta enriquecida
                 ruta_data["tiempo_calculo_ms"] = t_ms
                 self._send_json(ruta_data)
+            except Exception as e:
+                self._send_json({"error": str(e)}, 500)
+            return
+
+        # 3b. API: Despliegue de flota completa ante un sismo
+        if path == "/api/despliegue_sismo":
+            try:
+                def num(nombre, default, lo, hi):
+                    try:
+                        return max(lo, min(hi, float(query.get(nombre, [default])[0])))
+                    except (TypeError, ValueError):
+                        return default
+                sismo_id = int(str(query.get("sismo", ["15"])[0]).replace("sismo_", ""))
+                viento = num("viento_max", VIENTO_MAX_DEFAULT_KMH, *VIENTO_MAX_RANGO)
+                params = (sismo_id, round(viento, 1), int(num("drones_por_cuartel", 1, 1, 5)),
+                          num("autonomia_km", 30.0, 5.0, 100.0), num("alcance_camara_m", 150.0, 30.0, 500.0))
+                if params not in CACHE_DESPLIEGUES:
+                    conn = get_db_connection()
+                    try:
+                        t0 = time.time()
+                        res = calcular_despliegue_sismo(
+                            conn.cursor(), sismo_id, cost_resiliente_sql({"tipo": "sismo"}, viento),
+                            drones_por_cuartel=params[2], autonomia_km=params[3], alcance_camara_m=params[4])
+                        res["tiempo_calculo_ms"] = round((time.time() - t0) * 1000, 1)
+                    finally:
+                        release_db_connection(conn)
+                    if "error" in res:
+                        self._send_json(res, 400)
+                        return
+                    CACHE_DESPLIEGUES[params] = res
+                self._send_json(CACHE_DESPLIEGUES[params])
             except Exception as e:
                 self._send_json({"error": str(e)}, 500)
             return

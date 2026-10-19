@@ -17,6 +17,7 @@ let capasRutas = {
   resiliente: L.featureGroup().addTo(map),
 };
 let capaMarcadoresRuta = L.featureGroup().addTo(map);
+let capaFlota = L.featureGroup().addTo(map);
 
 let capaCarabineros = L.featureGroup().addTo(map);
 let capaSismos = L.featureGroup().addTo(map);
@@ -277,6 +278,7 @@ function renderizarRuta(rutaData) {
   capasRutas.dijkstra.clearLayers();
   capasRutas.resiliente.clearLayers();
   capaMarcadoresRuta.clearLayers();
+  capaFlota.clearLayers();
 
   const orig = rutaData.origen;
   const dest = rutaData.destino;
@@ -556,4 +558,59 @@ if (rngViento) {
     vientoMaxActivo = Number(e.target.value);
     actualizarRuta(origenActivo, destinoActivo);
   });
+}
+
+// Despliegue de flota completa ante un sismo (/api/despliegue_sismo)
+const COLORES_FLOTA = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4", "#008080", "#9a6324", "#800000", "#808000", "#000075", "#f032e6", "#469990"];
+
+document.getElementById("btn-flota")?.addEventListener("click", () => {
+  const info = document.getElementById("info-flota");
+  info.style.display = "block";
+  if (!destinoActivo.startsWith("sismo_")) {
+    info.textContent = "Selecciona un sismo como objetivo para desplegar la flota.";
+    return;
+  }
+  info.innerHTML = "<b>Calculando despliegue de toda la flota...</b> (puede tardar ~10-20 s)";
+  const n = document.getElementById("inp-flota-n").value;
+  const aut = document.getElementById("inp-flota-aut").value;
+  fetch(`/api/despliegue_sismo?sismo=${encodeURIComponent(destinoActivo)}&drones_por_cuartel=${n}&autonomia_km=${aut}&viento_max=${vientoMaxActivo}`)
+    .then((r) => r.json().then((d) => (r.ok ? d : Promise.reject(new Error(d.error || r.status)))))
+    .then((d) => renderizarFlota(d, info))
+    .catch((err) => (info.textContent = "Error: " + err.message));
+});
+
+function renderizarFlota(d, info) {
+  capasRutas.dijkstra.clearLayers();
+  capasRutas.resiliente.clearLayers();
+  capaMarcadoresRuta.clearLayers();
+  capaFlota.clearLayers();
+
+  L.circle([d.sismo.lat, d.sismo.lon], { radius: d.parametros.radio_km * 1000, color: "#c0392b", weight: 1, fillOpacity: 0.05, dashArray: "6,6" })
+    .bindPopup(`Zona afectada: radio ${d.parametros.radio_km} km`).addTo(capaFlota);
+  L.marker([d.sismo.lat, d.sismo.lon]).bindPopup(`<b>Sismo M${d.sismo.magnitud}</b><br>${d.sismo.lugar}`).addTo(capaFlota);
+
+  const colorDe = {};
+  d.drones.forEach((dr, i) => {
+    colorDe[dr.id] = COLORES_FLOTA[i % COLORES_FLOTA.length];
+    L.geoJSON(dr.geom, { style: { color: colorDe[dr.id], weight: 4, opacity: 0.85 } })
+      .bindPopup(`<b>${dr.id}</b><br>${dr.cuartel} (${dr.comuna})<br>${dr.distancia_km} km, ${dr.manzanas_visitadas.length} manzanas objetivo`)
+      .addTo(capaFlota);
+  });
+  d.manzanas.forEach((m) => {
+    L.circleMarker([m.lat, m.lon], {
+      radius: 3 + Math.min(4, m.prioridad / 400),
+      color: m.cubierta ? colorDe[m.dron] || "#27ae60" : "#7f8c8d",
+      fillOpacity: m.cubierta ? 0.8 : 0.3,
+      weight: 1,
+    }).bindPopup(`Manzana ${m.id}<br>Población: ${m.poblacion}<br>Antigüedad: ${m.antiguedad}<br>Prioridad: ${m.prioridad}<br>${m.cubierta ? "Cubierta" : "Sin cubrir"}`)
+      .addTo(capaFlota);
+  });
+  map.fitBounds(capaFlota.getBounds());
+
+  const k = d.metricas;
+  info.innerHTML = `<b>Flota desplegada:</b> ${k.drones_desplegados}/${k.drones_totales} drones, ${k.km_totales} km<br>
+    Población cubierta: <b>${k.pct_poblacion_cubierta}%</b> de ${k.poblacion_zona} hab.<br>
+    Prioridad cubierta: <b>${k.pct_prioridad_cubierta}%</b> · Manzanas: ${k.manzanas_cubiertas}/${k.manzanas_zona}<br>
+    Edificación antigua cubierta: ${k.pct_antiguas_cubiertas ?? "—"}%<br>
+    Primera inspección de la manzana prioritaria: ${k.min_primera_inspeccion_top ?? "—"} min`;
 }

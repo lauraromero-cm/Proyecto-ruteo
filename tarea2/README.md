@@ -248,6 +248,17 @@ La tabla de métricas del panel lateral muestra, lado a lado, Dijkstra vs. Resil
 
 ---
 
+## 12. Despliegue de flota ante un sismo
+
+Cuando el objetivo es un sismo, además de la ruta punto a punto, el botón *Desplegar todos los drones* (`/api/despliegue_sismo`, lógica en `sitio_web/despliegue.py`) lanza todos los drones de todos los cuarteles a la vez para cubrir la mayor parte posible de la zona afectada, priorizando según los datos de la plataforma.
+
+- **Zona:** manzanas censales pobladas (`metadata_poblacion`) a ≤ radio del epicentro. Radio según magnitud: M<4 → 5 km, <5 → 10 km, <6 → 20 km, ≥6 → 50 km (supuesto).
+- **Prioridad por manzana:** `total_pers × (1 + indice_antiguedad) / (1 + dist_epicentro / radio)`.
+- **Flota:** los cuarteles que ofrece `/api/origenes` × `drones_por_cuartel`. Cada dron tiene una autonomía (default 30 km, con 10 % de reserva) y puede terminar en cualquier punto de carga.
+- **Asignación (greedy):** en cada ronda, cada dron elige la manzana pendiente con mayor `prioridad / costo resiliente` que aún le permita volver a cargar. Las rutas usan el mismo `cost_resiliente_sql` (viento, tendido, SNASPE, antigüedad). Toda manzana a ≤ `alcance_camara_m` (150 m) de un tramo recorrido se considera cubierta, lo que reparte a los drones. Para acotar la matriz de costos solo las 120 manzanas de mayor prioridad son candidatas; la cobertura se mide sobre toda la zona.
+- **Métricas:** % de población y de prioridad cubiertas, % de edificación antigua cubierta, km totales y minutos hasta inspeccionar la manzana más prioritaria (a `velocidad_kmh` = 40, supuesto).
+- Los supuestos (radio, autonomía, cámara, velocidad) no provienen de ninguna fuente de datos. `python3 sitio_web/test_despliegue.py` prueba la lógica de asignación sin BD.
+
 ## Cómo compilar y ejecutar
 
 **Requisitos**: Docker + Docker Compose. No se requiere Python, PostgreSQL ni ninguna otra dependencia instalada en el host — todo corre en contenedores.
