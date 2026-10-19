@@ -2,11 +2,11 @@
   {
     "usgs_id": "us6000tz75",
     "magnitud": 4.3,
-    "profundidad_km": 32.14,
-    "fecha": 1790962098887,
-    "lugar": "30 km NNW of Valparaíso, Chile",
-    "lon": -71.7075,
-    "lat": -32.773
+    "profundidad_km": 31.319,
+    "fecha": 1790962098566,
+    "lugar": "32 km NNW of Valparaíso, Chile",
+    "lon": -71.7298,
+    "lat": -32.759
   },
   {
     "usgs_id": "us6000tg56",
