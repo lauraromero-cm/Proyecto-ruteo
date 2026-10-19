@@ -60,9 +60,10 @@ exportar("carabineros", """
 # Umbral combinado (mismo criterio que servidor.py y generar_rutas_
 # comparativas.py): "destino_valido" exige que el nodo vial mas cercano este
 # dentro del MINIMO de (a) el radio de relevancia segun la magnitud del
-# sismo (Wells & Coppersmith 1994) y (b) el radio operacional segun el
-# viento real de la zona (restriccion fisica de alcance del dron). Funciones
-# SQL en db/schema.sql: distancia_max_valida_sismo_km y sus componentes.
+# sismo (Wells & Coppersmith 1994) y (b) el radio operacional segun la
+# racha de viento PROMEDIO de la zona (metadata_viento.racha_media_kmh;
+# restriccion fisica de alcance del dron). Funciones SQL en db/schema.sql:
+# distancia_max_valida_sismo_km y sus componentes.
 # "en_tierra" es un hecho geografico INDEPENDIENTE (no un sinonimo de
 # destino_valido): un sismo puede estar en el mar y aun asi ser destino
 # valido (si es grande y el viento de la zona es favorable), o estar en
@@ -78,9 +79,9 @@ exportar("sismos", """
                 'id', s.id, 'magnitud', s.magnitud, 'profundidad_km', s.profundidad_km,
                 'fecha', s.fecha, 'lugar', s.lugar,
                 'dist_red_m', round(dist_red.d::numeric, 1),
-                'racha_zona_kmh', round(v.racha_max_kmh::numeric, 1),
-                'umbral_valido_km', round(distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)::numeric, 1),
-                'destino_valido', ((dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)),
+                'racha_zona_kmh', round(v.racha_media_kmh::numeric, 1),
+                'umbral_valido_km', round(distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)::numeric, 1),
+                'destino_valido', ((dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)),
                 'en_tierra', (ST_X(s.geom) >= -71.68)
             )
         )), '[]'::json)
@@ -90,7 +91,7 @@ exportar("sismos", """
         FROM infraestructura_nodos n ORDER BY n.geom <-> s.geom LIMIT 1
     ) dist_red
     CROSS JOIN LATERAL (
-        SELECT racha_max_kmh FROM metadata_viento ORDER BY geom <-> s.geom LIMIT 1
+        SELECT viento_racha_interpolada_kmh(s.geom) AS racha_media_kmh
     ) v;
 """)
 
@@ -139,7 +140,8 @@ exportar("viento", """
             'geometry', ST_AsGeoJSON(geom)::json,
             'properties', json_build_object(
                 'comuna', comuna, 'sector', sector,
-                'viento_kmh', viento_medio_kmh, 'racha_max_kmh', racha_max_kmh,
+                'viento_kmh', viento_medio_kmh,
+                'racha_media_kmh', racha_media_kmh, 'racha_max_kmh', racha_max_kmh,
                 'direccion_deg', direccion_deg
             )
         )), '[]'::json)

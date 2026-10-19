@@ -516,7 +516,7 @@ cargarGeoJSON("data/viento.geojson", (geojson) => {
     },
     onEachFeature: (f, layer) => {
       const p = f.properties;
-      layer.bindPopup(`<b>Estación Meteorológica: ${p.comuna}</b><br>${p.sector}<br>Viento medio: ${p.viento_medio_kmh || p.viento_kmh} km/h<br>Racha máx: ${p.racha_max_kmh} km/h<br>Elevación: ${p.elevacion_m} m`);
+      layer.bindPopup(`<b>Estación Meteorológica: ${p.comuna}</b><br>${p.sector}<br>Viento medio: ${p.viento_medio_kmh || p.viento_kmh} km/h<br>Racha promedio (usada como restricción operacional): ${p.racha_media_kmh} km/h<br>Racha máx. pronosticada (peor caso, informativo): ${p.racha_max_kmh} km/h<br>Elevación: ${p.elevacion_m} m`);
     },
   }).addTo(capaViento);
 });

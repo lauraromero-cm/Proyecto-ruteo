@@ -39,6 +39,12 @@ PESO_ANTIGUEDAD = 0.3
 #     techo absoluto del rango valido: no tiene sentido que el operador
 #     pida una restriccion mas permisiva que lo que el dron fisicamente
 #     resiste.
+# El umbral se compara contra la racha PROMEDIO del pronostico Open-Meteo
+# (metadata_viento.racha_media_kmh), no contra la racha maxima: en las 6
+# estaciones del area, la racha maxima de ~7 dias de pronostico supera
+# SIEMPRE el techo fisico del dron, lo que volveria la restriccion un
+# no-op (penalizaria el 100% de las aristas por igual, sin afectar la
+# eleccion de ruta). La racha promedio si varia de forma real entre zonas.
 VIENTO_MAX_DEFAULT_KMH = 43.2
 VIENTO_MAX_ABSOLUTO_KMH = 54.0  # limite fisico en vuelo del DJI M300 RTK (15 m/s)
 VIENTO_MAX_RANGO = (10.0, VIENTO_MAX_ABSOLUTO_KMH)
@@ -50,7 +56,7 @@ def cost_resiliente_sql(dest, viento_max_kmh=VIENTO_MAX_DEFAULT_KMH):
     if dest.get("tipo") == "sismo":
         base = f"({base} * (1 + {PESO_ANTIGUEDAD} * factor_antiguedad_zona))"
     return (
-        f"(CASE WHEN viento_racha_max_kmh > {float(viento_max_kmh)} "
+        f"(CASE WHEN viento_racha_kmh > {float(viento_max_kmh)} "
         f"THEN ({base}) * 1000.0 ELSE {base} END)"
     )
 
@@ -132,9 +138,9 @@ def obtener_todos_los_sismos():
             SELECT s.id, s.usgs_id, s.magnitud, s.lugar, s.profundidad_km,
                    ST_X(s.geom) AS lon, ST_Y(s.geom) AS lat,
                    round(dist_red.d::numeric, 1) AS dist_red_m,
-                   round(v.racha_max_kmh::numeric, 1) AS racha_zona_kmh,
-                   round(distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)::numeric, 1) AS umbral_km,
-                   ((dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)) AS destino_valido,
+                   round(v.racha_media_kmh::numeric, 1) AS racha_zona_kmh,
+                   round(distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)::numeric, 1) AS umbral_km,
+                   ((dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)) AS destino_valido,
                    (ST_X(s.geom) >= -71.68) AS en_tierra
             FROM amenaza_sismos s
             CROSS JOIN LATERAL (
@@ -142,9 +148,9 @@ def obtener_todos_los_sismos():
                 FROM infraestructura_nodos n ORDER BY n.geom <-> s.geom LIMIT 1
             ) dist_red
             CROSS JOIN LATERAL (
-                SELECT racha_max_kmh FROM metadata_viento ORDER BY geom <-> s.geom LIMIT 1
+                SELECT viento_racha_interpolada_kmh(s.geom) AS racha_media_kmh
             ) v
-            WHERE (dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)
+            WHERE (dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)
             ORDER BY s.magnitud DESC, dist_red_m ASC;
         """)
         filas = cur.fetchall()
@@ -248,7 +254,7 @@ def resolver_destino_nodo(cur, destino_str, lat_param=None, lon_param=None):
             """, (s_lon, s_lat, s_lon, s_lat))
             d_nodo, dn_lon, dn_lat, dist_aerea = cur.fetchone()
             cur.execute(
-                "SELECT distancia_max_valida_sismo_km(%s, (SELECT racha_max_kmh FROM metadata_viento ORDER BY geom <-> ST_SetSRID(ST_MakePoint(%s, %s), 4326) LIMIT 1))",
+                "SELECT distancia_max_valida_sismo_km(%s, viento_racha_interpolada_kmh(ST_SetSRID(ST_MakePoint(%s, %s), 4326)))",
                 (mag, s_lon, s_lat),
             )
             umbral_km = cur.fetchone()[0]

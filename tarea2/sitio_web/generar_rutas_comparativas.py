@@ -78,21 +78,35 @@ FROM (
 ) sub
 WHERE a.id = sub.id;
 
--- viento_racha_max_kmh: racha maxima pronosticada de la estacion Open-Meteo
--- mas cercana (de las 6 del area). Es la base de la RESTRICCION de usuario
--- (punto 6 de la rubrica, distinta de una ponderacion fija): el operador
--- define un umbral maximo de viento operacional (simulando su preferencia
--- de seguridad); cualquier arista cuya zona supere ese umbral se penaliza
--- fuertemente (x1000, igual convencion que CONAF/areas protegidas) en la
--- ruta resiliente. Se aplica en tiempo de consulta, no aqui, porque el
--- umbral es un parametro variable (ver costo_resiliente_sql).
-ALTER TABLE infraestructura_aristas ADD COLUMN IF NOT EXISTS viento_racha_max_kmh double precision;
+-- viento_racha_kmh: racha PROMEDIO pronosticada (racha_media_kmh) de la
+-- estacion Open-Meteo mas cercana (de las 6 del area). Es la base de la
+-- RESTRICCION de usuario (punto 6 de la rubrica, distinta de una
+-- ponderacion fija): el operador define un umbral maximo de viento
+-- operacional (simulando su preferencia de seguridad); cualquier arista
+-- cuya zona supere ese umbral se penaliza fuertemente (x1000, igual
+-- convencion que CONAF/areas protegidas) en la ruta resiliente.
+-- Se usa racha_media_kmh (promedio del periodo pronosticado) y NO
+-- racha_max_kmh (el peor instante puntual de ~7 dias de pronostico):
+-- en el Gran Valparaiso real, racha_max_kmh supera SIEMPRE el techo
+-- fisico del DJI M300 RTK (54 km/h) en las 6 estaciones -> si se usara
+-- ese valor, el 100% de las aristas quedarian penalizadas por igual y la
+-- restriccion de viento dejaria de influir en la eleccion de ruta (un
+-- no-op). racha_media_kmh (17.7-35.8 km/h en los datos reales) si varia
+-- de forma significativa entre zonas y mayormente queda bajo el umbral
+-- default, por lo que discrimina de verdad entre rutas. Se aplica en
+-- tiempo de consulta, no aqui, porque el umbral es un parametro variable
+-- (ver costo_resiliente_sql).
+ALTER TABLE infraestructura_aristas ADD COLUMN IF NOT EXISTS viento_racha_kmh double precision;
+ALTER TABLE infraestructura_aristas DROP COLUMN IF EXISTS viento_racha_max_kmh;
 CREATE INDEX IF NOT EXISTS idx_viento_geom ON metadata_viento USING gist(geom);
 
+-- Racha interpolada (IDW entre las 6 estaciones, ver
+-- viento_racha_interpolada_kmh en db/schema.sql) evaluada en el punto medio
+-- de cada arista, en vez de la de la estacion mas cercana: asi el viento
+-- varia de forma gradual por el mapa y el slider de viento cambia las
+-- rutas de forma progresiva, no solo al cruzar el valor de una estacion.
 UPDATE infraestructura_aristas a
-SET viento_racha_max_kmh = (
-    SELECT v.racha_max_kmh FROM metadata_viento v ORDER BY v.geom <-> a.geom LIMIT 1
-);
+SET viento_racha_kmh = viento_racha_interpolada_kmh(ST_LineInterpolatePoint(a.geom, 0.5));
 """)
 conn.commit()
 
@@ -111,18 +125,18 @@ def cost_resiliente_sql(dest, viento_max_kmh=VIENTO_MAX_DEFAULT_KMH):
     """Expresion SQL de costo para la ruta 'resiliente':
     - agrega el riesgo de escombros por edificacion antigua SOLO si el
       destino es un sismo (ponderacion condicional, punto 5).
-    - aplica la restriccion de viento operacional del usuario (o el default
-      de 40 km/h): si la racha de la zona supera el umbral, la arista se
-      penaliza x1000 (punto 6). Nunca excluye literalmente la arista (costo
-      finito), por lo que siempre existe una ruta aunque toda la zona este
-      ventosa; en ese caso la restriccion de viento no afecta la eleccion de
-      ruta porque penaliza por igual, lo cual es el comportamiento correcto.
+    - aplica la restriccion de viento operacional del usuario (o el
+      default de 43.2 km/h): si la racha PROMEDIO de la zona
+      (viento_racha_kmh, ver seccion anterior) supera el umbral, la
+      arista se penaliza x1000 (punto 6). Nunca excluye literalmente la
+      arista (costo finito), por lo que siempre existe una ruta aunque
+      toda la zona este ventosa.
     """
     base = "cost_resiliente"
     if dest.get("tipo") == "sismo":
         base = f"({base} * (1 + {PESO_ANTIGUEDAD} * factor_antiguedad_zona))"
     return (
-        f"(CASE WHEN viento_racha_max_kmh > {float(viento_max_kmh)} "
+        f"(CASE WHEN viento_racha_kmh > {float(viento_max_kmh)} "
         f"THEN ({base}) * 1000.0 ELSE {base} END)"
     )
 
@@ -170,7 +184,8 @@ for r in filas_cuarteles:
 # valido si el nodo vial mas cercano esta dentro del MINIMO de (a) el radio
 # de relevancia segun su magnitud (Wells & Coppersmith 1994) y (b) el radio
 # operacional segun el viento real de la zona (restriccion fisica de alcance
-# del dron). Funciones SQL en db/schema.sql.
+# del dron, calculado con racha_media_kmh - ver justificacion en la seccion
+# anterior). Funciones SQL en db/schema.sql.
 cur.execute("""
 SELECT s.id, s.usgs_id, s.magnitud, s.lugar, ST_X(s.geom) AS lon, ST_Y(s.geom) AS lat
 FROM amenaza_sismos s
@@ -179,9 +194,9 @@ CROSS JOIN LATERAL (
     FROM infraestructura_nodos n ORDER BY n.geom <-> s.geom LIMIT 1
 ) dist_red
 CROSS JOIN LATERAL (
-    SELECT racha_max_kmh FROM metadata_viento ORDER BY geom <-> s.geom LIMIT 1
+    SELECT viento_racha_interpolada_kmh(s.geom) AS racha_media_kmh
 ) v
-WHERE (dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_max_kmh)
+WHERE (dist_red.d / 1000.0) <= distancia_max_valida_sismo_km(s.magnitud, v.racha_media_kmh)
 ORDER BY s.magnitud DESC, dist_red.d ASC
 LIMIT 10;
 """)

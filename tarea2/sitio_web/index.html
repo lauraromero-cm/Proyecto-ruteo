@@ -108,36 +108,36 @@
   <table class="table-metric">
     <thead>
       <tr>
-        <th>Métrica Evaluada</th>
+        <th>Métrica Evaluada <span style="font-weight:400; font-size:10px; color:#94a3b8;" title="Pasa el mouse sobre cada fila para ver cómo se calcula">ⓘ</span></th>
         <th style="color:#e67e22;">Dijkstra</th>
         <th style="color:#2980b9;">Resiliente</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Distancia prom. (km)</td>
+        <td style="cursor:help;" title="Promedio de longitud (km) entre la Ruta 1 y la Ruta 2 del par k=2 de cada modo.">Distancia prom. (km)</td>
         <td class="num" id="m-dist-dijkstra">—</td>
         <td class="num" id="m-dist-resil">—</td>
       </tr>
       <tr>
-        <td>Disyunción de caminos</td>
+        <td style="cursor:help;" title="Qué tan independientes son la Ruta 1 y la Ruta 2 entre sí: 1 - (tramos compartidos / tramos totales). Alto = buen respaldo, ya que si algo corta la Ruta 1, la Ruta 2 probablemente sigue intacta.">Disyunción de caminos</td>
         <td class="num" id="m-disy-dijkstra">—</td>
         <td class="num" id="m-disy-resil">—</td>
       </tr>
       <tr>
-        <td>Aristas en riesgo</td>
+        <td style="cursor:help;" title="Cantidad de tramos (de Ruta 1 + Ruta 2 juntas) que cruzan alguna zona penalizada: tendido eléctrico, zona CONAF de ignición, área protegida, foco FIRMS o viento sobre el límite del dron. Resiliente evita estos tramos activamente; Dijkstra no.">Aristas en riesgo</td>
         <td class="num" id="m-riesgo-dijkstra" style="color:#c0392b; font-weight:600;">—</td>
         <td class="num" id="m-riesgo-resil" style="color:#27ae60; font-weight:600;">—</td>
       </tr>
       <tr style="font-weight:700; background:#f8fafc;">
-        <td>Resiliencia Global (R)</td>
+        <td style="cursor:help;" title="Score combinado: disyunción × factor de seguridad × 100, donde factor de seguridad = 1 - (aristas en riesgo / aristas totales del par), con piso de 0.2. Resume en un solo número qué tan robusto es el par de rutas (independiente entre sí Y lejos de zonas peligrosas).">Resiliencia Global (R)</td>
         <td class="num" id="m-resil-dijkstra" style="color:#e67e22;">—</td>
         <td class="num" id="m-resil-resil" style="color:#2980b9;">—</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="badge-diff" id="badge-diferencial">
+  <div class="badge-diff" id="badge-diferencial" title="Resiliencia Global del par Resiliente menos la del par Dijkstra, para este origen/destino específico. Positivo = la estrategia resiliente mejora la robustez frente al Dijkstra puro.">
     Calculando Diferencial de Resiliencia...
   </div>
 
