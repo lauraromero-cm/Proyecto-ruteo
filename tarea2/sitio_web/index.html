@@ -75,9 +75,8 @@
     <span>Ruteo Resiliente BVLOS</span>
     <span style="font-size:10px; font-weight:normal; background:#2980b9; color:#fff; padding:2px 6px; border-radius:4px;">Gran Valparaíso</span>
   </h2>
-  <p class="sub">Plataforma de Evaluación de Daños tras Desastres — Drones Autónomos</p>
 
-  <div class="section-title">1. Dupla Origen / Destino Dinámica (Punto 11.1)</div>
+  <div class="section-title">1. Dupla Origen / Destino Dinámica</div>
   <div class="form-group">
     <label>Inicio (Cuartel Carabineros / Base de Carga):</label>
     <select id="sel-origen" class="form-control">
@@ -94,7 +93,7 @@
   <div class="info-trayecto" id="info-seleccion">
     <b>Ruta Activa:</b> Cargando trayectoria...
   </div>
-  <div class="section-title">2. Preferencias / Restricciones (Punto 6)</div>
+  <div class="section-title">2. Preferencias / Restricciones</div>
   <div class="form-group">
     <label>Viento máx permitido: <span id="lbl-viento">43 km/h (DJI M300 RTK, despegue/aterrizaje)</span></label>
     <input type="range" id="rng-viento" min="15" max="54" value="43" class="form-control" style="padding:0;">
@@ -104,11 +103,11 @@
     <label><input type="checkbox" id="chk-opt-conaf" checked disabled> Evitar áreas SNASPE</label>
   </div>
 
-  <div class="section-title">3. Comparación de Rutas (Puntos 8, 9, 10, 11)</div>
+  <div class="section-title">3. Comparación de Rutas</div>
   <table class="table-metric">
     <thead>
       <tr>
-        <th>Métrica Evaluada <span style="font-weight:400; font-size:10px; color:#94a3b8;" title="Pasa el mouse sobre cada fila para ver cómo se calcula">ⓘ</span></th>
+        <th>Métrica Evaluada</th>
         <th style="color:#e67e22;">Dijkstra</th>
         <th style="color:#2980b9;">Resiliente</th>
       </tr>
@@ -141,7 +140,7 @@
     Calculando Diferencial de Resiliencia...
   </div>
 
-  <div class="section-title">4. Capas en el Mapa (Punto 7)</div>
+  <div class="section-title">4. Capas en el Mapa</div>
   <div class="layer-item">
     <span><span class="line-swatch" style="background:#2980b9;"></span><span class="line-swatch" style="background:#27ae60;"></span> Rutas Resilientes (k=2: Ruta 1 azul + Ruta 2 verde)</span>
     <input type="checkbox" id="chk-capa-resil" checked>

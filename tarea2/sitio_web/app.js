@@ -104,13 +104,13 @@ function poblarSelectoresDinamicos(origenes, sismos) {
 
   // Agrupar Destinos: Sismos Terrestres, Sismos Costeros/Marítimos, Focos de Incendio
   const optgroupTerrestres = document.createElement("optgroup");
-  optgroupTerrestres.label = "🏔️ Sismos Continentales en Tierra (USGS)";
+  optgroupTerrestres.label = "Sismos Continentales en Tierra (USGS)";
 
   const optgroupMaritimos = document.createElement("optgroup");
-  optgroupMaritimos.label = "🌊 Sismos en Costa y Océano Pacífico (USGS)";
+  optgroupMaritimos.label = "Sismos en Costa y Océano Pacífico (USGS)";
 
   const optgroupFocos = document.createElement("optgroup");
-  optgroupFocos.label = "🔥 Focos Activos de Incendio (NASA FIRMS)";
+  optgroupFocos.label = "Focos Activos de Incendio (NASA FIRMS)";
 
   // Sismos clasificados
   sismos.forEach((s) => {
@@ -243,7 +243,7 @@ function actualizarRuta(origenKey, destinoKey) {
 
   const infoBox = document.getElementById("info-seleccion");
   if (infoBox) {
-    infoBox.innerHTML = `<b>Calculando ruta óptima y resiliente con pgRouting en tiempo real...</b> <span style="font-size:12px; color:#2980b9;">⚙️</span>`;
+    infoBox.innerHTML = `<b>Calculando ruta óptima y resiliente con pgRouting en tiempo real...</b>`;
   }
 
   // 1. Invocar la API dinámica de pgRouting
@@ -318,7 +318,7 @@ function renderizarRuta(rutaData) {
     fillColor: "#2980b9",
     fillOpacity: 1,
     weight: 3,
-  }).bindPopup(`<b>🎯 BASE DE OPERACIÓN DRON (ORIGEN)</b><br><b>${orig.nombre}</b><br>Comuna: ${orig.comuna}<br>Punto de carga habilitado`).addTo(capaMarcadoresRuta);
+  }).bindPopup(`<b>BASE DE OPERACIÓN DRON (ORIGEN)</b><br><b>${orig.nombre}</b><br>Comuna: ${orig.comuna}<br>Punto de carga habilitado`).addTo(capaMarcadoresRuta);
 
   L.circleMarker([dest.lat, dest.lon], {
     radius: 11,
@@ -326,7 +326,7 @@ function renderizarRuta(rutaData) {
     fillColor: dest.tipo === "incendio" ? "#d35400" : "#c0392b",
     fillOpacity: 1,
     weight: 3,
-  }).bindPopup(`<b>🚨 OBJETIVO DE EMERGENCIA (DESTINO)</b><br><b>${dest.descripcion}</b><br>Coordenadas: ${dest.lat}, ${dest.lon}`).addTo(capaMarcadoresRuta);
+  }).bindPopup(`<b>OBJETIVO DE EMERGENCIA (DESTINO)</b><br><b>${dest.descripcion}</b><br>Coordenadas: ${dest.lat}, ${dest.lon}`).addTo(capaMarcadoresRuta);
 
   // 4. Centrar y encuadrar el mapa en la nueva trayectoria
   try {
@@ -339,10 +339,10 @@ function renderizarRuta(rutaData) {
   // 5. Actualizar Caja Informativa
   const infoBox = document.getElementById("info-seleccion");
   if (infoBox) {
-    const msInfo = rutaData.tiempo_calculo_ms ? ` <span style="font-size:10px; background:#e8f4f8; color:#1b4f72; padding:2px 6px; border-radius:3px; font-weight:bold;">⚡ pgRouting: ${rutaData.tiempo_calculo_ms} ms</span>` : "";
+    const msInfo = rutaData.tiempo_calculo_ms ? ` <span style="font-size:10px; background:#e8f4f8; color:#1b4f72; padding:2px 6px; border-radius:3px; font-weight:bold;">pgRouting: ${rutaData.tiempo_calculo_ms} ms</span>` : "";
     const r = rutaData.restricciones;
-    const restrInfo = r ? ` <span style="font-size:10px; background:#fff8e1; color:#8a6d00; padding:2px 6px; border-radius:3px;">💨 viento máx: ${r.viento_max_kmh} km/h${r.es_default ? " (default)" : ""}</span>` : "";
-    infoBox.innerHTML = `<b>Trayecto Activo:</b> ${orig.nombre} (${orig.comuna}) <br>➔ <b>${dest.descripcion}</b>${msInfo}${restrInfo}`;
+    const restrInfo = r ? ` <span style="font-size:10px; background:#fff8e1; color:#8a6d00; padding:2px 6px; border-radius:3px;">viento máx: ${r.viento_max_kmh} km/h${r.es_default ? " (default)" : ""}</span>` : "";
+    infoBox.innerHTML = `<b>Trayecto Activo:</b> ${orig.nombre} (${orig.comuna}) <br>&rarr; <b>${dest.descripcion}</b>${msInfo}${restrInfo}`;
   }
 
   // 6. Actualizar Métricas en la Tabla
@@ -400,7 +400,7 @@ cargarGeoJSON("data/carabineros.geojson", (geojson) => {
           Comuna: ${p.comuna}<br>
           <i>${p.es_comisaria ? "Comisaría Principal" : "Retén / Tenencia"} · Base de Carga</i><br>
           <button class="btn-popup btn-origen" onclick="window.fijarOrigen('${keyCuartel}')" style="margin-top:6px; width:100%;">
-            🎯 Fijar como Inicio del Dron
+            Fijar como Inicio del Dron
           </button>
         `).openPopup();
       });
@@ -432,11 +432,11 @@ cargarGeoJSON("data/sismos.geojson", (geojson) => {
       const sismoKey = `sismo_${p.id}`;
       const distStr = p.dist_red_m < 1000 ? `${Math.round(p.dist_red_m)}m` : `${(p.dist_red_m / 1000).toFixed(1)}km`;
       const umbralStr = p.umbral_valido_km != null ? `${p.umbral_valido_km}km` : "—";
-      const zonaStr = p.en_tierra ? "🏔️ Epicentro en tierra" : "🌊 Epicentro en el mar";
+      const zonaStr = p.en_tierra ? "Epicentro en tierra" : "Epicentro en el mar";
       const ubicacionStr = `${zonaStr}, a ${distStr} de la red vial — alcance máximo aquí: ${umbralStr} (según magnitud del sismo y viento actual)`;
       const botonDestino = p.destino_valido
         ? `<button class="btn-popup btn-destino" onclick="window.fijarDestino('${sismoKey}')" style="margin-top:6px; width:100%;">
-             🚨 Fijar como Objetivo de Emergencia
+             Fijar como Objetivo de Emergencia
            </button>`
         : `<div class="tip-box" style="margin-top:6px;">No seleccionable: está a ${distStr} de la calle más cercana, pero con este sismo (M${p.magnitud}) y el viento actual en esa zona (${p.racha_zona_kmh ?? "—"} km/h) el dron solo puede alejarse hasta ${umbralStr} de la red vial. Al estar más lejos que eso, no es alcanzable.</div>`;
       layer.on("click", () => {
@@ -494,7 +494,7 @@ cargarGeoJSON("data/firms.geojson", (geojson) => {
           Fecha detección: ${f.properties.fecha}<br>
           Corte operacional por humo/calor: 500m<br>
           <button class="btn-popup btn-destino" onclick="window.fijarDestino('${fKey}')" style="margin-top:6px; width:100%;">
-            🔥 Fijar como Incendio a Evaluar
+            Fijar como Incendio a Evaluar
           </button>
         `).openPopup();
       });
