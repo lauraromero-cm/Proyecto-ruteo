@@ -26,20 +26,20 @@
       "dijkstra": {
         "disyuncion_pct": 100.0,
         "solapamiento_pct": 0.0,
-        "factor_seguridad": 0.86,
+        "factor_seguridad": 0.97,
         "aristas_con_riesgo": 48,
-        "resiliencia_score": 85.9,
+        "resiliencia_score": 97.3,
         "distancia_promedio_km": 19.68
       },
       "resiliente": {
         "disyuncion_pct": 100.0,
         "solapamiento_pct": 0.0,
-        "factor_seguridad": 0.92,
+        "factor_seguridad": 1.0,
         "aristas_con_riesgo": 29,
-        "resiliencia_score": 92.3,
+        "resiliencia_score": 99.7,
         "distancia_promedio_km": 20.19
       },
-      "diferencial_resiliencia": 6.4
+      "diferencial_resiliencia": 2.4
     }
   },
   "features": [

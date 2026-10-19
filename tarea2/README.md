@@ -255,12 +255,15 @@ Función `calcular_metricas()` en `sitio_web/servidor.py` (y su equivalente en `
 
 ```
 disyuncion   = 1 - |aristas(ruta1) ∩ aristas(ruta2)| / |aristas(ruta1) ∪ aristas(ruta2)|
-riesgo       = aristas en (ruta1 ∪ ruta2) donde cost_resiliente > length_m  (es decir, penalizadas por alguna amenaza/metadata)
-seguridad    = max(0.2, 1 - riesgo / |ruta1 ∪ ruta2|)
+gravedad(e)  = min(1, ln(costo_real(e) / costo_base(e)) / ln(1000))      # 0 = sin penalización, 1 = ×1000
+exposición   = Σ largo(e) · gravedad(e)  /  Σ largo(e)                    # e ∈ ruta1 ∪ ruta2
+seguridad    = 1 - exposición
 resiliencia  = disyuncion × seguridad × 100
 ```
 
-**Justificación**: una dupla de rutas es más resiliente cuanto (a) más independientes son entre sí (si una se corta por una amenaza imprevista, la otra sigue siendo viable — componente de *disyunción*), y (b) menos aristas de ambas pasan por zonas penalizadas por amenazas conocidas (componente de *seguridad*). El piso de 0.2 en el factor de seguridad evita que la métrica colapse a cero cuando, por geografía, es imposible evitar completamente una zona de riesgo. Se calcula tanto para el par Dijkstra como para el par Resiliente, lo que permite compararlos directamente (sección 11.2).
+`costo_real` es **exactamente** la función de costo que usa el ruteo resiliente (amenazas + restricción de viento + antigüedad si el destino es un sismo) y `costo_base` es solo la distancia (con el sesgo de antigüedad cuando aplica). La gravedad usa escala logarítmica porque las penalizaciones son multiplicativas: ×1000 (área protegida, foco FIRMS, viento sobre el umbral) cuenta como gravedad máxima (1.0), ×1.5 (tendido) ≈ 0.06 y ×1.3 (ignición CONAF) ≈ 0.04. "Aristas en riesgo" cuenta las aristas del par con cualquier penalización física o viento sobre el umbral.
+
+**Justificación**: una dupla de rutas es más resiliente cuanto (a) más independientes son entre sí (si una se corta por una amenaza imprevista, la otra sigue siendo viable — *disyunción*), y (b) menos distancia recorren por zonas penalizadas, ponderada por la gravedad de la penalización (*seguridad*). Se versionó respecto a una primera métrica que solo contaba aristas penalizadas (todas por igual): esa métrica no medía lo que el ruteo optimiza y podía dar diferenciales negativos grandes (hasta −6) aunque la ruta resiliente evitara las zonas más graves. Con la métrica actual el diferencial refleja la exposición real al riesgo; los pocos pares con diferencial levemente negativo (≤ 1 punto) se deben a la disyunción del par (el bypass de la ruta 2 no es óptimo), no a mayor riesgo. Se calcula tanto para el par Dijkstra como para el Resiliente (sección 11.2).
 
 ---
 

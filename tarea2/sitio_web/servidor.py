@@ -334,23 +334,34 @@ def resolver_destino_nodo(cur, destino_str, lat_param=None, lon_param=None):
     return resolver_destino_nodo(cur, "sismo_15")
 
 
-def calcular_metricas(cur, edges1, edges2, dist1, dist2):
+def costo_base_sql(dest):
+    """Ver docstring equivalente en generar_rutas_comparativas.py."""
+    if dest.get("tipo") == "sismo":
+        return f"(length_m * (1 + {PESO_ANTIGUEDAD} * factor_antiguedad_zona))"
+    return "length_m"
+
+
+def calcular_metricas(cur, edges1, edges2, dist1, dist2, dest, viento_max_kmh=VIENTO_MAX_DEFAULT_KMH):
     s1, s2 = set(edges1), set(edges2)
     inter = len(s1.intersection(s2))
     union = len(s1.union(s2)) if len(s1.union(s2)) > 0 else 1
     disyuncion = 1.0 - (inter / union)
     solapamiento_pct = (inter / union) * 100.0
 
+    # Seguridad = costo "sin riesgo" / costo real ponderado de las aristas del
+    # par, con la misma funcion de costo que usa el ruteo (ver
+    # generar_rutas_comparativas.py).
+    aristas_con_riesgo, factor_seguridad = 0, 1.0
     if len(s1.union(s2)) > 0:
         cur.execute(
-            "SELECT count(*) FROM infraestructura_aristas WHERE id = ANY(%s) AND cost_resiliente > length_m",
-            (list(s1.union(s2)),),
+            f"""SELECT count(*) FILTER (WHERE cost_resiliente > length_m OR viento_racha_kmh > %s),
+                       coalesce(sum(length_m * LEAST(1.0, LN(GREATEST(1.0, ({cost_resiliente_sql(dest, viento_max_kmh)}) / ({costo_base_sql(dest)}))) / LN(1000.0))), 0),
+                       coalesce(sum(length_m), 0)
+                FROM infraestructura_aristas WHERE id = ANY(%s)""",
+            (float(viento_max_kmh), list(s1.union(s2))),
         )
-        aristas_con_riesgo = cur.fetchone()[0]
-    else:
-        aristas_con_riesgo = 0
-
-    factor_seguridad = max(0.2, 1.0 - (aristas_con_riesgo / max(len(s1.union(s2)), 1)))
+        aristas_con_riesgo, exposicion_pond, suma_len = cur.fetchone()
+        factor_seguridad = 1.0 - float(exposicion_pond) / float(suma_len) if suma_len else 1.0
     resiliencia_score = round(disyuncion * factor_seguridad * 100.0, 1)
 
     return {
@@ -469,8 +480,8 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
         geom_r1, dist_r1 = extraer_geometria_y_distancia(cur, e_r1, dest)
         geom_r2, dist_r2 = extraer_geometria_y_distancia(cur, e_r2 if e_r2 else e_r1, dest)
 
-        m_dijkstra = calcular_metricas(cur, e_d1, e_d2 if e_d2 else e_d1, dist_d1, dist_d2)
-        m_resiliente = calcular_metricas(cur, e_r1, e_r2 if e_r2 else e_r1, dist_r1, dist_r2)
+        m_dijkstra = calcular_metricas(cur, e_d1, e_d2 if e_d2 else e_d1, dist_d1, dist_d2, dest, viento_max_kmh)
+        m_resiliente = calcular_metricas(cur, e_r1, e_r2 if e_r2 else e_r1, dist_r1, dist_r2, dest, viento_max_kmh)
         diff_resil = round(m_resiliente["resiliencia_score"] - m_dijkstra["resiliencia_score"], 1)
 
         resultado = {
