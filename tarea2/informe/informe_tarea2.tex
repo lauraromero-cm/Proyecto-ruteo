@@ -1,0 +1,635 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+% ===================== PAQUETES =====================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% \usepackage[spanish]{babel}  % requiere texlive-lang-spanish
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{mdframed}
+\usepackage{caption}
+\usepackage{placeins}
+\usepackage{hyperref}
+\usepackage{multirow}
+
+% ===================== CÓDIGO =====================
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{black!4},
+  breaklines=true,
+  frame=single,
+  framerule=0.3pt,
+  rulecolor=\color{black!30},
+  xleftmargin=2pt,
+  xrightmargin=2pt,
+  aboveskip=5pt,
+  belowskip=5pt,
+  showstringspaces=false,
+  columns=flexible,
+}
+
+% ===================== CAJAS DE NOTA =====================
+\newmdenv[
+  linecolor=black!55,
+  linewidth=0.6pt,
+  backgroundcolor=black!4,
+  leftmargin=0pt, rightmargin=0pt,
+  innertopmargin=5pt, innerbottommargin=5pt,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  skipabove=8pt, skipbelow=8pt
+]{notabox}
+
+% ===================== FIGURAS PENDIENTES =====================
+\newcommand{\figuraPendiente}[2]{%
+  \begin{center}
+    \fbox{\parbox{0.92\linewidth}{\centering\vspace{1.6cm}%
+      {\footnotesize\itshape\color{black!55}[ Espacio para #1 --- pegar aquí: \texttt{#2} ]}%
+      \vspace{1.6cm}}}
+  \end{center}
+}
+\captionsetup{font=footnotesize,labelfont=bf,labelsep=period}
+
+% ===================== METADATOS PDF =====================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!40!black,
+  urlcolor=blue!40!black,
+  citecolor=blue!40!black,
+  pdftitle={Ruteo resiliente de drones BVLOS sobre corredores viales},
+  pdfauthor={Tarea 2 grupal}
+}
+
+\begin{document}
+
+\title{Ruteo resiliente de drones BVLOS sobre corredores viales para la evaluación de daños post-emergencia en el Gran Valparaíso\\
+\large Tarea 2 --- Fase 2: Modelo de ruteo resiliente implementado}
+
+\author{
+\IEEEauthorblockN{Laura Romero}
+\IEEEauthorblockA{\textit{Ing. Civil Informática} \\
+\textit{y Telecomunicaciones.} \\
+\textit{Universidad Diego Portales}\\
+Santiago, Chile \\
+laura.romero@mail.udp.cl}
+\and
+\IEEEauthorblockN{Matias Díaz}
+\IEEEauthorblockA{\textit{Ing. Civil Informática} \\
+\textit{y Telecomunicaciones.} \\
+\textit{Universidad Diego Portales}\\
+Santiago, Chile \\
+matias.diaz2@mail.udp.cl}
+\and
+\IEEEauthorblockN{Eduardo Valenzuela}
+\IEEEauthorblockA{\textit{Ing. Civil Informática} \\
+\textit{y Telecomunicaciones.} \\
+\textit{Universidad Diego Portales}\\
+Santiago, Chile \\
+eduardo.valenzuela1@mail.udp.cl}
+}
+\maketitle
+
+\begin{abstract}
+Este trabajo presenta la implementación completa de un modelo de ruteo resiliente para drones BVLOS (\textit{Beyond Visual Line of Sight}) orientado a la evaluación rápida de daños en el Gran Valparaíso tras una emergencia. Los drones siguen el trazado de la red vial, lo que convierte a la ciudad en un grafo geolocalizado real de 52.856 nodos y 126.480 aristas. Sobre esa infraestructura se incorporan cinco fuentes de metadata operacional (viento, tendido eléctrico, relieve, población y antigüedad de edificación) y tres fuentes de amenazas geolocalizadas (focos de incendio activo NASA FIRMS, zonas de riesgo de ignición y áreas protegidas CONAF, y sismicidad USGS). Cada fuente se traduce en un multiplicador del costo base (\texttt{length\_m}) de las aristas, conformando una función de costo resiliente que el algoritmo \texttt{pgr\_dijkstra} minimiza para obtener rutas de menor riesgo. Un mecanismo de penalización iterativa genera $k=2$ rutas máximamente disjuntas para cada par origen--destino, y una métrica cuantitativa de resiliencia compara la calidad del par resiliente contra el par Dijkstra base. El sistema completo se despliega en Docker y ofrece una plataforma web interactiva con Leaflet y un backend Python sobre PostgreSQL~17, PostGIS~3.5 y pgRouting~3.7.
+\end{abstract}
+
+\begin{IEEEkeywords}
+ruteo resiliente, drones BVLOS, redes geolocalizadas, respuesta a emergencias, PostGIS, pgRouting, incendios forestales, Gran Valparaíso
+\end{IEEEkeywords}
+
+% =====================================================================
+\section{Introducción}
+% =====================================================================
+
+Este trabajo aborda el ruteo resiliente de drones BVLOS \textit{(Beyond Visual Line of Sight, vuelo más allá del alcance visual del operador)} para la evaluación rápida de daños en el Gran Valparaíso tras una emergencia. La propuesta parte de una decisión de diseño central: en vez de volar en línea recta entre un origen y un destino, los drones siguen el trazado de la red vial. Esa decisión convierte a la ciudad en un grafo geolocalizado real, con nodos en las intersecciones y aristas en los tramos de calle, sobre el cual es posible aplicar las técnicas de ruteo resiliente que exige el curso. La resiliencia se materializa en que, ante la degradación dinámica de una o más aristas por humo, viento, restricciones aeronáuticas temporales o daño estructural, el sistema es capaz de entregar una ruta alternativa viable entre el mismo par de puntos.
+
+Sobre la infraestructura vial se incorporan dos tipos de información externa. La primera es metadata operacional ---viento, tendido eléctrico, relieve, población por manzana censal y antigüedad de edificación--- que no bloquea una ruta pero la encarece, empujando al sistema hacia corredores más seguros sin descartarlos por completo. La segunda son amenazas geolocalizadas ---focos de incendio activo, zonas de riesgo de ignición, áreas silvestres protegidas y sismicidad--- que penalizan o excluyen directamente las aristas afectadas. Esta distinción entre ``encarecer'' y ``excluir'' es la que permite construir, sobre PostGIS y pgRouting, el mecanismo de $k=2$ rutas alternativas máximamente disjuntas que constituye el aporte de este proyecto.
+
+Cuatro decisiones de diseño sostienen esta propuesta. La red vial se eligió como infraestructura porque es mallada ---existen caminos alternativos entre casi cualquier par de puntos---, está completamente digitalizada en OpenStreetMap y es descargable en minutos. El Gran Valparaíso se eligió como caso de estudio porque concentra sismicidad, incendios de interfaz urbano-rural y topografía compleja dentro de un área relativamente acotada. Volar sobre las calles y no en línea recta se justifica, como se desarrolla en la sección~\ref{sec:justificacion}, porque minimiza el riesgo en tierra, garantiza zonas de aterrizaje de emergencia y mejora el enlace de comando y control. Finalmente, PostgreSQL junto con PostGIS y pgRouting se escogió porque permite operar polígonos y grafos en el mismo motor de base de datos.
+
+
+\subsection{Contexto territorial}
+
+El Gran Valparaíso, conurbación que reúne a Valparaíso, Viña del Mar, Quilpué, Villa Alemana y Concón, concentra simultáneamente tres condiciones que rara vez coinciden en un mismo territorio. La primera es una alta sismicidad: la zona se ubica sobre una zona de subducción con un historial de eventos destructivos capaces de dañar vías, puentes y taludes. La segunda son los incendios de interfaz urbano-rural: las quebradas cargadas de vegetación combustible penetran directamente en el tejido urbano. La tercera es una topografía de cerros y quebradas que genera canalización del viento, sombras de cobertura celular y, en muchos sectores, un único acceso vial posible por cerro.
+
+\subsection{El problema operacional}
+
+Tras una emergencia, la ventana crítica para la toma de decisiones se mide en minutos u horas: la guía OCHA de Naciones Unidas para evaluación rápida establece que el primer reporte situacional debe emitirse dentro de las primeras 8--12 horas, y FEMA define una ``ventana de oro'' de 72~h para la evaluación inicial de daños~\cite{ocha2012,fema2016}. El dron es la herramienta natural para levantar esa información, pero su uso actual presenta cuatro limitaciones concretas. Primero, la planificación de vuelo sigue siendo estática. Segundo, el espacio aéreo se degrada de forma dinámica sin que exista un mecanismo que traduzca esa degradación en una decisión de ruta. Tercero, la ruta directa entre dos puntos es, en la práctica, inadmisible: la metodología SORA (\textit{Specific Operations Risk Assessment}) de EASA~\cite{easa2019} exige evaluar explícitamente el riesgo en tierra (\textit{Ground Risk Class}) como condición para autorizar operaciones BVLOS, y la normativa chilena DAN~151~\cite{dgac2020} incorpora este mismo criterio al regular el uso de RPAS en espacio aéreo nacional. Cuarto, en la literatura revisada por los autores no se identificó un modelo de red geolocalizada que integre amenazas dinámicas para el ruteo de drones de emergencia sobre corredores viales urbanos: los trabajos existentes abordan el ruteo UAV sobre espacio aéreo libre~\cite{hu2020} o la planificación estática pre-vuelo~\cite{almozel2025}, pero no combinan un grafo vial real con penalizaciones derivadas de amenazas en cuasi-tiempo real.
+
+\subsection{Formulación de la problemática}
+
+No existe un modelo de red geolocalizada que permita, en tiempo cuasi-real, evaluar la disponibilidad de corredores aéreos para drones de emergencia en el Gran Valparaíso y seleccionar rutas alternativas cuando parte de esos corredores se degrada por eventos externos.
+
+
+% =====================================================================
+\section{Hipótesis}
+% =====================================================================
+
+Modelando la red vial del Gran Valparaíso como un grafo geolocalizado cuyas aristas llevan pesos dinámicos derivados de metadata ambiental y de amenazas georreferenciadas, es posible calcular $k=2$ rutas alternativas máximamente disjuntas entre un par origen--destino, manteniendo la conectividad operacional del servicio de evaluación de daños aun ante la degradación simultánea de múltiples aristas.
+
+
+\subsection{Desglose de la hipótesis}
+
+Esta hipótesis contiene tres afirmaciones verificables. La primera es que el grafo vial constituye un modelo válido de corredor aéreo, sostenida en tres argumentos operacionales desarrollados en la sección~\ref{sec:justificacion}. La segunda es que tanto la metadata como las amenazas son traducibles a operaciones concretas sobre el grafo: la metadata modifica el costo de una arista (penalización gradual), mientras que una amenaza la penaliza a un costo prohibitivo ($\times$1000, exclusión práctica). La tercera es que existe redundancia estructural suficiente para que la resiliencia sea posible: la red vial urbana es mallada, y entre dos puntos cualesquiera existen casi siempre múltiples caminos.
+
+\subsection{Justificación de volar sobre corredores viales}
+\label{sec:justificacion}
+
+\textbf{Riesgo en tierra.} La calzada concentra menos personas ajenas a la operación que el interior de una manzana edificada. Un estudio de 2025 reportó una reducción del 72,2\,\% del riesgo en tierra respecto de la ruta directa, con un factor de desvío de apenas 1,06 \cite{brassel2025}.
+
+\textbf{Contingencia y aterrizaje de emergencia.} Ante una falla mecánica o la pérdida de señal GNSS, el dron necesita una superficie despejada bajo su vertical, y la vía la garantiza de forma continua \cite{almozel2025}.
+
+\textbf{Enlace de comando y control.} La infraestructura de telefonía móvil se despliega siguiendo los ejes viales, de modo que volar sobre la vía maximiza la probabilidad de mantener el enlace C2 \cite{sinha2024}.
+
+Un trabajo de 2026 adopta explícitamente los corredores viales como base operacional del ruteo de UAV en entornos urbanos \cite{yang2026}.
+
+% =====================================================================
+\section{Objetivos}
+% =====================================================================
+
+\subsection{Objetivo general}
+
+Diseñar, implementar y evaluar un modelo de ruteo resiliente sobre una red de corredores viales para operaciones de drones BVLOS de evaluación de daños en el Gran Valparaíso, alimentado exclusivamente por fuentes de datos geoespaciales públicas y verificables, desplegable en un solo comando mediante Docker.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}[label=\arabic*.,leftmargin=1.4em,itemsep=2pt]
+\item \textbf{Construir la infraestructura de red}, extrayendo el grafo vial del Gran Valparaíso desde OpenStreetMap/Geofabrik y persistiéndolo en PostgreSQL con soporte de polígonos e índices espaciales.
+\item \textbf{Enriquecer la red con cinco capas de metadata operacional}: viento (Open-Meteo), tendido eléctrico (OSM/Overpass), relieve (Open Topo Data), población (INE Censo 2017) y antigüedad de edificación (Observatorio de Ciudades UC).
+\item \textbf{Modelar amenazas geolocalizadas externas} desde tres fuentes: focos de incendio activo (NASA FIRMS), zonas de riesgo de ignición y áreas protegidas (CONAF) y sismicidad (USGS FDSN).
+\item \textbf{Implementar la función de costo resiliente}, donde cada fuente de metadata y amenaza se traduce en un multiplicador específico sobre \texttt{length\_m}, y calcular $k=2$ rutas máximamente disjuntas mediante penalización iterativa sobre \texttt{pgr\_dijkstra}.
+\item \textbf{Definir y calcular una métrica cuantitativa de resiliencia} que combine disyunción entre rutas y seguridad ponderada por gravedad de las amenazas.
+\item \textbf{Desplegar la plataforma interactiva} con un visor Leaflet, un backend Python y un pipeline ETL completo, todo en contenedores Docker ejecutable con un solo comando.
+\end{enumerate}
+
+% =====================================================================
+\section{Infraestructura: la red geolocalizada}
+\label{sec:infraestructura}
+% =====================================================================
+
+\subsection{Definición del grafo}
+
+El grafo que sostiene el modelo se define de forma directa: los nodos corresponden a las intersecciones viales y las aristas a los tramos de calle entre ellas, cada una con atributos de longitud (\texttt{length\_m}), tipo de vía (\texttt{highway}), superficie (\texttt{surface}) y dirección (\texttt{oneway}). Sobre el Gran Valparaíso, este grafo se materializó en \textbf{52.856 nodos} y \textbf{126.480 aristas}.
+
+\subsection{Origen de los datos}
+
+\textbf{Fuente primaria --- OpenStreetMap / Geofabrik.} El grafo vial se obtiene mediante un extracto offline de Geofabrik (\texttt{.gpkg}), procesado por \texttt{extraer\_infraestructura.py} que genera archivos \texttt{nodos.json} y \texttt{aristas.json}, cargados después a PostgreSQL por \texttt{cargar\_infraestructura.py}. El flujo completo es:
+
+\begin{lstlisting}
+OSM / Geofabrik (.gpkg) -> extraer_infraestructura.py
+  -> nodos.json + aristas.json
+  -> cargar_infraestructura.py -> PostgreSQL / pgRouting
+\end{lstlisting}
+
+\subsection{Nodos especiales: Cuarteles de Carabineros}
+
+Se incorporan 29 cuarteles de Carabineros obtenidos desde un ArcGIS FeatureServer, de los cuales 9 comisarías sirven como origen y punto de carga del dron. Cada cuartel se vincula al nodo vial más cercano del grafo (\texttt{nodo\_vial\_id}), lo que permite usarlo directamente como nodo origen en \texttt{pgr\_dijkstra}.
+
+\subsection{Costo base}
+
+El costo base de cada arista es \texttt{length\_m}, la distancia real en metros del tramo vial. Sobre este valor se aplican los multiplicadores de la función de costo resiliente (sección~\ref{sec:costo}).
+
+% =====================================================================
+\section{Metadata incorporada a la infraestructura}
+\label{sec:metadata}
+% =====================================================================
+
+Se incorporan cinco capas de metadata, cada una con un pipeline independiente de extracción (fuente externa $\to$ \texttt{extraer\_X.py} $\to$ \texttt{X.json}) y carga (\texttt{cargar\_X.py} $\to$ tabla \texttt{metadata\_X} en PostgreSQL). La Tabla~\ref{tab:metadata} resume las cinco capas.
+
+\begin{table}[!htbp]
+\centering
+\caption{Cinco capas de metadata operacional.}
+\label{tab:metadata}
+\scriptsize
+\begin{tabularx}{\columnwidth}{lllX}
+\toprule
+\textbf{Capa} & \textbf{Fuente} & \textbf{Tabla BD} & \textbf{Rol en el ruteo} \\
+\midrule
+Viento & Open-Meteo (6 estaciones) & \texttt{metadata\_viento} & Restricción configurable por el operador \\
+Tendido eléctrico & OSM / Overpass & \texttt{metadata\_tendido\_electrico} & Penalización $\times$1.5 por riesgo de colisión \\
+Relieve & Open Topo Data (SRTM) & \texttt{metadata\_relieve} & Pendiente del terreno por arista \\
+Población & INE Censo 2017 & \texttt{metadata\_poblacion} & Densidad poblacional por manzana \\
+Permisos edificación & Obs. Ciudades UC & \texttt{metadata\_permisos\_edificacion} & Proxy de antigüedad $\to$ penalización condicional en sismos \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Metadata 1: Viento (Open-Meteo)}
+
+Open-Meteo entrega viento y rachas a 10~m de altura por coordenada y hora, mediante una API REST/JSON sin clave. Se registran 6 puntos de medición, uno por comuna: Valparaíso Plan, Valparaíso Cerros/Placilla, Viña del Mar, Concón, Quilpué y Villa Alemana.
+
+Con solo 6 mediciones, usar la estación más cercana haría que el viento cambiara de golpe en el borde entre zonas. Se utiliza el método de interpolación por ponderación inversa a la distancia (IDW) de Shepard~\cite{shepard1968}, con potencia~2 y un piso de 100~m, que promedia las estaciones dando más peso a las más cercanas y produce una variación gradual del viento a lo largo del grafo:
+
+\begin{lstlisting}[language=SQL]
+CREATE OR REPLACE FUNCTION
+  viento_racha_interpolada_kmh(p geometry)
+RETURNS double precision AS $$
+  SELECT SUM(t.racha / POWER(t.d, 2))
+       / SUM(1.0 / POWER(t.d, 2))
+  FROM (
+    SELECT v.racha_media_kmh AS racha,
+      GREATEST(ST_Distance(
+        v.geom::geography, p::geography), 100.0) AS d
+    FROM metadata_viento v
+  ) t;
+$$ LANGUAGE SQL STABLE;
+\end{lstlisting}
+
+Se utiliza \texttt{racha\_media\_kmh} (promedio del periodo pronosticado) y no \texttt{racha\_max\_kmh}: en el Gran Valparaíso real, la racha máxima supera siempre el techo físico del DJI~M300~RTK (54~km/h) en las 6 estaciones, lo que volvería la restricción un no-op. La racha media (17,7--35,8~km/h) sí varía entre zonas y discrimina entre rutas.
+
+\subsection{Metadata 2: Tendido eléctrico (OSM / Overpass)}
+
+Se extraen las líneas de alta y media tensión desde OpenStreetMap mediante la Overpass API. Cada arista del grafo que pasa a menos de 22~m de un cable (\texttt{ST\_DWithin} con 0,0002° $\approx$ 22~m) recibe un multiplicador de $\times$1.5, forzando la maniobra horizontal hacia corredores despejados.
+
+La penalización se justifica porque el dron está confinado verticalmente entre 30--65~m AGL, exactamente donde están los cables: el techo legal DAN~151 es 120~m, pero la resolución fotogramétrica requiere 30--60~m AGL para detectar fisuras (GSD 0,8--1,6~cm/px), y la cámara térmica pierde eficacia sobre 65~m. Torres de alta tensión de 35--80~m con catenaria cruzando quebradas comparten esa franja vertical. Además, las líneas AT producen campos magnéticos de 50--200~$\mu$T que saturan el compás digital del dron (campo terrestre: 30--50~$\mu$T).
+
+\subsection{Metadata 3: Relieve (Open Topo Data)}
+
+Se consulta la API de Open Topo Data con el dataset SRTM para obtener la elevación en los extremos de cada arista. A partir de ambas elevaciones se calcula el desnivel y la pendiente longitudinal del tramo, almacenados en la tabla \texttt{metadata\_relieve}.
+
+\subsection{Metadata 4: Población (INE Censo 2017)}
+
+Se obtienen 10.750 manzanas censales con geometría de polígono desde el Observatorio de Ciudades UC, sumando 1.005.013 habitantes en las cinco comunas del Gran Valparaíso.
+
+\subsection{Metadata 5: Permisos de edificación (Obs. Ciudades UC)}
+
+Esta fuente alimenta un proxy de antigüedad de la edificación por zona, utilizado como penalización condicional solo cuando el destino de la misión es un sismo. Se obtienen los permisos de edificación emitidos entre 2010 y 2018, y se calcula un \textbf{índice de antigüedad} (\texttt{indice\_antiguedad}) por manzana censal:
+
+\begin{equation}
+\text{idx} = 1 - \min\!\left(1,\; \frac{n_{\text{permisos}}}{p_{95}}\right)
+\label{eq:idx}
+\end{equation}
+
+donde $n_{\text{permisos}}$ es la cantidad de permisos dentro de la manzana (vía \texttt{ST\_Contains}) y $p_{95}$ es el percentil~95 de $n_{\text{permisos}}$ entre las manzanas con al menos un permiso. Así, idx~=~0 indica edificación renovada e idx~=~1 indica zona sin permisos recientes (presumiblemente antigua). Del total de 74.550 edificios en la zona, solo 6.788 (9,1\,\%) tienen permiso en esa ventana, por lo que el índice es un \textbf{proxy relativo por zona}, no una probabilidad de colapso.
+
+Cada arista del grafo recibe un \texttt{factor\_antiguedad\_zona} igual al mayor \texttt{indice\_antiguedad} de las manzanas que cruza (\texttt{ST\_Intersects}).
+
+
+% =====================================================================
+\section{Amenazas y eventos de falla geolocalizados}
+\label{sec:amenazas}
+% =====================================================================
+
+Se modelan tres fuentes de amenazas, cada una con su propio pipeline de extracción y carga. La Tabla~\ref{tab:amenazas} resume las tres fuentes.
+
+\begin{table}[!htbp]
+\centering
+\caption{Tres fuentes de amenazas geolocalizadas.}
+\label{tab:amenazas}
+\scriptsize
+\begin{tabularx}{\columnwidth}{lXll}
+\toprule
+\textbf{Amenaza} & \textbf{Fuente} & \textbf{Extracción} & \textbf{Tabla BD} \\
+\midrule
+Incendios activos & NASA FIRMS API (VIIRS NRT, últimos 3 días, bbox Valparaíso) & \texttt{extraer\_firms.py} & \texttt{amenaza\_firms} \\
+Zonas de riesgo de ignición + Áreas protegidas & ArcGIS FeatureServer (capas PI y ASP, CONAF) & \texttt{extraer\_conaf.py} & \texttt{amenaza\_conaf\_ignicion}, \texttt{amenaza\_conaf\_areas\_protegidas} \\
+Sismos & USGS FDSN Event API (mag~$\geq$~2, desde 2015, bbox Valparaíso) & \texttt{extraer\_sismos.py} & \texttt{amenaza\_sismos} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Amenaza 1: NASA FIRMS}
+
+NASA FIRMS entrega focos activos VIIRS NRT en cuasi-tiempo real. La consulta se limita a los últimos 3 días y al bounding box del Gran Valparaíso. Los focos se filtran contra el polígono real de Chile (\texttt{dentro\_chile = TRUE}) para descartar detecciones en Argentina y Bolivia que el bounding box rectangular incluye inevitablemente.
+
+\subsection{Amenaza 2: CONAF (Ignición y Áreas Protegidas)}
+
+CONAF publica, vía ArcGIS Online (GEPRIF), dos tipos de polígonos relevantes:
+
+\begin{itemize}[itemsep=2pt]
+\item \textbf{Probabilidad de ignición} (pronóstico a 5 días): polígonos con deciles de riesgo. Se aplica un multiplicador fijo de $\times$1.3 a las aristas que intersectan estos polígonos (\texttt{ST\_Intersects}).
+\item \textbf{Áreas Silvestres Protegidas del Estado (SNASPE)}: vuelo prohibido. Se aplica un multiplicador de $\times$1000 (exclusión práctica).
+\end{itemize}
+
+\subsection{Amenaza 3: Sismicidad (USGS FDSN)}
+
+El servicio USGS FDSN reportó 106 sismos de magnitud M$\geq$2 en el período 2015--2026 para el área de estudio. A diferencia de las amenazas de evasión, el sismo no excluye la zona afectada ---que es precisamente el objetivo de la misión de evaluación de daños--- sino que define el destino. Es importante precisar que el sistema \textbf{no modela la atenuación sísmica}: no se calculan intensidades locales, efectos de sitio ni clasificación de suelos. Lo que USGS entrega ---epicentro, magnitud y profundidad--- se usa exclusivamente para dos decisiones: (1)~determinar si el sismo queda dentro del alcance operacional del dron (\textit{filtro de destinos}) y (2)~activar la penalización condicional por antigüedad de edificación en las aristas de la ruta (sección~\ref{sec:costo}). Modelar la vulnerabilidad estructural real de puentes, taludes o edificaciones requeriría estudios geotécnicos locales, ecuaciones de atenuación y clasificación de suelos (roca vs. arena), lo que excede el alcance de este trabajo y se reconoce explícitamente en la sección~\ref{sec:limitaciones}.
+
+\subsubsection{Validación de destinos sísmicos}
+
+Un sismo es destino válido si la distancia de su epicentro a la red vial cumple dos condiciones simultáneas:
+
+\begin{enumerate}[label=\arabic*.,itemsep=2pt]
+\item \textbf{Relevancia sísmica (filtro geométrico, no modelo de atenuación).} Se utiliza la regresión empírica de longitud de ruptura subsuperficial de Wells y Coppersmith~\cite{wells1994} (regresión ``All'': $\log_{10}(\text{RLD}) = -2{,}44 + 0{,}59 \cdot M$) como \textbf{proxy geométrico} para estimar un radio de relevancia ---no una intensidad ni un daño esperado---. Este radio se multiplica por~3 y se acota con un piso de 2~km:
+\begin{equation}
+r_{\text{sismo}} = \max\!\left(2{,}0;\; 3{,}0 \cdot 10^{-2{,}44 + 0{,}59 \cdot M}\right) \;\text{[km]}
+\label{eq:radio_sismo}
+\end{equation}
+El multiplicador~3, el piso de 2~km y el uso de RLD como proxy de alcance son elecciones de diseño propias; no representan un modelo de atenuación sísmica.
+\item \textbf{Alcance operacional UAV.} El radio del dron depende del viento de la zona, inspirado en Thibbotuwawa et al.~\cite{thibbotuwawa2020}:
+\begin{equation}
+r_{\text{UAV}} = 15 \cdot \min\!\left(1{,}5;\; \max\!\left(0{,}15;\; \frac{u_{\text{umbral}}}{r_{\text{racha}}}\right)\right) \;\text{[km]}
+\label{eq:radio_uav}
+\end{equation}
+donde 15~km es el alcance OcuSync Enterprise del DJI~M300~RTK, $u_{\text{umbral}}$ es el umbral del operador (default 43,2~km/h = 12~m/s, límite de despegue/aterrizaje), y $r_{\text{racha}}$ es la racha media interpolada de la zona.
+\end{enumerate}
+
+La distancia máxima válida es $\min(r_{\text{sismo}}, r_{\text{UAV}})$. De los 106 sismos, \textbf{26 cumplen ambas condiciones} y son destinos operables.
+
+% =====================================================================
+\section{Función de costo resiliente}
+\label{sec:costo}
+% =====================================================================
+
+La función de costo resiliente es el componente central del modelo. Cada arista tiene un costo que parte de \texttt{length\_m} y se multiplica por factores acumulativos según las amenazas y metadata que la afectan:
+
+\begin{equation}
+\boxed{
+\text{cost\_resiliente} = \texttt{length\_m} \;\times\; \prod_{i} f_i
+}
+\label{eq:cost_resiliente}
+\end{equation}
+
+La Tabla~\ref{tab:multiplicadores} detalla cada multiplicador. Los multiplicadores se \textbf{componen multiplicativamente}: una arista puede tener tendido ($\times$1.5) \textbf{y} estar en zona CONAF ($\times$1.3) = $\times$1.95 total.
+
+\begin{table}[!htbp]
+\centering
+\caption{Multiplicadores de la función de costo resiliente.}
+\label{tab:multiplicadores}
+\scriptsize
+\begin{tabularx}{\columnwidth}{lllX}
+\toprule
+\textbf{Fuente} & \textbf{Operador} & \textbf{Factor} & \textbf{Justificación} \\
+\midrule
+Tendido eléctrico & \texttt{ST\_DWithin} (22~m) & $\times$1.5 & Riesgo colisión + EMI --- DAN~151 \\
+CONAF ignición & \texttt{ST\_Intersects} & $\times$1.3 & Pronóstico incendio a 5 días \\
+Áreas SNASPE & \texttt{ST\_Intersects} & $\times$1000 & Vuelo prohibido en áreas protegidas \\
+FIRMS activo & \texttt{ST\_DWithin} (500~m) & $\times$1000 & Peligro físico inmediato \\
+Antigüedad edif. & \texttt{ST\_Intersects} & $\times(1+0{,}3 \cdot \text{idx})$ & Solo si destino = sismo \\
+Viento racha & IDW interpolado & $\times$1000 & Si racha $>$ umbral del operador \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Interpretación de los multiplicadores}
+
+Los multiplicadores se interpretan como \textbf{desvío tolerado}: $\times$1.5 significa que el algoritmo acepta hasta un 50\,\% de camino extra para evitar esa zona; $\times$1.3 acepta hasta un 30\,\%. Los valores $\times$1000 actúan como \textbf{exclusión práctica} (``big-M''): una arista de 50~m con $\times$1000 tiene un costo de 50~km, mayor que cualquier desvío posible en el área de estudio, por lo que \texttt{pgr\_dijkstra} la evita salvo que sea la única ruta. A diferencia de un corte real, el costo permanece finito, lo que mantiene el grafo conexo y garantiza que siempre exista alguna ruta.
+
+Los valores numéricos siguen una \textbf{jerarquía ordinal} de riesgo:
+\begin{itemize}[itemsep=1pt]
+\item $\times$1000: prohibido o riesgo físico inmediato (SNASPE, FIRMS, viento extremo).
+\item $\times$1.5: riesgo físico presente (tendido eléctrico).
+\item $\times$1.3: riesgo probable (pronóstico de ignición).
+\item $\times$(1.0--1.3): riesgo indirecto, condicional (antigüedad edificación en sismos).
+\end{itemize}
+
+Los valores exactos son \textbf{parámetros de diseño propios}, no provenientes de papers. Se eligieron para respetar la jerarquía ordinal y son susceptibles de validación mediante análisis de sensibilidad.
+
+\subsection{Penalización condicional por antigüedad (sismos)}
+
+La antigüedad de la edificación se activa \textbf{solo si el destino es un sismo}, porque los escombros son un riesgo relevante únicamente en ese contexto. El peso de 0,3 (\texttt{PESO\_ANTIGUEDAD}) se eligió deliberadamente bajo: con el máximo (idx~=~1), la penalización es $\times$1.3, que nunca supera al tendido ($\times$1.5) ni a las amenazas directas ($\times$1000).
+
+\begin{lstlisting}[language=Python]
+# servidor.py / generar_rutas_comparativas.py
+PESO_ANTIGUEDAD = 0.3
+if dest["tipo"] == "sismo":
+    base = f"({base} * (1 + {PESO_ANTIGUEDAD}
+             * factor_antiguedad_zona))"
+\end{lstlisting}
+
+\subsection{Restricción configurable de viento}
+
+El viento no es una penalización fija sino una \textbf{restricción configurable} por el operador del dron: se implementa como un slider en la interfaz web (rango 15--54~km/h). Si la racha interpolada de una calle supera el umbral elegido, se aplica $\times$1000. El valor por defecto es 43,2~km/h (12~m/s), el límite de despegue/aterrizaje del DJI Matrice 300~RTK. El tope del slider (54~km/h = 15~m/s) es el límite en vuelo del mismo dron.
+
+
+% =====================================================================
+\section{Algoritmo de ruteo}
+\label{sec:algoritmo}
+% =====================================================================
+
+\subsection{Fundamento teórico: resiliencia mediante rutas disjuntas}
+
+La resiliencia de una red se define como la capacidad de mantener un nivel aceptable de servicio frente a fallas y desafíos a su operación normal~\cite{sterbenz2010}. Sterbenz et al. proponen un marco de tres fases ---defensa, detección y remediación--- que este trabajo implementa de la siguiente forma: la \textit{defensa} consiste en evitar proactivamente las aristas de alto riesgo (multiplicadores de costo); la \textit{detección} se materializa en la ingesta de amenazas en cuasi-tiempo real (FIRMS, CONAF, USGS); y la \textit{remediación} es la disponibilidad de una segunda ruta disjunta que absorbe la falla de la primera.
+
+El principio de que la supervivencia de una red ante fallas requiere la existencia de caminos físicamente independientes entre cada par de nodos es un resultado clásico de la teoría de grafos (teorema de Menger, 1927). Bhandari~\cite{bhandari1999} desarrolla los algoritmos necesarios para construir rutas arista-disjuntas (\textit{edge-disjoint}) y nodo-disjuntas (\textit{vertex-disjoint}) sobre redes de telecomunicaciones, demostrando que la diversidad de caminos es la herramienta fundamental para garantizar la supervivencia del servicio. Este trabajo adopta el mismo principio: dos rutas que no comparten aristas garantizan que la falla de cualquier tramo vial no deja al dron sin alternativa.
+
+\subsection{Dijkstra con costo resiliente}
+
+El algoritmo es el mismo en ambos modelos: \texttt{pgr\_dijkstra} (Dijkstra, 1959~\cite{dijkstra1959}). Lo que cambia es el costo de cada calle:
+
+\begin{itemize}[itemsep=2pt]
+\item \textbf{Modelo base (Dijkstra):} costo = \texttt{length\_m}. Resultado: la ruta más corta.
+\item \textbf{Modelo resiliente:} costo = \texttt{length\_m} $\times$ penalizaciones. Resultado: la ruta de menor riesgo.
+\end{itemize}
+
+La elección de Dijkstra con costo ponderado por riesgo se justifica en Hu et al.~\cite{hu2020}, que mostraron que planificar sobre un mapa de riesgo produce rutas más seguras que usar solo la distancia más corta. Braßel et al.~\cite{brassel2025} extienden este enfoque combinando datos GIS urbanos abiertos en una función de costo ponderada por riesgo y reportan una reducción del 72,2\,\% del riesgo en tierra.
+
+\subsection{Obtención de $k=2$ rutas disjuntas}
+
+Para obtener dos rutas independientes se utiliza un mecanismo de \textbf{penalización iterativa}, inspirado en el algoritmo de Suurballe~\cite{suurballe1974} para pares de caminos disjuntos de costo mínimo, y estudiado formalmente por Kobitzsch et al.~\cite{kobitzsch2013}:
+
+\begin{enumerate}[label=\arabic*.,itemsep=2pt]
+\item \textbf{Ruta~1:} se ejecuta \texttt{pgr\_dijkstra} con el costo del modelo.
+\item \textbf{Penalizar:} se multiplican por $\times$1000 los costos de las aristas de la ruta~1.
+\item \textbf{Ruta~2:} se vuelve a ejecutar \texttt{pgr\_dijkstra}. Al evitar las aristas encarecidas, encuentra un camino alternativo disjunto.
+\end{enumerate}
+
+Este mecanismo es una instancia del enfoque de \textit{diverse routing} descrito por Bhandari~\cite{bhandari1999}: en lugar de resolver el problema de caminos disjuntos de forma exacta (que requiere transformaciones del grafo), se utiliza una heurística de penalización que produce rutas con alto grado de disyunción en la práctica. Kobitzsch et al.~\cite{kobitzsch2013} evalúan formalmente esta heurística y confirman que genera rutas alternativas con bajo solapamiento, validando su uso como aproximación eficiente al problema de caminos disjuntos.
+
+\begin{lstlisting}[language=SQL]
+-- servidor.py: paso 2 y 3 (ruta de respaldo)
+SELECT edge FROM pgr_dijkstra(
+  'SELECT id, source, target,
+   CASE WHEN id = ANY(ruta_1)
+        THEN costo * 1000
+        ELSE costo END AS cost
+   FROM infraestructura_aristas',
+  origen, destino);
+\end{lstlisting}
+
+\textbf{¿Por qué no \texttt{pgr\_ksp} (Yen)?} El algoritmo de Yen genera $k$ rutas más cortas, pero no garantiza disyunción: en zonas con pocas alternativas ---como los cerros de Valparaíso--- sus rutas comparten casi todas las aristas, lo que anula la resiliencia porque la falla de una arista compartida invalida ambas rutas simultáneamente~\cite{bhandari1999}. La penalización iterativa fuerza la disyunción al encarecer explícitamente las aristas ya usadas.
+
+\subsection{Justificación bibliográfica del algoritmo}
+
+\begin{itemize}[itemsep=2pt]
+\item \textbf{Marco de resiliencia:} Sterbenz et al.~\cite{sterbenz2010} definen resiliencia como la capacidad de mantener servicio ante fallas y proponen el marco defensa--detección--remediación que este trabajo implementa.
+\item \textbf{Rutas disjuntas para supervivencia:} Bhandari~\cite{bhandari1999} demuestra que la diversidad de caminos (rutas que no comparten aristas) es la herramienta fundamental para la supervivencia de redes ante fallas.
+\item \textbf{Caminos disjuntos de costo mínimo:} Suurballe~\cite{suurballe1974} propone el primer algoritmo eficiente para encontrar un par de caminos arista-disjuntos de costo total mínimo.
+\item \textbf{Costo ponderado por riesgo:} Hu et al.~\cite{hu2020} proponen un modelo de evaluación de riesgo para UAV que produce rutas más seguras que la distancia más corta.
+\item \textbf{Ruta de respaldo por penalización:} Kobitzsch et al.~\cite{kobitzsch2013} evalúan formalmente el método de penalización para generar rutas alternativas con bajo solapamiento, validando la heurística que este trabajo emplea.
+\item \textbf{Resiliencia UAV ante incendios:} Raj et al.~\cite{raj2025} proponen un framework resiliente para planificación de rutas de evacuación con UAV en escenarios de incendio forestal.
+\end{itemize}
+
+
+% =====================================================================
+\section{Métrica de resiliencia}
+\label{sec:metrica}
+% =====================================================================
+
+Para cuantificar la calidad de un par de rutas se define la siguiente métrica:
+
+\begin{equation}
+R = \text{disyunción} \times \text{seguridad} \times 100
+\label{eq:resiliencia}
+\end{equation}
+
+\textbf{Disyunción.} Mide la independencia geométrica entre ruta~1 y ruta~2:
+\begin{equation}
+\text{disyunción} = 1 - \frac{|\text{ruta}_1 \cap \text{ruta}_2|}{|\text{ruta}_1 \cup \text{ruta}_2|}
+\end{equation}
+
+Un valor alto indica buen respaldo: si una ruta se corta, la otra no se ve afectada.
+
+\textbf{Seguridad.} Fracción de distancia libre de penalizaciones, ponderada por la gravedad de cada amenaza:
+\begin{equation}
+\text{gravedad}(e) = \min\!\left(1,\; \frac{\ln(\text{costo\_real}(e) / \text{costo\_base}(e))}{\ln(1000)}\right)
+\end{equation}
+\begin{equation}
+\text{exposición} = \frac{\sum \text{largo}(e) \cdot \text{gravedad}(e)}{\sum \text{largo}(e)}
+\end{equation}
+\begin{equation}
+\text{seguridad} = 1 - \text{exposición}
+\end{equation}
+
+La escala logarítmica de gravedad produce valores intuitivos: $\times$1000 (FIRMS, SNASPE) $\to$ gravedad~1,0; $\times$1.5 (tendido) $\to$ gravedad~0,06; $\times$1.3 (ignición) $\to$ gravedad~0,04.
+
+% =====================================================================
+\section{Catálogo de rutas y resultados}
+\label{sec:resultados}
+% =====================================================================
+
+Se calcularon \textbf{144 pares de rutas} (12 orígenes $\times$ 12 destinos), cada uno con sus versiones Dijkstra~$k=2$ y Resiliente~$k=2$. Un ejemplo representativo:
+
+\begin{notabox}
+\textbf{Ejemplo:} 8va Comisaría de Valparaíso (Florida) $\to$ Sismo M4.6, 5~km N de Viña del Mar.
+
+\smallskip
+\begin{tabular}{lcc}
+\toprule
+\textbf{Métrica} & \textbf{Dijkstra} & \textbf{Resiliente} \\
+\midrule
+Distancia prom. & 20,2~km & 20,7~km \\
+Disyunción & 100\,\% & 100\,\% \\
+Aristas en riesgo & 48 & 29 \\
+Resiliencia ($R$) & 97,3\,\% & 99,7\,\% \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{Diferencial: +2,4\,\% de resiliencia ganada.} La ruta resiliente acepta 500~m adicionales de recorrido (+2,5\,\%) pero reduce las aristas en riesgo de 48 a 29 ($-$39,6\,\%).
+\end{notabox}
+
+
+% =====================================================================
+\section{Arquitectura de la solución}
+\label{sec:arquitectura}
+% =====================================================================
+
+La solución se despliega con \texttt{python3 main.py}, que orquesta tres contenedores Docker:
+
+\begin{enumerate}[label=\arabic*.,itemsep=2pt]
+\item \textbf{\texttt{db}}: PostgreSQL~17 + PostGIS~3.5 + pgRouting~3.7. Esquema auto-inicializado (\texttt{db/schema.sql}). Health check integrado.
+\item \textbf{\texttt{etl}}: Ejecuta 10 extractores (APIs reales) y 10 cargadores, calcula las rutas del catálogo y exporta GeoJSON. Se ejecuta y sale.
+\item \textbf{\texttt{sitio\_web}}: Servidor Python (\texttt{ThreadingHTTPServer} + pool PostgreSQL) en puerto~8080. Sirve el frontend y la API dinámica de ruteo.
+\end{enumerate}
+
+No requiere Python, PostgreSQL ni ninguna otra dependencia en el host. Tiempo de ejecución desde cero: 5--10 minutos (depende de las APIs externas). Reinicio limpio: \texttt{docker compose down -v}.
+
+\subsection{Plataforma web interactiva}
+
+El frontend (\texttt{index.html} + \texttt{app.js}) es un visor Leaflet con 8 capas toggleables: rutas resilientes ($k=2$), rutas Dijkstra ($k=2$), cuarteles de Carabineros (29), sismos USGS (106), tendido eléctrico (100 líneas), áreas protegidas CONAF (26), focos NASA FIRMS y estaciones de viento (6).
+
+El usuario selecciona origen (cualquier cuartel de Carabineros) y destino (cualquier sismo válido) por selector desplegable o clic en el mapa, ajusta el umbral de viento con un slider (15--54~km/h), y obtiene en tiempo real la tabla comparativa con distancia promedio, disyunción, aristas en riesgo, resiliencia global y un badge con el diferencial de resiliencia. Las rutas se calculan en vivo con \texttt{pgr\_dijkstra} contra PostgreSQL (\texttt{GET /api/calcular\_ruta}).
+
+\subsection{Documentación de datos}
+
+Cada archivo \texttt{*.json} tiene un \texttt{*.schema.md} hermano que documenta su origen, cada campo con su tipo y significado, un ejemplo real tomado del JSON y cómo se usa en el cálculo de costos. En total se mantienen 11 archivos \texttt{schema.md}: 3 de infraestructura (\texttt{nodos}, \texttt{aristas}, \texttt{carabineros}), 5 de metadata (\texttt{viento}, \texttt{tendido\_electrico}, \texttt{relieve}, \texttt{poblacion}, \texttt{permisos\_edificacion}) y 3 de amenazas (\texttt{firms}, \texttt{conaf}, \texttt{sismos}).
+
+% =====================================================================
+\section{Base de datos geoespacial}
+\label{sec:recursos}
+% =====================================================================
+
+El motor es PostgreSQL~17 con PostGIS~3.5 y pgRouting~3.7. La base contiene 12 tablas organizadas en 4 grupos: infraestructura (2 tablas: nodos y aristas), nodos especiales (1 tabla: cuarteles de Carabineros), metadata (5 tablas: viento, tendido eléctrico, relieve, población, permisos de edificación) y amenazas (4 tablas: FIRMS, CONAF ignición, CONAF áreas protegidas, sismos). Todas las tablas con geometría llevan un índice GIST.
+
+Las operaciones espaciales clave son:
+\begin{itemize}[itemsep=1pt]
+\item \texttt{ST\_DWithin}: proximidad --- la calle pasa cerca del peligro (tendido a 22~m, FIRMS a 500~m).
+\item \texttt{ST\_Intersects}: contención --- la calle entra en una zona marcada (CONAF, SNASPE, manzanas censales).
+\item Función IDW: interpolación del viento en el punto medio de cada arista.
+\end{itemize}
+
+% =====================================================================
+\section{Marco teórico y trabajos relacionados}
+% =====================================================================
+
+Este trabajo toma como \textbf{paper base} a \cite{brassel2025}, que optimiza trayectorias UAV combinando datos GIS urbanos abiertos en una función de costo ponderada por riesgo y reporta una reducción del 72,2\,\% del riesgo en tierra respecto de la ruta directa con un factor de desvío de 1,06. Su metodología ---costo derivado de múltiples fuentes abiertas aplicado sobre un algoritmo de ruteo--- es la que se replica y extiende en este proyecto.
+
+El uso de corredores viales como infraestructura de ruteo UAV se justifica normativamente en \cite{yang2026}. La contingencia ante falla de GPS se fundamenta en \cite{almozel2025}. Las limitaciones del GNSS en corredores de drones provienen de \cite{sinha2024}. La resiliencia ante fallas durante incendios se documenta en \cite{raj2025}, mientras que la planificación consciente del riesgo en monitoreo de incendios se aborda en \cite{huang2026}.
+
+El concepto de resiliencia en redes se formaliza en Sterbenz et al.~\cite{sterbenz2010}, que proponen el marco defensa--detección--remediación adoptado en este trabajo. La necesidad de caminos físicamente independientes para garantizar la supervivencia de una red ante fallas se desarrolla en Bhandari~\cite{bhandari1999}, cuyo enfoque de \textit{diverse routing} fundamenta la decisión de buscar rutas arista-disjuntas en lugar de simplemente $k$ rutas más cortas. Suurballe~\cite{suurballe1974} aporta el primer algoritmo eficiente para pares de caminos disjuntos de costo mínimo, y Kobitzsch et al.~\cite{kobitzsch2013} validan la heurística de penalización como aproximación práctica al mismo problema.
+
+El algoritmo de costo ponderado por riesgo para UAV proviene de Hu et al.~\cite{hu2020}. La interpolación del viento utiliza el método IDW de Shepard~\cite{shepard1968}, y la validación de destinos sísmicos se basa en las regresiones empíricas de Wells y Coppersmith~\cite{wells1994}. El efecto del viento sobre el alcance planificable del UAV se documenta en Thibbotuwawa et al.~\cite{thibbotuwawa2020}.
+
+% =====================================================================
+\section{Alcances y limitaciones}
+\label{sec:limitaciones}
+% =====================================================================
+
+\begin{enumerate}[label=\arabic*.,leftmargin=1.4em,itemsep=2pt]
+\item \textbf{El modelo es estratégico, no táctico:} se planifica antes del vuelo, sin reemplazar la evitación de obstáculos en tiempo real a bordo.
+\item \textbf{Los datos de amenazas tienen latencia:} las detecciones satelitales de foco activo presentan retardo.
+\item \textbf{No se ejecutan vuelos reales:} el trabajo es de modelación sobre datos públicos, con plataforma interactiva funcional.
+\item \textbf{El índice de antigüedad es un proxy débil:} solo el 9,1\,\% de los edificios tiene permiso en la ventana 2010--2018; no distingue ``antigua'' de ``con permiso anterior a 2010''.
+\item \textbf{Los multiplicadores son parámetros de diseño:} no provienen de papers ni normas. Se recomienda un análisis de sensibilidad para validarlos.
+\item \textbf{La autonomía de batería no se modela:} el radio operacional limita la distancia en línea recta al epicentro, no la longitud total de la ruta.
+\item \textbf{La interpolación IDW tiene solo 6 puntos:} es una estimación, no una medición en cada calle.
+\item \textbf{No se modela la atenuación sísmica:} el sistema usa el epicentro y la magnitud de USGS solo como filtro geométrico de destinos y como activador de la penalización por antigüedad. Calcular la intensidad sísmica local en cada arista (efectos de sitio, clasificación de suelos, ecuaciones de atenuación) requeriría estudios geotécnicos que exceden el alcance del proyecto.
+\end{enumerate}
+
+% =====================================================================
+% REFERENCIAS
+% =====================================================================
+\begin{thebibliography}{00}
+
+\bibitem{yang2026} Q. Yang, B. Liu, C. Xie, and Z. Wen, ``Range-feasibility blindness in urban UAV logistics: A feasibility-embedded location--routing framework for infrastructure planning,'' \emph{Aerospace}, vol.~13, no.~6, p.~536, 2026.
+
+\bibitem{brassel2025} H. Braßel, T. Zeh, M. Lindner, and H. Fricke, ``Risk-aware UAV trajectory optimization using open urban GIS data and target level of safety constraints,'' \emph{Drones}, vol.~9, no.~10, p.~666, 2025.
+
+\bibitem{almozel2025} A. Almozel, A. Adil, and E. Feron, ``Safety-aware pre-flight trajectory planning for urban UAVs with contingency plans for mechanical and GPS failure scenarios,'' \emph{Drones}, vol.~9, no.~10, p.~708, 2025.
+
+\bibitem{sinha2024} P. Sinha, M. M. U. Chowdhury, I. Guvenc, D. W. Matolak, and K. Namuduri, ``Wireless connectivity and localization for advanced air mobility services,'' \emph{IEEE Aerosp. Electron. Syst. Mag.}, vol.~39, no.~11, pp.~4--14, 2024.
+
+\bibitem{raj2025} S. Raj \emph{et al.}, ``AeroResQ: Edge-accelerated UAV framework for scalable, resilient and collaborative escape route planning in wildfire scenarios,'' \emph{arXiv preprint arXiv:2511.00038}, 2025.
+
+\bibitem{huang2026} Y. Huang, Z. Wang, and R. Buyya, ``A risk-aware UAV-edge service framework for wildfire monitoring and emergency response,'' \emph{arXiv preprint arXiv:2602.19742}, 2026.
+
+\bibitem{dijkstra1959} E. W. Dijkstra, ``A note on two problems in connexion with graphs,'' \emph{Numerische Mathematik}, vol.~1, pp.~269--271, 1959.
+
+\bibitem{suurballe1974} J. W. Suurballe, ``Disjoint paths in a network,'' \emph{Networks}, vol.~4, no.~2, pp.~125--145, 1974.
+
+\bibitem{hu2020} X. Hu, B. Pang, F. Dai, and K. H. Low, ``Risk assessment model for UAV cost-effective path planning in urban environments,'' \emph{IEEE Access}, vol.~8, pp.~150162--150173, 2020.
+
+\bibitem{kobitzsch2013} M. Kobitzsch, M. Radermacher, and D. Schieferdecker, ``Evolution and evaluation of the penalty method for alternative graphs,'' in \emph{13th Workshop on Algorithmic Approaches for Transportation Modelling, Optimization, and Systems (ATMOS 2013)}, OASIcs, vol.~33, pp.~94--107, 2013.
+
+\bibitem{wells1994} D. L. Wells and K. J. Coppersmith, ``New empirical relationships among magnitude, rupture length, rupture width, rupture area, and surface displacement,'' \emph{Bull. Seismol. Soc. Amer.}, vol.~84, no.~4, pp.~974--1002, 1994.
+
+\bibitem{shepard1968} D. Shepard, ``A two-dimensional interpolation function for irregularly-spaced data,'' in \emph{Proc. 23rd ACM National Conference}, pp.~517--524, 1968.
+
+\bibitem{thibbotuwawa2020} A. Thibbotuwawa, G. Bocewicz, P. Nielsen, and Z. Banaszak, ``UAV mission planning resistant to weather uncertainty,'' \emph{Sensors}, vol.~20, no.~3, p.~598, 2020.
+
+\bibitem{sterbenz2010} J. P. G. Sterbenz, D. Hutchison, E. K. \c{C}etinkaya, A. Jabbar, J. P. Rohrer, M. Sch\"{o}ller, and P. Smith, ``Resilience and survivability in communication networks: Strategies, principles, and survey of disciplines,'' \emph{Computer Networks}, vol.~54, no.~8, pp.~1245--1265, 2010.
+
+\bibitem{bhandari1999} R. Bhandari, \emph{Survivable Networks: Algorithms for Diverse Routing}.\hskip 1em plus 0.5em minus 0.4em Kluwer Academic Publishers (Springer), 1999.
+
+\bibitem{ocha2012} OCHA (United Nations Office for the Coordination of Humanitarian Affairs), \emph{Multi-Cluster/Sector Initial Rapid Assessment (MIRA) --- Guidance}, Geneva, 2012.
+
+\bibitem{fema2016} Federal Emergency Management Agency, \emph{Preliminary Damage Assessment Guide} (FEMA~DAP~7010.3), Washington, DC, 2016.
+
+\bibitem{easa2019} European Union Aviation Safety Agency, ``Annex to ED Decision 2019/021/R --- Acceptable Means of Compliance and Guidance Material to Commission Implementing Regulation (EU) 2019/947 --- SORA,'' 2019.
+
+\bibitem{dgac2020} Dirección General de Aeronáutica Civil de Chile, ``DAN~151: Operaciones de aeronaves pilotadas a distancia (RPAS),'' 5ta ed., 2020.
+
+\end{thebibliography}
+
+\end{document}

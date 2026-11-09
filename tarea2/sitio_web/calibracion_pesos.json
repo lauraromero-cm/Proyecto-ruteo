@@ -1,0 +1,877 @@
+[
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 95.71,
+    "distancia_extra_pct": 4.92
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 95.7,
+    "distancia_extra_pct": 4.78
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 95.7,
+    "distancia_extra_pct": 5.17
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 95.69,
+    "distancia_extra_pct": 5.14
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 95.68,
+    "distancia_extra_pct": 4.98
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 95.48,
+    "distancia_extra_pct": 5.32
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 95.46,
+    "distancia_extra_pct": 5.25
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 95.46,
+    "distancia_extra_pct": 5.3
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 95.46,
+    "distancia_extra_pct": 5.5
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 95.45,
+    "distancia_extra_pct": 5.53
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 95.29,
+    "distancia_extra_pct": 6.21
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 95.28,
+    "distancia_extra_pct": 6.05
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 95.28,
+    "distancia_extra_pct": 6.16
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 95.28,
+    "distancia_extra_pct": 6.43
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 95.28,
+    "distancia_extra_pct": 6.46
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 94.99,
+    "distancia_extra_pct": 6.89
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 94.99,
+    "distancia_extra_pct": 7.09
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 94.98,
+    "distancia_extra_pct": 6.73
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 94.98,
+    "distancia_extra_pct": 6.84
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 94.97,
+    "distancia_extra_pct": 7.12
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 94.6,
+    "distancia_extra_pct": 7.88
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 94.56,
+    "distancia_extra_pct": 7.41
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 94.55,
+    "distancia_extra_pct": 7.13
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 94.55,
+    "distancia_extra_pct": 7.18
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.1,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 94.54,
+    "distancia_extra_pct": 7.06
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 94.5,
+    "distancia_extra_pct": 5.11
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 94.49,
+    "distancia_extra_pct": 5.03
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 94.49,
+    "distancia_extra_pct": 5.08
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 94.47,
+    "distancia_extra_pct": 5.23
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 94.43,
+    "distancia_extra_pct": 5.26
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 94.38,
+    "distancia_extra_pct": 6.09
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 94.37,
+    "distancia_extra_pct": 6.03
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 94.37,
+    "distancia_extra_pct": 6.29
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 94.36,
+    "distancia_extra_pct": 6.26
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 94.35,
+    "distancia_extra_pct": 5.92
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 94.13,
+    "distancia_extra_pct": 6.83
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 94.12,
+    "distancia_extra_pct": 6.66
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 94.12,
+    "distancia_extra_pct": 6.86
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 94.11,
+    "distancia_extra_pct": 6.6
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 94.1,
+    "distancia_extra_pct": 6.16
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 93.79,
+    "distancia_extra_pct": 7.0
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 93.79,
+    "distancia_extra_pct": 7.02
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 93.78,
+    "distancia_extra_pct": 6.82
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 93.77,
+    "distancia_extra_pct": 6.65
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 93.77,
+    "distancia_extra_pct": 6.76
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 93.57,
+    "distancia_extra_pct": 6.07
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 93.57,
+    "distancia_extra_pct": 6.07
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 93.57,
+    "distancia_extra_pct": 6.13
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 93.56,
+    "distancia_extra_pct": 6.3
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 93.53,
+    "distancia_extra_pct": 6.27
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 93.51,
+    "distancia_extra_pct": 7.59
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 93.43,
+    "distancia_extra_pct": 7.87
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 93.39,
+    "distancia_extra_pct": 6.59
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 93.39,
+    "distancia_extra_pct": 6.62
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 93.38,
+    "distancia_extra_pct": 6.42
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 93.38,
+    "distancia_extra_pct": 7.6
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 93.37,
+    "distancia_extra_pct": 6.39
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 93.37,
+    "distancia_extra_pct": 6.36
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 93.37,
+    "distancia_extra_pct": 7.42
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.3,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 93.36,
+    "distancia_extra_pct": 7.36
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 93.12,
+    "distancia_extra_pct": 6.85
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 93.12,
+    "distancia_extra_pct": 6.87
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 93.11,
+    "distancia_extra_pct": 7.01
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 93.1,
+    "distancia_extra_pct": 6.82
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 93.1,
+    "distancia_extra_pct": 6.95
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 92.82,
+    "distancia_extra_pct": 7.41
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 92.82,
+    "distancia_extra_pct": 7.43
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 92.8,
+    "distancia_extra_pct": 7.11
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 92.8,
+    "distancia_extra_pct": 7.17
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 92.79,
+    "distancia_extra_pct": 7.0
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 92.53,
+    "distancia_extra_pct": 7.75
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 92.43,
+    "distancia_extra_pct": 8.38
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 92.39,
+    "distancia_extra_pct": 8.34
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 92.37,
+    "distancia_extra_pct": 7.93
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 1.5,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 92.36,
+    "distancia_extra_pct": 7.87
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 91.75,
+    "distancia_extra_pct": 7.51
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 91.74,
+    "distancia_extra_pct": 7.49
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 91.74,
+    "distancia_extra_pct": 7.49
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 91.71,
+    "distancia_extra_pct": 7.45
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 91.7,
+    "distancia_extra_pct": 7.3
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 91.51,
+    "distancia_extra_pct": 7.3
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 91.5,
+    "distancia_extra_pct": 7.27
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 91.46,
+    "distancia_extra_pct": 7.21
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 91.46,
+    "distancia_extra_pct": 7.25
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 91.45,
+    "distancia_extra_pct": 7.06
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 91.23,
+    "distancia_extra_pct": 7.49
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 91.21,
+    "distancia_extra_pct": 7.47
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 91.2,
+    "distancia_extra_pct": 7.38
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 91.19,
+    "distancia_extra_pct": 7.41
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 91.19,
+    "distancia_extra_pct": 7.29
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 91.1,
+    "distancia_extra_pct": 7.68
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 90.92,
+    "distancia_extra_pct": 7.67
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 90.9,
+    "distancia_extra_pct": 7.71
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 90.9,
+    "distancia_extra_pct": 8.04
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 90.89,
+    "distancia_extra_pct": 7.77
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 90.69,
+    "distancia_extra_pct": 7.92
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 90.54,
+    "distancia_extra_pct": 8.64
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 90.48,
+    "distancia_extra_pct": 8.6
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 90.47,
+    "distancia_extra_pct": 8.15
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 2.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 90.45,
+    "distancia_extra_pct": 8.19
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 89.25,
+    "distancia_extra_pct": 7.91
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 89.09,
+    "distancia_extra_pct": 8.3
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 89.08,
+    "distancia_extra_pct": 8.22
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 89.07,
+    "distancia_extra_pct": 8.22
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 89.05,
+    "distancia_extra_pct": 7.99
+  },
+  {
+    "peso_tendido": 1.2,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 89.05,
+    "distancia_extra_pct": 8.03
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 88.91,
+    "distancia_extra_pct": 8.66
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 88.87,
+    "distancia_extra_pct": 8.61
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 88.87,
+    "distancia_extra_pct": 8.48
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 88.85,
+    "distancia_extra_pct": 8.38
+  },
+  {
+    "peso_tendido": 1.5,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 88.85,
+    "distancia_extra_pct": 8.43
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 88.67,
+    "distancia_extra_pct": 8.79
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 88.67,
+    "distancia_extra_pct": 8.81
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 88.67,
+    "distancia_extra_pct": 8.84
+  },
+  {
+    "peso_tendido": 2.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 88.66,
+    "distancia_extra_pct": 8.74
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 88.55,
+    "distancia_extra_pct": 8.04
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 88.3,
+    "distancia_extra_pct": 8.47
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 88.28,
+    "distancia_extra_pct": 8.19
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 88.27,
+    "distancia_extra_pct": 8.12
+  },
+  {
+    "peso_tendido": 3.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 88.27,
+    "distancia_extra_pct": 8.01
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.1,
+    "resiliencia_promedio": 88.13,
+    "distancia_extra_pct": 8.24
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 1.0,
+    "resiliencia_promedio": 87.9,
+    "distancia_extra_pct": 9.3
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.8,
+    "resiliencia_promedio": 87.88,
+    "distancia_extra_pct": 9.16
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.3,
+    "resiliencia_promedio": 87.72,
+    "distancia_extra_pct": 8.18
+  },
+  {
+    "peso_tendido": 5.0,
+    "peso_ignicion": 3.0,
+    "peso_antiguedad": 0.5,
+    "resiliencia_promedio": 87.72,
+    "distancia_extra_pct": 8.22
+  }
+]

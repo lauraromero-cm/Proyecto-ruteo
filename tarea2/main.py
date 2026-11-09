@@ -48,6 +48,7 @@ PASOS_CARGA = [
 
 PASOS_SITIO = [
     ("sitio_web/generar_rutas_comparativas.py", "sitio_web"),
+    ("sitio_web/generar_probabilidad_fallo.py", "sitio_web"),
     ("sitio_web/generar_ruta_ejemplo.py", "sitio_web"),
     ("sitio_web/exportar_capas_web.py", "sitio_web"),
 ]

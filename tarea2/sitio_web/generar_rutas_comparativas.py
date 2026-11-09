@@ -31,13 +31,13 @@ CREATE INDEX IF NOT EXISTS idx_ignicion_geom ON amenaza_conaf_ignicion USING gis
 CREATE INDEX IF NOT EXISTS idx_asp_geom ON amenaza_conaf_areas_protegidas USING gist(geom);
 CREATE INDEX IF NOT EXISTS idx_firms_geom ON amenaza_firms USING gist(geom);
 
-UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.5
+UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.2
 WHERE id IN (
     SELECT a.id FROM infraestructura_aristas a
     JOIN metadata_tendido_electrico t ON a.geom && ST_Expand(t.geom, 0.0002) AND ST_DWithin(a.geom, t.geom, 0.0002)
 );
 
-UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.3
+UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.1
 WHERE id IN (
     SELECT a.id FROM infraestructura_aristas a
     JOIN amenaza_conaf_ignicion i ON a.geom && i.geom AND ST_Intersects(a.geom, i.geom)

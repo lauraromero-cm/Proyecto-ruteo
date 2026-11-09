@@ -15,6 +15,8 @@ function cargarGeoJSON(url, callback) {
 let capasRutas = {
   dijkstra: L.featureGroup().addTo(map),
   resiliente: L.featureGroup().addTo(map),
+  optimizacion_lp: L.featureGroup().addTo(map),
+  aco: L.featureGroup().addTo(map),
 };
 let capaMarcadoresRuta = L.featureGroup().addTo(map);
 
@@ -276,6 +278,8 @@ function renderizarRuta(rutaData) {
   // Limpiar capas previas
   capasRutas.dijkstra.clearLayers();
   capasRutas.resiliente.clearLayers();
+  capasRutas.optimizacion_lp.clearLayers();
+  capasRutas.aco.clearLayers();
   capaMarcadoresRuta.clearLayers();
 
   const orig = rutaData.origen;
@@ -311,7 +315,23 @@ function renderizarRuta(rutaData) {
     capasRutas.resiliente.addLayer(r2);
   }
 
-  // 3. Marcadores Destacados de Inicio y Destino
+  // 3. Ruta Optimización LP (PuLP/CBC)
+  if (rutaData.optimizacion_lp && rutaData.optimizacion_lp.geom) {
+    const lp = L.geoJSON(rutaData.optimizacion_lp.geom, {
+      style: { color: "#9b59b6", weight: 4.5, opacity: 0.85, dashArray: "8, 4" },
+    }).bindPopup(`<b>Optimización LP (PuLP/CBC)</b><br>Distancia: ${Math.round(rutaData.optimizacion_lp.distancia_m)} m<br>Tramos: ${rutaData.optimizacion_lp.tramos}<br><i>Programación Lineal Entera — mín costo s.a. flujo</i>`);
+    capasRutas.optimizacion_lp.addLayer(lp);
+  }
+
+  // 4. Ruta Metaheurística ACO
+  if (rutaData.aco && rutaData.aco.geom) {
+    const aco = L.geoJSON(rutaData.aco.geom, {
+      style: { color: "#16a085", weight: 4.5, opacity: 0.85, dashArray: "3, 8" },
+    }).bindPopup(`<b>Metaheurística ACO (Ant Colony)</b><br>Distancia: ${Math.round(rutaData.aco.distancia_m)} m<br>Tramos: ${rutaData.aco.tramos}<br><i>20 hormigas × 30 iteraciones</i>`);
+    capasRutas.aco.addLayer(aco);
+  }
+
+  // 5. Marcadores Destacados de Inicio y Destino
   L.circleMarker([orig.lat, orig.lon], {
     radius: 10,
     color: "#1a365d",
@@ -330,7 +350,7 @@ function renderizarRuta(rutaData) {
 
   // 4. Centrar y encuadrar el mapa en la nueva trayectoria
   try {
-    const grupoTotal = L.featureGroup([capasRutas.resiliente, capasRutas.dijkstra, capaMarcadoresRuta]);
+    const grupoTotal = L.featureGroup([capasRutas.resiliente, capasRutas.dijkstra, capasRutas.optimizacion_lp, capasRutas.aco, capaMarcadoresRuta]);
     map.fitBounds(grupoTotal.getBounds(), { padding: [55, 55], maxZoom: 13 });
   } catch (err) {
     map.setView([orig.lat, orig.lon], 11);
@@ -345,26 +365,58 @@ function renderizarRuta(rutaData) {
     infoBox.innerHTML = `<b>Trayecto Activo:</b> ${orig.nombre} (${orig.comuna}) <br>&rarr; <b>${dest.descripcion}</b>${msInfo}${restrInfo}`;
   }
 
-  // 6. Actualizar Métricas en la Tabla
+  // 8. Actualizar Métricas en la Tabla (4 técnicas)
   const m = rutaData.metricas || {};
-  if (m.dijkstra && m.resiliente) {
-    document.getElementById("m-dist-dijkstra").innerText = `${m.dijkstra.distancia_promedio_km} km`;
-    document.getElementById("m-dist-resil").innerText = `${m.resiliente.distancia_promedio_km} km`;
-    document.getElementById("m-disy-dijkstra").innerText = `${m.dijkstra.disyuncion_pct}%`;
-    document.getElementById("m-disy-resil").innerText = `${m.resiliente.disyuncion_pct}%`;
-    document.getElementById("m-riesgo-dijkstra").innerText = `${m.dijkstra.aristas_con_riesgo} tramos`;
-    document.getElementById("m-riesgo-resil").innerText = `${m.resiliente.aristas_con_riesgo} tramos`;
-    document.getElementById("m-resil-dijkstra").innerText = `${m.dijkstra.resiliencia_score}%`;
-    document.getElementById("m-resil-resil").innerText = `${m.resiliente.resiliencia_score}%`;
+  const sim = rutaData.simulacion_fallas || {};
 
-    const diff = m.diferencial_resiliencia;
-    const badge = document.getElementById("badge-diferencial");
-    badge.innerText = diff >= 0
-      ? `Diferencial: +${diff}% de Resiliencia Ganada`
-      : `Diferencial: ${diff}% (Dijkstra resultó más resiliente para este par)`;
-    badge.style.background = diff >= 0 ? "#ebfbee" : "#fff5f5";
-    badge.style.color = diff >= 0 ? "#2b8a3e" : "#c53030";
-    badge.style.borderColor = diff >= 0 ? "#b2f2bb" : "#feb2b2";
+  if (m.dijkstra) {
+    document.getElementById("m-dist-dijkstra").innerText = `${m.dijkstra.distancia_promedio_km}`;
+    document.getElementById("m-riesgo-dijkstra").innerText = `${m.dijkstra.aristas_con_riesgo}`;
+    document.getElementById("m-resil-dijkstra").innerText = `${m.dijkstra.resiliencia_score}%`;
+    document.getElementById("m-time-dijkstra").innerText = `${m.dijkstra.tiempo_ms || "—"}`;
+    document.getElementById("m-sim-dijkstra").innerText = sim.dijkstra ? `${sim.dijkstra.tasa_supervivencia}%` : "—";
+  }
+  if (m.resiliente) {
+    document.getElementById("m-dist-resil").innerText = `${m.resiliente.distancia_promedio_km}`;
+    document.getElementById("m-riesgo-resil").innerText = `${m.resiliente.aristas_con_riesgo}`;
+    document.getElementById("m-resil-resil").innerText = `${m.resiliente.resiliencia_score}%`;
+    document.getElementById("m-time-resil").innerText = `${m.resiliente.tiempo_ms || "—"}`;
+    document.getElementById("m-sim-resil").innerText = sim.resiliente ? `${sim.resiliente.tasa_supervivencia}%` : "—";
+  }
+  if (m.optimizacion_lp && m.optimizacion_lp.resiliencia_score !== undefined) {
+    document.getElementById("m-dist-lp").innerText = `${m.optimizacion_lp.distancia_promedio_km || "—"}`;
+    document.getElementById("m-riesgo-lp").innerText = `${m.optimizacion_lp.aristas_con_riesgo ?? "—"}`;
+    document.getElementById("m-resil-lp").innerText = `${m.optimizacion_lp.resiliencia_score}%`;
+    document.getElementById("m-time-lp").innerText = `${m.optimizacion_lp.tiempo_ms || "—"}`;
+    document.getElementById("m-sim-lp").innerText = sim.optimizacion_lp ? `${sim.optimizacion_lp.tasa_supervivencia}%` : "—";
+  } else {
+    ["m-dist-lp","m-riesgo-lp","m-resil-lp","m-time-lp","m-sim-lp"].forEach(id => { document.getElementById(id).innerText = "—"; });
+  }
+  if (m.aco && m.aco.resiliencia_score !== undefined) {
+    document.getElementById("m-dist-aco").innerText = `${m.aco.distancia_promedio_km || "—"}`;
+    document.getElementById("m-riesgo-aco").innerText = `${m.aco.aristas_con_riesgo ?? "—"}`;
+    document.getElementById("m-resil-aco").innerText = `${m.aco.resiliencia_score}%`;
+    document.getElementById("m-time-aco").innerText = `${m.aco.tiempo_ms || "—"}`;
+    document.getElementById("m-sim-aco").innerText = sim.aco ? `${sim.aco.tasa_supervivencia}%` : "—";
+  } else {
+    ["m-dist-aco","m-riesgo-aco","m-resil-aco","m-time-aco","m-sim-aco"].forEach(id => { document.getElementById(id).innerText = "—"; });
+  }
+
+  // Badge: mejor técnica
+  const tecnicas = [
+    { nombre: "Dijkstra", score: m.dijkstra?.resiliencia_score || 0 },
+    { nombre: "Resiliente", score: m.resiliente?.resiliencia_score || 0 },
+    { nombre: "Optim. LP", score: m.optimizacion_lp?.resiliencia_score || 0 },
+    { nombre: "ACO", score: m.aco?.resiliencia_score || 0 },
+  ].filter(t => t.score > 0);
+  const badge = document.getElementById("badge-diferencial");
+  if (tecnicas.length > 0) {
+    tecnicas.sort((a, b) => b.score - a.score);
+    const mejor = tecnicas[0];
+    badge.innerText = `Mejor técnica: ${mejor.nombre} (R = ${mejor.score}%)`;
+    badge.style.background = "#ebfbee";
+    badge.style.color = "#2b8a3e";
+    badge.style.borderColor = "#b2f2bb";
   }
 }
 
@@ -532,8 +584,10 @@ function toggleCapa(id, grupo) {
   }
 }
 
-toggleCapa("chk-capa-resil", capasRutas.resiliente);
 toggleCapa("chk-capa-dijkstra", capasRutas.dijkstra);
+toggleCapa("chk-capa-resil", capasRutas.resiliente);
+toggleCapa("chk-capa-lp", capasRutas.optimizacion_lp);
+toggleCapa("chk-capa-aco", capasRutas.aco);
 toggleCapa("chk-capa-carabineros", capaCarabineros);
 toggleCapa("chk-capa-sismos", capaSismos);
 toggleCapa("chk-capa-tendido", capaTendido);

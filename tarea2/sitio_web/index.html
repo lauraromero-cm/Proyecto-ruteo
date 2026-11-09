@@ -103,52 +103,78 @@
     <label><input type="checkbox" id="chk-opt-conaf" checked disabled> Evitar áreas SNASPE</label>
   </div>
 
-  <div class="section-title">3. Comparación de Rutas</div>
+  <div class="section-title">3. Comparación de 4 Técnicas de Ruteo</div>
   <table class="table-metric">
     <thead>
       <tr>
-        <th>Métrica Evaluada</th>
-        <th style="color:#e67e22;">Dijkstra</th>
+        <th>Métrica</th>
+        <th style="color:#e74c3c;">Dijkstra</th>
         <th style="color:#2980b9;">Resiliente</th>
+        <th style="color:#9b59b6;">Optim. LP</th>
+        <th style="color:#16a085;">ACO</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td style="cursor:help;" title="Promedio de longitud (km) entre la Ruta 1 y la Ruta 2 del par k=2 de cada modo.">Distancia prom. (km)</td>
+        <td title="Distancia de la ruta principal (km)">Distancia (km)</td>
         <td class="num" id="m-dist-dijkstra">—</td>
         <td class="num" id="m-dist-resil">—</td>
+        <td class="num" id="m-dist-lp">—</td>
+        <td class="num" id="m-dist-aco">—</td>
       </tr>
       <tr>
-        <td style="cursor:help;" title="Qué tan independientes son la Ruta 1 y la Ruta 2 entre sí: 1 - (tramos compartidos / tramos totales). Alto = buen respaldo, ya que si algo corta la Ruta 1, la Ruta 2 probablemente sigue intacta.">Disyunción de caminos</td>
-        <td class="num" id="m-disy-dijkstra">—</td>
-        <td class="num" id="m-disy-resil">—</td>
-      </tr>
-      <tr>
-        <td style="cursor:help;" title="Cantidad de tramos (de Ruta 1 + Ruta 2 juntas) con alguna penalización: tendido eléctrico, zona CONAF de ignición, área protegida, foco FIRMS o viento sobre el límite del dron. Es solo un conteo; la resiliencia pondera además qué tan grave es cada penalización.">Aristas en riesgo</td>
-        <td class="num" id="m-riesgo-dijkstra" style="color:#c0392b; font-weight:600;">—</td>
-        <td class="num" id="m-riesgo-resil" style="color:#27ae60; font-weight:600;">—</td>
+        <td title="Aristas expuestas a amenazas">Aristas riesgo</td>
+        <td class="num" id="m-riesgo-dijkstra" style="color:#c0392b;">—</td>
+        <td class="num" id="m-riesgo-resil" style="color:#27ae60;">—</td>
+        <td class="num" id="m-riesgo-lp">—</td>
+        <td class="num" id="m-riesgo-aco">—</td>
       </tr>
       <tr style="font-weight:700; background:#f8fafc;">
-        <td style="cursor:help;" title="Score combinado: disyunción × seguridad × 100. Seguridad = 1 - exposición, donde la exposición es la fracción de distancia del par recorrida por zonas penalizadas, ponderada por la gravedad de cada penalización (escala logarítmica: ×1000 pesa 1.0, ×1.3 apenas 0.04). Usa el mismo costo que el ruteo.">Resiliencia Global (R)</td>
-        <td class="num" id="m-resil-dijkstra" style="color:#e67e22;">—</td>
+        <td title="Score: disyunción × seguridad × 100">Resiliencia (R)</td>
+        <td class="num" id="m-resil-dijkstra" style="color:#e74c3c;">—</td>
         <td class="num" id="m-resil-resil" style="color:#2980b9;">—</td>
+        <td class="num" id="m-resil-lp" style="color:#9b59b6;">—</td>
+        <td class="num" id="m-resil-aco" style="color:#16a085;">—</td>
+      </tr>
+      <tr>
+        <td title="Tiempo de cómputo del algoritmo">Tiempo (ms)</td>
+        <td class="num" id="m-time-dijkstra">—</td>
+        <td class="num" id="m-time-resil">—</td>
+        <td class="num" id="m-time-lp">—</td>
+        <td class="num" id="m-time-aco">—</td>
+      </tr>
+      <tr>
+        <td title="Simulación Monte Carlo: % de 100 escenarios donde la ruta sobrevive sin fallas">Supervivencia (%)</td>
+        <td class="num" id="m-sim-dijkstra">—</td>
+        <td class="num" id="m-sim-resil">—</td>
+        <td class="num" id="m-sim-lp">—</td>
+        <td class="num" id="m-sim-aco">—</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="badge-diff" id="badge-diferencial" title="Resiliencia Global del par Resiliente menos la del par Dijkstra, para este origen/destino específico. Positivo = la estrategia resiliente mejora la robustez frente al Dijkstra puro.">
-    Calculando Diferencial de Resiliencia...
+  <div class="badge-diff" id="badge-diferencial" title="Mejor técnica según resiliencia global">
+    Calculando comparación...
   </div>
 
-  <div class="section-title">4. Capas en el Mapa</div>
+  <div class="section-title">4. Capas de Rutas (4 técnicas)</div>
   <div class="layer-item">
-    <span><span class="line-swatch" style="background:#2980b9;"></span><span class="line-swatch" style="background:#27ae60;"></span> Rutas Resilientes (k=2: Ruta 1 azul + Ruta 2 verde)</span>
+    <span><span class="line-swatch" style="background:#e74c3c;"></span><span class="line-swatch" style="background:#e67e22;"></span> Dijkstra (distancia pura, k=2)</span>
+    <input type="checkbox" id="chk-capa-dijkstra" checked>
+  </div>
+  <div class="layer-item">
+    <span><span class="line-swatch" style="background:#2980b9;"></span><span class="line-swatch" style="background:#27ae60;"></span> Resiliente (multi-amenaza, k=2)</span>
     <input type="checkbox" id="chk-capa-resil" checked>
   </div>
   <div class="layer-item">
-    <span><span class="line-swatch" style="background:#e74c3c;"></span><span class="line-swatch" style="background:#e67e22;"></span> Rutas Dijkstra (k=2: Ruta 1 roja + Ruta 2 naranja)</span>
-    <input type="checkbox" id="chk-capa-dijkstra" checked>
+    <span><span class="line-swatch" style="background:#9b59b6;"></span> Optimización LP (PuLP/CBC)</span>
+    <input type="checkbox" id="chk-capa-lp" checked>
   </div>
+  <div class="layer-item">
+    <span><span class="line-swatch" style="background:#16a085;"></span> Metaheurística ACO (Ant Colony)</span>
+    <input type="checkbox" id="chk-capa-aco" checked>
+  </div>
+  <div class="section-title">5. Capas de Datos y Amenazas</div>
   <div class="layer-item">
     <span><span class="swatch" style="background:#c0392b;"></span> Cuarteles Carabineros (29 bases)</span>
     <input type="checkbox" id="chk-capa-carabineros" checked>

@@ -1,5 +1,3 @@
--- Esquema de la base de datos - Ruteo resiliente de drones BVLOS
--- Gran Valparaiso. Ver db/diagrama_bd.png para el diagrama visual.
 
 -- ============================================================
 -- INFRAESTRUCTURA (grafo vial real, OSM via Geofabrik)
