@@ -15,9 +15,12 @@ Modelo de probabilidad por amenaza:
 - Viento: P = max(0, (racha - umbral) / umbral) acotado a [0, 1]
   (a medida que la racha supera el umbral de operación del DJI M300 RTK,
   la probabilidad de que el dron no pueda operar crece linealmente).
-- Sismo + edificación antigua: P = indice_antiguedad × 0.5 (el índice de
-  antigüedad es proxy de vulnerabilidad estructural; ×0.5 porque es un proxy,
-  no medición directa de daño).
+- Sismo + edificación antigua: se guarda la VULNERABILIDAD = indice_antiguedad
+  (proxy de vulnerabilidad estructural, 0-1). Es condicional al sismo: la
+  probabilidad efectiva se calcula en el servidor al elegir el destino,
+  P = vulnerabilidad × f(intensidad MMI del sismo en esa arista), donde f sube de 0
+  (MMI ≤ V) a 1 (MMI ≥ IX). Un sismo débil o profundo no daña edificios. El p_total
+  de este archivo supone el caso de daño pleno (f=1), es decir el peor caso.
 
 Salida: sitio_web/data/probabilidad_fallo.json
   {
@@ -158,7 +161,7 @@ cur.execute("""
 """)
 cnt = 0
 for aid, faz, zid in cur.fetchall():
-    p = min(1.0, float(faz) * 0.5)
+    p = min(1.0, float(faz))
     if p > 0.01:
         agregar(aid, "sismo_edificacion", p, zid)
         cnt += 1
@@ -210,7 +213,7 @@ salida = {
         "areas_protegidas": "P=0.95 (restricción legal DAN 151 / SNASPE)",
         "firms": "P=0.80 (buffer 500m, foco activo NASA FIRMS)",
         "viento": "P=max(0, (racha-umbral)/umbral) (DJI M300 RTK, umbral 43.2 km/h)",
-        "sismo_edificacion": "P=indice_antiguedad×0.5 (proxy vulnerabilidad estructural)",
+        "sismo_edificacion": "vulnerabilidad=indice_antiguedad; P efectiva = vulnerabilidad × f(MMI del sismo destino) calculada en servidor.py (p_total del archivo = peor caso f=1)",
         "p_total": "1 - Π(1-P_i) (combinación independiente)",
     },
     "resumen": resumen,

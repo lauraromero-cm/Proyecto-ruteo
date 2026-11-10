@@ -11,6 +11,7 @@ import json
 import time
 import random
 import heapq
+import math
 import re
 import tempfile
 import urllib.parse
@@ -250,10 +251,10 @@ def resolver_origen_nodo(cur, origen_str):
 def resolver_destino_nodo(cur, destino_str, lat_param=None, lon_param=None):
     if destino_str.startswith("sismo_") or destino_str.isdigit():
         s_id = int(destino_str.replace("sismo_", ""))
-        cur.execute("SELECT id, usgs_id, magnitud, lugar, ST_X(geom), ST_Y(geom) FROM amenaza_sismos WHERE id = %s", (s_id,))
+        cur.execute("SELECT id, usgs_id, magnitud, lugar, ST_X(geom), ST_Y(geom), profundidad_km FROM amenaza_sismos WHERE id = %s", (s_id,))
         row = cur.fetchone()
         if row:
-            s_id, usgs, mag, lug, s_lon, s_lat = row
+            s_id, usgs, mag, lug, s_lon, s_lat, prof_km = row
             cur.execute("""
                 SELECT id, ST_X(geom), ST_Y(geom),
                        ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography)
@@ -279,6 +280,7 @@ def resolver_destino_nodo(cur, destino_str, lat_param=None, lon_param=None):
                 "tipo": "sismo",
                 "descripcion": f"Sismo M{mag} ({lug})",
                 "magnitud": float(mag),
+                "profundidad_km": float(prof_km or 10.0),
                 "lugar": lug,
                 "lon": round(float(s_lon), 5),
                 "lat": round(float(s_lat), 5),
@@ -455,7 +457,7 @@ def _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None, 
     return rows[:max_edges]
 
 
-def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None, riesgo_max=None):
+def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None, riesgo_max=None, fs=None):
     """Camino más corto como Programación Lineal resuelta con Simplex (PuLP + CBC/Clp).
     Formulación: min Σ c_e·x_e  s.a. conservación de flujo en cada nodo.
     La matriz de incidencia nodo-arco es totalmente unimodular, por lo que el
@@ -507,7 +509,7 @@ def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=Non
     # haría el LP infactible en rutas largas, donde la suma de P crece con la distancia.
     if PROB_FALLO and riesgo_max is not None:
         prob_lp += pulp.lpSum(
-            PROB_FALLO.get(eid, {}).get("p_total", 0) * x[eid]
+            p_efectiva(eid, fs or {}) * x[eid]
             for eid in edge_map
         ) <= riesgo_max + 1e-6, "max_riesgo_acumulado"
 
@@ -692,7 +694,60 @@ def _ant_walk(adj, origin, target, pheromone, edge_cost,
 # =====================================================================
 # SIMULACIÓN DE FALLAS ALEATORIAS (Point 7 rúbrica)
 # =====================================================================
-def _sortear_aristas(edge_ids, eventos=None):
+# Intensidad sísmica -> fracción de edificación antigua que sufre daño/escombros.
+# MMI = A + B*M - C*log10(R_hipocentral_km): relación de atenuación simplificada de la forma
+# empírica tipo Gutenberg-Richter. Coeficientes de orden de magnitud (NO de una GMPE publicada),
+# elegidos para que M6.5 a 10 km dé MMI ~VII y un M4.4 a 48 km de profundidad dé MMI ~I-II.
+MMI_A, MMI_B, MMI_C = 0.9, 1.5, 3.5
+MMI_DANO_INICIO, MMI_DANO_TOTAL = 5.0, 9.0  # daño leve desde MMI VI aprox.; pleno hacia MMI IX
+CACHE_FS = {}
+
+
+def factor_dano_mmi(mag, prof_km, dist_km):
+    r = max((dist_km ** 2 + prof_km ** 2) ** 0.5, 1.0)
+    mmi = MMI_A + MMI_B * mag - MMI_C * math.log10(r)
+    return max(0.0, min(1.0, (mmi - MMI_DANO_INICIO) / (MMI_DANO_TOTAL - MMI_DANO_INICIO)))
+
+
+def factor_sismo_aristas(cur, dest):
+    """{arista_id: fracción de daño} para las aristas con edificación vulnerable, según el sismo
+    de destino. Para destinos que no son sismo la amenaza no aplica (factor 0)."""
+    if dest.get("tipo") != "sismo":
+        return {}
+    if dest["id"] in CACHE_FS:
+        return CACHE_FS[dest["id"]]
+    ids = [e for e, d in PROB_FALLO.items() if "sismo_edificacion" in d]
+    cur.execute(
+        """SELECT id, ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography) / 1000.0
+           FROM infraestructura_aristas WHERE id = ANY(%s)""",
+        (dest["lon"], dest["lat"], ids),
+    )
+    fs = {eid: factor_dano_mmi(dest["magnitud"], dest.get("profundidad_km", 10.0), d_km) for eid, d_km in cur.fetchall()}
+    CACHE_FS[dest["id"]] = fs
+    return fs
+
+
+def probs_efectivas(eid, fs):
+    """P por amenaza de una arista; sismo_edificacion (vulnerabilidad) se escala por la intensidad del sismo."""
+    out = {}
+    for am, p in PROB_FALLO.get(eid, {}).items():
+        if am == "p_total":
+            continue
+        if am == "sismo_edificacion":
+            p = p * fs.get(eid, 0.0)
+        if p > 0:
+            out[am] = p
+    return out
+
+
+def p_efectiva(eid, fs):
+    prod = 1.0
+    for p in probs_efectivas(eid, fs).values():
+        prod *= 1.0 - p
+    return 1.0 - prod
+
+
+def _sortear_aristas(edge_ids, fs, eventos=None):
     """Un escenario: devuelve {arista_id: [(amenaza, aleatorio, umbral)]} de las aristas que fallan.
     Cada amenaza se sortea con random(0,100) contra P*100. Las amenazas espaciales comparten
     un sorteo por evento/zona (todas las aristas de la misma zona de ignición, área protegida,
@@ -700,9 +755,7 @@ def _sortear_aristas(edge_ids, eventos=None):
     eventos = {} if eventos is None else eventos
     fallan = {}
     for eid in edge_ids:
-        for am, p in PROB_FALLO.get(eid, {}).items():
-            if am == "p_total" or p <= 0:
-                continue
+        for am, p in probs_efectivas(eid, fs).items():
             zid = ZONAS.get(eid, {}).get(am)
             if zid is not None:
                 if (am, zid) not in eventos:
@@ -715,10 +768,10 @@ def _sortear_aristas(edge_ids, eventos=None):
     return fallan
 
 
-def simular_fallas(cur, route_edges, n_sim=100):
+def simular_fallas(cur, route_edges, fs, n_sim=100):
     """Monte Carlo: n_sim escenarios de sorteo aleatorio (ver _sortear_aristas).
     La ruta sobrevive a un escenario si ninguna de sus aristas falla."""
-    expuestas = [e for e in (route_edges or []) if PROB_FALLO.get(e, {}).get("p_total", 0) > 0]
+    expuestas = [e for e in (route_edges or []) if p_efectiva(e, fs) > 0]
     if not expuestas:
         return {"simulaciones": n_sim, "sobrevive": n_sim, "tasa_supervivencia": 100.0,
                 "aristas_vulnerables": 0, "fallas_promedio": 0.0, "detalle_fallas": []}
@@ -727,7 +780,7 @@ def simular_fallas(cur, route_edges, n_sim=100):
     total_fallas = 0
     fallas_por_arista = {}
     for _ in range(n_sim):
-        fallan = _sortear_aristas(expuestas)
+        fallan = _sortear_aristas(expuestas, fs)
         total_fallas += len(fallan)
         if not fallan:
             sobrevive += 1
@@ -736,7 +789,7 @@ def simular_fallas(cur, route_edges, n_sim=100):
 
     detalle = [{
         "arista_id": eid,
-        "p_fallo": round(PROB_FALLO[eid]["p_total"], 4),
+        "p_fallo": round(p_efectiva(eid, fs), 4),
         "fallas_en_sim": cnt,
         "pct_falla": round(cnt / n_sim * 100, 1),
     } for eid, cnt in sorted(fallas_por_arista.items(), key=lambda x: -x[1])[:10]]
@@ -751,15 +804,15 @@ def simular_fallas(cur, route_edges, n_sim=100):
     }
 
 
-def aristas_vulnerables_geo(cur, route_edges):
+def aristas_vulnerables_geo(cur, route_edges, fs):
     """Aristas de la ruta con P(fallo)>0, con su geometría, para el sorteo aleatorio en la interfaz (punto 7)."""
-    ids = [e for e in route_edges if PROB_FALLO.get(e, {}).get("p_total", 0) > 0]
+    ids = [e for e in route_edges if p_efectiva(e, fs) > 0]
     if not ids:
         return []
     cur.execute("SELECT id, ST_AsGeoJSON(geom) FROM infraestructura_aristas WHERE id = ANY(%s)", (ids,))
     geoms = {i: json.loads(g) for i, g in cur.fetchall()}
-    return [{"id": e, "p": PROB_FALLO[e]["p_total"],
-             "amenazas": {k: v for k, v in PROB_FALLO[e].items() if k != "p_total"},
+    return [{"id": e, "p": round(p_efectiva(e, fs), 4),
+             "amenazas": {k: round(v, 4) for k, v in probs_efectivas(e, fs).items()},
              "zonas": ZONAS.get(e, {}),
              "geom": geoms.get(e)} for e in ids]
 
@@ -852,11 +905,12 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
         diff_resil = round(m_resiliente["resiliencia_score"] - m_dijkstra["resiliencia_score"], 1)
 
         ruta_corredor = list(set(e_d1) | set(e_r1))
-        riesgo_ref = sum(PROB_FALLO.get(e, {}).get("p_total", 0) for e in e_r1)
+        fs = factor_sismo_aristas(cur, dest)
+        riesgo_ref = sum(p_efectiva(e, fs) for e in e_r1)
 
         # 5. Optimización LP — método Simplex (PuLP/CBC, equivalente a CPLEX/GUROBI)
         t_lp_start = time.time()
-        e_lp, info_lp = ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_corredor, riesgo_ref)
+        e_lp, info_lp = ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_corredor, riesgo_ref, fs)
         t_lp_ms = round((time.time() - t_lp_start) * 1000, 1)
         geom_lp, dist_lp = extraer_geometria_y_distancia(cur, e_lp, dest)
         m_lp = calcular_metricas(cur, e_lp, e_d2 if e_d2 else e_lp, dist_lp, dist_d2, dest, viento_max_kmh) if e_lp else {}
@@ -869,10 +923,10 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
         m_aco = calcular_metricas(cur, e_aco, e_d2 if e_d2 else e_aco, dist_aco, dist_d2, dest, viento_max_kmh) if e_aco else {}
 
         # 7. Simulación de fallas para cada técnica
-        sim_dijkstra = simular_fallas(cur, e_d1)
-        sim_resiliente = simular_fallas(cur, e_r1)
-        sim_lp = simular_fallas(cur, e_lp) if e_lp else {}
-        sim_aco = simular_fallas(cur, e_aco) if e_aco else {}
+        sim_dijkstra = simular_fallas(cur, e_d1, fs)
+        sim_resiliente = simular_fallas(cur, e_r1, fs)
+        sim_lp = simular_fallas(cur, e_lp, fs) if e_lp else {}
+        sim_aco = simular_fallas(cur, e_aco, fs) if e_aco else {}
 
         resultado = {
             "origen": orig,
@@ -895,10 +949,10 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
                 "diferencial_resiliencia": diff_resil,
             },
             "aristas_vulnerables": {
-                "dijkstra": aristas_vulnerables_geo(cur, e_d1),
-                "resiliente": aristas_vulnerables_geo(cur, e_r1),
-                "optimizacion_lp": aristas_vulnerables_geo(cur, e_lp),
-                "aco": aristas_vulnerables_geo(cur, e_aco),
+                "dijkstra": aristas_vulnerables_geo(cur, e_d1, fs),
+                "resiliente": aristas_vulnerables_geo(cur, e_r1, fs),
+                "optimizacion_lp": aristas_vulnerables_geo(cur, e_lp, fs),
+                "aco": aristas_vulnerables_geo(cur, e_aco, fs),
             },
             "simulacion_fallas": {
                 "dijkstra": sim_dijkstra,

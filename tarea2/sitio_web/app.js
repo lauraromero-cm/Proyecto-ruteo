@@ -632,32 +632,48 @@ document.getElementById("btn-sim").addEventListener("click", () => {
   capaFallas.clearLayers();
   const colores = { dijkstra: "#e74c3c", resiliente: "#2980b9", optimizacion_lp: "#9b59b6", aco: "#16a085" };
   const nombres = { dijkstra: "Dijkstra", resiliente: "Resiliente", optimizacion_lp: "LP Simplex", aco: "ACO" };
+  const etiquetaAm = { tendido: "línea de tendido", ignicion: "zona de ignición", areas_protegidas: "área protegida", firms: "foco FIRMS", viento: "viento", sismo_edificacion: "manzana con edificación antigua" };
+
+  // Un solo escenario: cada evento de amenaza (zona compartida o arista) se sortea una vez
+  // y es el mismo para las 4 rutas, de modo que la comparación entre técnicas es justa.
+  const sorteos = {};
+  const sortear = (clave) => (clave in sorteos ? sorteos[clave] : (sorteos[clave] = Math.random() * 100));
+  const aristasFalladas = {};
   let html = "";
   for (const k of Object.keys(nombres)) {
     const aristas = (ultimoResultado.aristas_vulnerables || {})[k] || [];
     const rutaExiste = ultimoResultado[k === "dijkstra" ? "dijkstra_1" : k === "resiliente" ? "resiliente_1" : k]?.geom;
     if (!rutaExiste) continue;
-    let fallas = 0;
-    const eventos = {};
+    const eventosFallidos = {};
+    let aristasFallan = 0;
     aristas.forEach(a => {
-      const motivos = [];
+      let falla = false;
       for (const [am, p] of Object.entries(a.amenazas)) {
         const zid = (a.zonas || {})[am];
-        const clave = zid !== undefined ? am + ":" + zid : null;
-        let r;
-        if (clave) { if (!(clave in eventos)) eventos[clave] = Math.random() * 100; r = eventos[clave]; }
-        else r = Math.random() * 100;
-        if (r < p * 100) motivos.push(`${am}: aleatorio ${r.toFixed(1)} &lt; umbral ${(p * 100).toFixed(1)}${clave ? " (evento compartido de la zona)" : ""}`);
+        const clave = zid !== undefined ? `${am}:${zid}` : `${am}:arista${a.id}`;
+        const r = sortear(clave);
+        const umbral = p * 100;
+        if (r < umbral) {
+          falla = true;
+          eventosFallidos[clave] = am;
+          const f = (aristasFalladas[a.id] = aristasFalladas[a.id] || { geom: a.geom, motivos: {}, tecnicas: new Set() });
+          f.motivos[clave] = `${etiquetaAm[am] || am}: aleatorio ${r.toFixed(1)} &lt; umbral ${umbral.toFixed(1)}`;
+          f.tecnicas.add(nombres[k]);
+        }
       }
-      if (motivos.length) {
-        fallas++;
-        if (a.geom) L.geoJSON(a.geom, { style: { color: "#000", weight: 8, opacity: 0.85 } })
-          .bindPopup(`<b>FALLA (${nombres[k]})</b><br>${motivos.join("<br>")}`)
-          .addTo(capaFallas);
-      }
+      if (falla) aristasFallan++;
     });
-    const ok = fallas === 0;
-    html += `<div style="color:${colores[k]}"><b>${nombres[k]}</b>: ${aristas.length} aristas expuestas, ${fallas} fallaron → ${ok ? "RUTA SOBREVIVE" : "RUTA INTERRUMPIDA"}</div>`;
+    const porTipo = {};
+    Object.values(eventosFallidos).forEach(am => { porTipo[am] = (porTipo[am] || 0) + 1; });
+    const detalle = Object.entries(porTipo).map(([am, n]) => `${n} ${etiquetaAm[am] || am}`).join(", ");
+    const ok = aristasFallan === 0;
+    html += `<div style="color:${colores[k]}; margin-bottom:3px;"><b>${nombres[k]}</b>: ${aristas.length} aristas expuestas → ` +
+      (ok ? "<b>RUTA SOBREVIVE</b>" : `<b>RUTA INTERRUMPIDA</b> (${Object.keys(eventosFallidos).length} evento(s): ${detalle}; ${aristasFallan} aristas afectadas)`) + "</div>";
   }
+  Object.values(aristasFalladas).forEach(f => {
+    if (f.geom) L.geoJSON(f.geom, { style: { color: "#000", weight: 8, opacity: 0.85 } })
+      .bindPopup(`<b>FALLA</b> — rutas afectadas: ${[...f.tecnicas].join(", ")}<br>${Object.values(f.motivos).join("<br>")}`)
+      .addTo(capaFallas);
+  });
   document.getElementById("sim-resultado").innerHTML = html || "Sin aristas con riesgo.";
 });
