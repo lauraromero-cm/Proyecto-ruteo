@@ -11,6 +11,8 @@ import json
 import time
 import random
 import heapq
+import re
+import tempfile
 import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import psycopg2
@@ -415,60 +417,56 @@ def extraer_geometria_y_distancia(cur, edge_ids, dest_info=None):
 # PROB. DE FALLO — carga en memoria al arrancar (Point 5 rúbrica)
 # =====================================================================
 PROB_FALLO = {}
+ZONAS = {}
 _prob_path = os.path.join(AQUI, "data", "probabilidad_fallo.json")
 if os.path.exists(_prob_path):
     with open(_prob_path, "r", encoding="utf-8") as _f:
         _pdata = json.load(_f)
         PROB_FALLO = {int(k): v for k, v in _pdata.get("aristas", {}).items()}
+        ZONAS = {int(k): v for k, v in _pdata.get("zonas", {}).items()}
     print(f"OK: Probabilidades de fallo cargadas — {len(PROB_FALLO)} aristas")
 else:
     print(f"AVISO: {_prob_path} no encontrado. Ejecutar generar_probabilidad_fallo.py primero.")
 
 
 # =====================================================================
-# OPTIMIZACIÓN FORMAL PuLP/CBC (Point 6.2 rúbrica — CPLEX/GUROBI)
+# OPTIMIZACIÓN FORMAL: Programación Lineal con Simplex (Point 6.2 rúbrica — CPLEX/GUROBI)
 # =====================================================================
-def _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh, max_edges=30000):
-    """Extrae un subgrafo acotado usando un bounding box expandido alrededor
-    de los nodos origen/destino, limitado a max_edges para que LP y ACO
-    sean computacionalmente viables."""
-    cur.execute("""
-        SELECT ST_X(n1.geom), ST_Y(n1.geom), ST_X(n2.geom), ST_Y(n2.geom)
-        FROM infraestructura_nodos n1, infraestructura_nodos n2
-        WHERE n1.id = %s AND n2.id = %s
-    """, (o_nodo, d_nodo))
-    row = cur.fetchone()
-    if not row:
+def _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None, max_edges=30000):
+    """Subgrafo acotado para LP y ACO: corredor alrededor de las rutas de referencia
+    (Dijkstra y resiliente), que garantiza que origen y destino queden conectados
+    aunque la ruta sea larga. Se reduce el ancho del corredor hasta tener <= max_edges
+    aristas, porque el LP y el ACO son computacionalmente costosos sobre el grafo completo."""
+    if not ruta_ref:
         return []
-    x1, y1, x2, y2 = row
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    margin = max(dx, dy, 0.01) * 0.5
-    xmin = min(x1, x2) - margin
-    xmax = max(x1, x2) + margin
-    ymin = min(y1, y2) - margin
-    ymax = max(y1, y2) + margin
-
-    cur.execute(
-        f"""SELECT a.id, a.source, a.target, {cost_resiliente_sql(dest, viento_max_kmh)} AS cost
-            FROM infraestructura_aristas a
-            WHERE a.geom && ST_MakeEnvelope(%s, %s, %s, %s, 4326)
-            LIMIT %s""",
-        (xmin, ymin, xmax, ymax, max_edges),
-    )
-    return cur.fetchall()
+    costo = cost_resiliente_sql(dest, viento_max_kmh)
+    ref_sql = "SELECT ST_Collect(geom) AS g FROM infraestructura_aristas WHERE id = ANY(%s)"
+    for buf in (0.03, 0.02, 0.012, 0.006, 0.003):
+        cur.execute(
+            f"""WITH ref AS ({ref_sql})
+                SELECT a.id, a.source, a.target, {costo} AS cost
+                FROM infraestructura_aristas a, ref
+                WHERE a.geom && ST_Expand(ref.g, %s) AND ST_DWithin(a.geom, ref.g, %s)""",
+            (list(ruta_ref), buf, buf),
+        )
+        rows = cur.fetchall()
+        if len(rows) <= max_edges:
+            return rows
+    return rows[:max_edges]
 
 
-def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh):
-    """Shortest path via LP (PuLP + CBC solver).
+def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None, riesgo_max=None):
+    """Camino más corto como Programación Lineal resuelta con Simplex (PuLP + CBC/Clp).
     Formulación: min Σ c_e·x_e  s.a. conservación de flujo en cada nodo.
-    Trabaja sobre un subgrafo acotado para viabilidad computacional."""
+    La matriz de incidencia nodo-arco es totalmente unimodular, por lo que el
+    vértice óptimo que entrega el Simplex ya es entero (x_e ∈ {0,1}).
+    Devuelve (aristas, info) con info = iteraciones Simplex, objetivo, tamaño del LP."""
     if pulp is None:
-        return [], 0.0
+        return [], {}
 
-    edges = _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh)
+    edges = _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref)
     if not edges:
-        return [], 0.0
+        return [], {}
 
     edge_map = {}
     nodos_set = set()
@@ -478,7 +476,7 @@ def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh):
         nodos_set.add(tgt)
 
     if o_nodo not in nodos_set or d_nodo not in nodos_set:
-        return [], 0.0
+        return [], {}
 
     prob_lp = pulp.LpProblem("shortest_path_resiliente", pulp.LpMinimize)
 
@@ -504,30 +502,46 @@ def ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh):
         else:
             prob_lp += flow_out - flow_in == 0
 
-    # Restricción de riesgo: la probabilidad acumulada de fallo de la ruta
-    # no puede superar un umbral (modelo de confiabilidad)
-    if PROB_FALLO:
+    # Restricción de riesgo: la probabilidad acumulada de fallo de la ruta no puede
+    # superar la de la mejor ruta de referencia (modelo de confiabilidad). Un tope fijo
+    # haría el LP infactible en rutas largas, donde la suma de P crece con la distancia.
+    if PROB_FALLO and riesgo_max is not None:
         prob_lp += pulp.lpSum(
             PROB_FALLO.get(eid, {}).get("p_total", 0) * x[eid]
             for eid in edge_map
-        ) <= 5.0, "max_riesgo_acumulado"
+        ) <= riesgo_max + 1e-6, "max_riesgo_acumulado"
 
-    prob_lp.solve(pulp.PULP_CBC_CMD(msg=0, timeLimit=15))
+    log_path = tempfile.mktemp(suffix=".cbc.log")
+    try:
+        prob_lp.solve(pulp.PULP_CBC_CMD(msg=True, timeLimit=15, logPath=log_path))
+        with open(log_path, encoding="utf-8", errors="ignore") as f:
+            log = f.read()
+    finally:
+        if os.path.exists(log_path):
+            os.remove(log_path)
 
     if prob_lp.status != 1:
-        return [], 0.0
+        return [], {}
+
+    iters = re.findall(r"Optimal objective\s+\S+\s+-\s+(\d+)\s+iterations", log)
+    info = {
+        "iteraciones_simplex": int(iters[-1]) if iters else None,
+        "objetivo": round(pulp.value(prob_lp.objective), 2),
+        "variables": len(edge_map),
+        "restricciones": len(prob_lp.constraints),
+    }
 
     path_edges = [eid for eid in edge_map if pulp.value(x[eid]) is not None and pulp.value(x[eid]) > 0.5]
-    return path_edges, 0.0
+    return path_edges, info
 
 
 # =====================================================================
 # METAHEURÍSTICA — Ant Colony Optimization (Point 6.4 rúbrica)
 # =====================================================================
-def ruta_aco(cur, o_nodo, d_nodo, dest, viento_max_kmh,
+def ruta_aco(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref=None,
              n_ants=30, n_iter=40, alpha=1.0, beta=3.0, rho=0.3, q=100.0):
     """ACO para shortest path resiliente sobre subgrafo acotado."""
-    rows = _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh)
+    rows = _subgrafo_acotado(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_ref)
     if not rows:
         return [], 0.0
 
@@ -678,49 +692,76 @@ def _ant_walk(adj, origin, target, pheromone, edge_cost,
 # =====================================================================
 # SIMULACIÓN DE FALLAS ALEATORIAS (Point 7 rúbrica)
 # =====================================================================
-def simular_fallas(cur, route_edges, n_sim=100):
-    """Simulación Monte Carlo: para cada arista de la ruta, genera random(0,100)
-    y la compara con P(fallo)×100. Reporta cuántas simulaciones sobrevive la ruta."""
-    if not route_edges or not PROB_FALLO:
-        return {"simulaciones": n_sim, "sobrevive": n_sim, "tasa_supervivencia": 100.0,
-                "aristas_vulnerables": 0, "detalle_fallas": []}
+def _sortear_aristas(edge_ids, eventos=None):
+    """Un escenario: devuelve {arista_id: [(amenaza, aleatorio, umbral)]} de las aristas que fallan.
+    Cada amenaza se sortea con random(0,100) contra P*100. Las amenazas espaciales comparten
+    un sorteo por evento/zona (todas las aristas de la misma zona de ignición, área protegida,
+    foco o línea de tendido fallan juntas); viento y sismo se sortean por arista."""
+    eventos = {} if eventos is None else eventos
+    fallan = {}
+    for eid in edge_ids:
+        for am, p in PROB_FALLO.get(eid, {}).items():
+            if am == "p_total" or p <= 0:
+                continue
+            zid = ZONAS.get(eid, {}).get(am)
+            if zid is not None:
+                if (am, zid) not in eventos:
+                    eventos[(am, zid)] = random.uniform(0, 100)
+                r = eventos[(am, zid)]
+            else:
+                r = random.uniform(0, 100)
+            if r < p * 100:
+                fallan.setdefault(eid, []).append((am, round(r, 1), round(p * 100, 1)))
+    return fallan
 
-    edge_probs = []
-    for eid in route_edges:
-        p = PROB_FALLO.get(eid, {}).get("p_total", 0.0)
-        if p > 0:
-            edge_probs.append((eid, p))
+
+def simular_fallas(cur, route_edges, n_sim=100):
+    """Monte Carlo: n_sim escenarios de sorteo aleatorio (ver _sortear_aristas).
+    La ruta sobrevive a un escenario si ninguna de sus aristas falla."""
+    expuestas = [e for e in (route_edges or []) if PROB_FALLO.get(e, {}).get("p_total", 0) > 0]
+    if not expuestas:
+        return {"simulaciones": n_sim, "sobrevive": n_sim, "tasa_supervivencia": 100.0,
+                "aristas_vulnerables": 0, "fallas_promedio": 0.0, "detalle_fallas": []}
 
     sobrevive = 0
+    total_fallas = 0
     fallas_por_arista = {}
-
     for _ in range(n_sim):
-        ruta_ok = True
-        for eid, p in edge_probs:
-            r = random.uniform(0, 100)
-            if r < p * 100:
-                ruta_ok = False
-                fallas_por_arista[eid] = fallas_por_arista.get(eid, 0) + 1
-
-        if ruta_ok:
+        fallan = _sortear_aristas(expuestas)
+        total_fallas += len(fallan)
+        if not fallan:
             sobrevive += 1
+        for eid in fallan:
+            fallas_por_arista[eid] = fallas_por_arista.get(eid, 0) + 1
 
-    detalle = []
-    for eid, cnt in sorted(fallas_por_arista.items(), key=lambda x: -x[1])[:10]:
-        detalle.append({
-            "arista_id": eid,
-            "p_fallo": round(PROB_FALLO.get(eid, {}).get("p_total", 0), 4),
-            "fallas_en_sim": cnt,
-            "pct_falla": round(cnt / n_sim * 100, 1),
-        })
+    detalle = [{
+        "arista_id": eid,
+        "p_fallo": round(PROB_FALLO[eid]["p_total"], 4),
+        "fallas_en_sim": cnt,
+        "pct_falla": round(cnt / n_sim * 100, 1),
+    } for eid, cnt in sorted(fallas_por_arista.items(), key=lambda x: -x[1])[:10]]
 
     return {
         "simulaciones": n_sim,
         "sobrevive": sobrevive,
         "tasa_supervivencia": round(sobrevive / n_sim * 100, 1),
-        "aristas_vulnerables": len(edge_probs),
+        "aristas_vulnerables": len(expuestas),
+        "fallas_promedio": round(total_fallas / n_sim, 2),
         "detalle_fallas": detalle,
     }
+
+
+def aristas_vulnerables_geo(cur, route_edges):
+    """Aristas de la ruta con P(fallo)>0, con su geometría, para el sorteo aleatorio en la interfaz (punto 7)."""
+    ids = [e for e in route_edges if PROB_FALLO.get(e, {}).get("p_total", 0) > 0]
+    if not ids:
+        return []
+    cur.execute("SELECT id, ST_AsGeoJSON(geom) FROM infraestructura_aristas WHERE id = ANY(%s)", (ids,))
+    geoms = {i: json.loads(g) for i, g in cur.fetchall()}
+    return [{"id": e, "p": PROB_FALLO[e]["p_total"],
+             "amenazas": {k: v for k, v in PROB_FALLO[e].items() if k != "p_total"},
+             "zonas": ZONAS.get(e, {}),
+             "geom": geoms.get(e)} for e in ids]
 
 
 def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_kmh=None):
@@ -810,16 +851,19 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
         m_resiliente = calcular_metricas(cur, e_r1, e_r2 if e_r2 else e_r1, dist_r1, dist_r2, dest, viento_max_kmh)
         diff_resil = round(m_resiliente["resiliencia_score"] - m_dijkstra["resiliencia_score"], 1)
 
-        # 5. Optimización LP (PuLP/CBC — CPLEX/GUROBI)
+        ruta_corredor = list(set(e_d1) | set(e_r1))
+        riesgo_ref = sum(PROB_FALLO.get(e, {}).get("p_total", 0) for e in e_r1)
+
+        # 5. Optimización LP — método Simplex (PuLP/CBC, equivalente a CPLEX/GUROBI)
         t_lp_start = time.time()
-        e_lp, _ = ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh)
+        e_lp, info_lp = ruta_optimizacion_lp(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_corredor, riesgo_ref)
         t_lp_ms = round((time.time() - t_lp_start) * 1000, 1)
         geom_lp, dist_lp = extraer_geometria_y_distancia(cur, e_lp, dest)
         m_lp = calcular_metricas(cur, e_lp, e_d2 if e_d2 else e_lp, dist_lp, dist_d2, dest, viento_max_kmh) if e_lp else {}
 
         # 6. Metaheurística ACO
         t_aco_start = time.time()
-        e_aco, _ = ruta_aco(cur, o_nodo, d_nodo, dest, viento_max_kmh)
+        e_aco, _ = ruta_aco(cur, o_nodo, d_nodo, dest, viento_max_kmh, ruta_corredor)
         t_aco_ms = round((time.time() - t_aco_start) * 1000, 1)
         geom_aco, dist_aco = extraer_geometria_y_distancia(cur, e_aco, dest)
         m_aco = calcular_metricas(cur, e_aco, e_d2 if e_d2 else e_aco, dist_aco, dist_d2, dest, viento_max_kmh) if e_aco else {}
@@ -841,14 +885,20 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
             "dijkstra_2": {"distancia_m": round(dist_d2, 1), "tramos": len(e_d2), "geom": geom_d2},
             "resiliente_1": {"distancia_m": round(dist_r1, 1), "tramos": len(e_r1), "geom": geom_r1},
             "resiliente_2": {"distancia_m": round(dist_r2, 1), "tramos": len(e_r2), "geom": geom_r2},
-            "optimizacion_lp": {"distancia_m": round(dist_lp, 1), "tramos": len(e_lp), "geom": geom_lp, "algoritmo": "PuLP/CBC (Programación Lineal Entera)", "tiempo_ms": t_lp_ms},
+            "optimizacion_lp": {"distancia_m": round(dist_lp, 1), "tramos": len(e_lp), "geom": geom_lp, "algoritmo": "Programación Lineal — método Simplex (PuLP/CBC)", "simplex": info_lp, "tiempo_ms": t_lp_ms},
             "aco": {"distancia_m": round(dist_aco, 1), "tramos": len(e_aco), "geom": geom_aco, "algoritmo": "Ant Colony Optimization (20 hormigas, 30 iter)", "tiempo_ms": t_aco_ms},
             "metricas": {
                 "dijkstra": {**m_dijkstra, "algoritmo": "pgr_dijkstra (distancia pura)", "tiempo_ms": t_dijkstra_ms},
                 "resiliente": {**m_resiliente, "algoritmo": "pgr_dijkstra (cost_resiliente multi-amenaza)", "tiempo_ms": t_resil_ms},
-                "optimizacion_lp": {**m_lp, "algoritmo": "PuLP/CBC (PL Entera, min costo s.a. flujo)", "tiempo_ms": t_lp_ms} if m_lp else {},
+                "optimizacion_lp": {**m_lp, "algoritmo": "Simplex (PL, min costo s.a. conservación de flujo)", "simplex": info_lp, "tiempo_ms": t_lp_ms} if m_lp else {},
                 "aco": {**m_aco, "algoritmo": "ACO (Ant Colony Optimization)", "tiempo_ms": t_aco_ms} if m_aco else {},
                 "diferencial_resiliencia": diff_resil,
+            },
+            "aristas_vulnerables": {
+                "dijkstra": aristas_vulnerables_geo(cur, e_d1),
+                "resiliente": aristas_vulnerables_geo(cur, e_r1),
+                "optimizacion_lp": aristas_vulnerables_geo(cur, e_lp),
+                "aco": aristas_vulnerables_geo(cur, e_aco),
             },
             "simulacion_fallas": {
                 "dijkstra": sim_dijkstra,

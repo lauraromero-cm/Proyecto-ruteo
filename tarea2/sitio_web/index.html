@@ -56,6 +56,7 @@
     text-align: center; margin-top: 8px; display: block; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
   
+  .leg { font-size: 10.5px; color: #4a5568; margin: -2px 0 6px 38px; }
   .btn-popup {
     display: inline-block; margin-top: 6px; padding: 4px 8px; font-size: 11px;
     font-weight: 600; color: #fff; border: none; border-radius: 4px; cursor: pointer;
@@ -110,7 +111,7 @@
         <th>Métrica</th>
         <th style="color:#e74c3c;">Dijkstra</th>
         <th style="color:#2980b9;">Resiliente</th>
-        <th style="color:#9b59b6;">Optim. LP</th>
+        <th style="color:#9b59b6;">LP Simplex</th>
         <th style="color:#16a085;">ACO</th>
       </tr>
     </thead>
@@ -162,19 +163,28 @@
     <span><span class="line-swatch" style="background:#e74c3c;"></span><span class="line-swatch" style="background:#e67e22;"></span> Dijkstra (distancia pura, k=2)</span>
     <input type="checkbox" id="chk-capa-dijkstra" checked>
   </div>
+  <div class="leg" id="leg-dijkstra">—</div>
   <div class="layer-item">
     <span><span class="line-swatch" style="background:#2980b9;"></span><span class="line-swatch" style="background:#27ae60;"></span> Resiliente (multi-amenaza, k=2)</span>
     <input type="checkbox" id="chk-capa-resil" checked>
   </div>
+  <div class="leg" id="leg-resil">—</div>
   <div class="layer-item">
-    <span><span class="line-swatch" style="background:#9b59b6;"></span> Optimización LP (PuLP/CBC)</span>
+    <span><span class="line-swatch" style="background:#9b59b6;"></span> Programación Lineal — Simplex (PuLP/CBC)</span>
     <input type="checkbox" id="chk-capa-lp" checked>
   </div>
+  <div class="leg" id="leg-lp">—</div>
   <div class="layer-item">
     <span><span class="line-swatch" style="background:#16a085;"></span> Metaheurística ACO (Ant Colony)</span>
     <input type="checkbox" id="chk-capa-aco" checked>
   </div>
-  <div class="section-title">5. Capas de Datos y Amenazas</div>
+  <div class="leg" id="leg-aco">—</div>
+  <div class="section-title">5. Simulación de fallas aleatorias</div>
+  <div style="font-size:11px; color:#4a5568; margin-bottom:6px;">Por cada arista con P(fallo) &gt; 0 se sortea un número aleatorio en [0,100]; si es menor que P×100, la arista falla.</div>
+  <button id="btn-sim" style="width:100%; padding:7px; border:none; border-radius:6px; background:#c0392b; color:#fff; font-weight:700; cursor:pointer;">Sortear fallas</button>
+  <div id="sim-resultado" style="font-size:11.5px; margin-top:6px;"></div>
+
+  <div class="section-title">6. Capas de Datos y Amenazas</div>
   <div class="layer-item">
     <span><span class="swatch" style="background:#c0392b;"></span> Cuarteles Carabineros (29 bases)</span>
     <input type="checkbox" id="chk-capa-carabineros" checked>

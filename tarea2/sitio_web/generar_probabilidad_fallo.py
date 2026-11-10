@@ -28,6 +28,7 @@ Salida: sitio_web/data/probabilidad_fallo.json
     },
     "resumen": { ... }
   }
+"nodos": {"<id>": P_total del nodo} (máx. de sus aristas incidentes).
 Solo incluye aristas con P > 0 en al menos una amenaza.
 """
 import json
@@ -51,7 +52,15 @@ cur = conn.cursor()
 
 prob = {}  # {arista_id: {amenaza: prob}}
 
-def agregar(arista_id, amenaza, p):
+# Eventos de amenaza compartidos: las amenazas espaciales (zona de ignición, área
+# protegida, foco FIRMS, línea de tendido) son UN solo evento que afecta a todas las
+# aristas que toca, no un evento independiente por arista. zonas[arista][amenaza] = id
+# del evento; al simular, todas las aristas del mismo evento fallan o no juntas.
+zonas = {}
+
+def agregar(arista_id, amenaza, p, zona=None):
+    if zona is not None:
+        zonas.setdefault(int(arista_id), {})[amenaza] = int(zona)
     aid = int(arista_id)
     if aid not in prob:
         prob[aid] = {}
@@ -61,14 +70,15 @@ def agregar(arista_id, amenaza, p):
 # 1. Tendido eléctrico — P = 0.35 para aristas dentro de buffer 20m
 print("Tendido eléctrico...")
 cur.execute("""
-    SELECT DISTINCT a.id
+    SELECT a.id, MIN(t.id)
     FROM infraestructura_aristas a
     JOIN metadata_tendido_electrico t
       ON a.geom && ST_Expand(t.geom, 0.0002) AND ST_DWithin(a.geom, t.geom, 0.0002)
+    GROUP BY a.id
 """)
 cnt = 0
-for (aid,) in cur.fetchall():
-    agregar(aid, "tendido", 0.35)
+for aid, zid in cur.fetchall():
+    agregar(aid, "tendido", 0.35, zid)
     cnt += 1
 print(f"  {cnt} aristas afectadas")
 
@@ -76,15 +86,15 @@ print(f"  {cnt} aristas afectadas")
 # 2. CONAF ignición — P = decil/100
 print("CONAF ignición...")
 cur.execute("""
-    SELECT a.id, MAX(i.label)
+    SELECT DISTINCT ON (a.id) a.id, i.label, i.id
     FROM infraestructura_aristas a
     JOIN amenaza_conaf_ignicion i ON a.geom && i.geom AND ST_Intersects(a.geom, i.geom)
-    GROUP BY a.id
+    ORDER BY a.id, i.label DESC
 """)
 cnt = 0
-for aid, label in cur.fetchall():
+for aid, label, zid in cur.fetchall():
     p = min(1.0, float(label) / 100.0)
-    agregar(aid, "ignicion", p)
+    agregar(aid, "ignicion", p, zid)
     cnt += 1
 print(f"  {cnt} aristas afectadas")
 
@@ -92,13 +102,14 @@ print(f"  {cnt} aristas afectadas")
 # 3. Áreas protegidas SNASPE — P = 0.95
 print("Áreas protegidas SNASPE...")
 cur.execute("""
-    SELECT DISTINCT a.id
+    SELECT DISTINCT ON (a.id) a.id, asp.id
     FROM infraestructura_aristas a
     JOIN amenaza_conaf_areas_protegidas asp ON a.geom && asp.geom AND ST_Intersects(a.geom, asp.geom)
+    ORDER BY a.id, asp.id
 """)
 cnt = 0
-for (aid,) in cur.fetchall():
-    agregar(aid, "areas_protegidas", 0.95)
+for aid, zid in cur.fetchall():
+    agregar(aid, "areas_protegidas", 0.95, zid)
     cnt += 1
 print(f"  {cnt} aristas afectadas")
 
@@ -106,15 +117,16 @@ print(f"  {cnt} aristas afectadas")
 # 4. FIRMS focos activos — P = 0.80 dentro de buffer 500m
 print("FIRMS focos activos...")
 cur.execute("""
-    SELECT DISTINCT a.id
+    SELECT DISTINCT ON (a.id) a.id, f.id
     FROM infraestructura_aristas a
     JOIN amenaza_firms f ON f.dentro_chile
       AND a.geom && ST_Expand(f.geom, 0.005)
       AND ST_DWithin(a.geom, f.geom, 0.005)
+    ORDER BY a.id, f.id
 """)
 cnt = 0
-for (aid,) in cur.fetchall():
-    agregar(aid, "firms", 0.80)
+for aid, zid in cur.fetchall():
+    agregar(aid, "firms", 0.80, zid)
     cnt += 1
 print(f"  {cnt} aristas afectadas")
 
@@ -138,15 +150,17 @@ print(f"  {cnt} aristas afectadas")
 # 6. Sismo + edificación antigua — P = indice_antiguedad × 0.5
 print("Sismo / edificación antigua...")
 cur.execute("""
-    SELECT a.id, a.factor_antiguedad_zona
+    SELECT DISTINCT ON (a.id) a.id, m.indice_antiguedad, m.id
     FROM infraestructura_aristas a
-    WHERE a.factor_antiguedad_zona > 0
+    JOIN metadata_poblacion m ON a.geom && m.geom AND ST_Intersects(a.geom, m.geom)
+    WHERE m.indice_antiguedad > 0
+    ORDER BY a.id, m.indice_antiguedad DESC
 """)
 cnt = 0
-for aid, faz in cur.fetchall():
+for aid, faz, zid in cur.fetchall():
     p = min(1.0, float(faz) * 0.5)
     if p > 0.01:
-        agregar(aid, "sismo_edificacion", p)
+        agregar(aid, "sismo_edificacion", p, zid)
         cnt += 1
 print(f"  {cnt} aristas afectadas")
 
@@ -158,6 +172,16 @@ for aid in prob:
     for p in ps:
         p_total *= (1.0 - p)
     prob[aid]["p_total"] = round(1.0 - p_total, 4)
+
+
+# Nodos: P(nodo) = max de p_total de sus aristas incidentes. Un nodo (intersección)
+# queda inutilizable si cualquiera de los tramos que concurren a él está bloqueado
+# por la amenaza, por lo que hereda la peor probabilidad entre ellos.
+cur.execute("SELECT id, source, target FROM infraestructura_aristas WHERE id = ANY(%s)", (list(prob.keys()),))
+prob_nodos = {}
+for aid, src, tgt in cur.fetchall():
+    for n in (src, tgt):
+        prob_nodos[n] = max(prob_nodos.get(n, 0.0), prob[aid]["p_total"])
 
 
 # Resumen
@@ -190,7 +214,11 @@ salida = {
         "p_total": "1 - Π(1-P_i) (combinación independiente)",
     },
     "resumen": resumen,
+    "modelo_nodos": "P(nodo) = max P_total de aristas incidentes",
+    "modelo_simulacion": "Amenazas espaciales (tendido, ignicion, areas_protegidas, firms, sismo_edificacion por manzana): un sorteo por evento/zona compartido por todas sus aristas. viento: sorteo independiente por arista.",
     "aristas": {str(k): v for k, v in prob.items()},
+    "zonas": {str(k): v for k, v in zonas.items()},
+    "nodos": {str(k): round(v, 4) for k, v in prob_nodos.items()},
 }
 
 outpath = os.path.join(AQUI, "data", "probabilidad_fallo.json")
@@ -199,6 +227,7 @@ with open(outpath, "w", encoding="utf-8") as f:
     json.dump(salida, f, ensure_ascii=False, indent=2)
 
 print(f"\nGenerado {outpath}")
+print(f"  {len(prob_nodos)} nodos con P(fallo) > 0")
 print(f"  {len(prob)} aristas con P(fallo) > 0 de {total_aristas} totales ({resumen['pct_aristas_con_riesgo']}%)")
 for am in amenazas:
     r = resumen[am]

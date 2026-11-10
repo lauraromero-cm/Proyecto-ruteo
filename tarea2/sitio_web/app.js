@@ -272,7 +272,13 @@ function actualizarRuta(origenKey, destinoKey) {
     });
 }
 
+let ultimoResultado = null;
+const capaFallas = L.featureGroup().addTo(map);
+
 function renderizarRuta(rutaData) {
+  ultimoResultado = rutaData;
+  capaFallas.clearLayers();
+  const _sr = document.getElementById("sim-resultado"); if (_sr) _sr.innerHTML = "";
   if (!rutaData) return;
 
   // Limpiar capas previas
@@ -315,11 +321,11 @@ function renderizarRuta(rutaData) {
     capasRutas.resiliente.addLayer(r2);
   }
 
-  // 3. Ruta Optimización LP (PuLP/CBC)
+  // 3. Ruta Programación Lineal (Simplex)
   if (rutaData.optimizacion_lp && rutaData.optimizacion_lp.geom) {
     const lp = L.geoJSON(rutaData.optimizacion_lp.geom, {
       style: { color: "#9b59b6", weight: 4.5, opacity: 0.85, dashArray: "8, 4" },
-    }).bindPopup(`<b>Optimización LP (PuLP/CBC)</b><br>Distancia: ${Math.round(rutaData.optimizacion_lp.distancia_m)} m<br>Tramos: ${rutaData.optimizacion_lp.tramos}<br><i>Programación Lineal Entera — mín costo s.a. flujo</i>`);
+    }).bindPopup(`<b>Programación Lineal — Simplex</b><br>Distancia: ${Math.round(rutaData.optimizacion_lp.distancia_m)} m<br>Tramos: ${rutaData.optimizacion_lp.tramos}<br>Iteraciones Simplex: ${rutaData.optimizacion_lp.simplex?.iteraciones_simplex ?? "—"}<br>Variables/restricciones: ${rutaData.optimizacion_lp.simplex?.variables ?? "—"} / ${rutaData.optimizacion_lp.simplex?.restricciones ?? "—"}<br><i>mín costo s.a. conservación de flujo</i>`);
     capasRutas.optimizacion_lp.addLayer(lp);
   }
 
@@ -402,18 +408,25 @@ function renderizarRuta(rutaData) {
     ["m-dist-aco","m-riesgo-aco","m-resil-aco","m-time-aco","m-sim-aco"].forEach(id => { document.getElementById(id).innerText = "—"; });
   }
 
+  // Leyenda: algoritmo + tiempo de cómputo + resiliencia (punto 8)
+  [["dijkstra","dijkstra","Dijkstra (distancia)"],["resil","resiliente","pgr_dijkstra multi-amenaza"],["lp","optimizacion_lp","Simplex (PL)"],["aco","aco","Ant Colony"]].forEach(([id,k,nom]) => {
+    const el = document.getElementById("leg-" + id);
+    const t = m[k];
+    el.innerText = t && t.resiliencia_score !== undefined ? `${nom} · ${t.tiempo_ms} ms · R = ${t.resiliencia_score}%` : `${nom} · sin ruta`;
+  });
+
   // Badge: mejor técnica
   const tecnicas = [
     { nombre: "Dijkstra", score: m.dijkstra?.resiliencia_score || 0 },
     { nombre: "Resiliente", score: m.resiliente?.resiliencia_score || 0 },
-    { nombre: "Optim. LP", score: m.optimizacion_lp?.resiliencia_score || 0 },
+    { nombre: "LP Simplex", score: m.optimizacion_lp?.resiliencia_score || 0 },
     { nombre: "ACO", score: m.aco?.resiliencia_score || 0 },
   ].filter(t => t.score > 0);
   const badge = document.getElementById("badge-diferencial");
   if (tecnicas.length > 0) {
     tecnicas.sort((a, b) => b.score - a.score);
     const mejor = tecnicas[0];
-    badge.innerText = `Mejor técnica: ${mejor.nombre} (R = ${mejor.score}%)`;
+    badge.innerText = `Técnica más resiliente: ${mejor.nombre} (R = ${mejor.score}%)`;
     badge.style.background = "#ebfbee";
     badge.style.color = "#2b8a3e";
     badge.style.borderColor = "#b2f2bb";
@@ -611,3 +624,40 @@ if (rngViento) {
     actualizarRuta(origenActivo, destinoActivo);
   });
 }
+
+
+// Punto 7: sorteo aleatorio de fallas (random 0-100 vs umbral P(fallo)*100)
+document.getElementById("btn-sim").addEventListener("click", () => {
+  if (!ultimoResultado) return;
+  capaFallas.clearLayers();
+  const colores = { dijkstra: "#e74c3c", resiliente: "#2980b9", optimizacion_lp: "#9b59b6", aco: "#16a085" };
+  const nombres = { dijkstra: "Dijkstra", resiliente: "Resiliente", optimizacion_lp: "LP Simplex", aco: "ACO" };
+  let html = "";
+  for (const k of Object.keys(nombres)) {
+    const aristas = (ultimoResultado.aristas_vulnerables || {})[k] || [];
+    const rutaExiste = ultimoResultado[k === "dijkstra" ? "dijkstra_1" : k === "resiliente" ? "resiliente_1" : k]?.geom;
+    if (!rutaExiste) continue;
+    let fallas = 0;
+    const eventos = {};
+    aristas.forEach(a => {
+      const motivos = [];
+      for (const [am, p] of Object.entries(a.amenazas)) {
+        const zid = (a.zonas || {})[am];
+        const clave = zid !== undefined ? am + ":" + zid : null;
+        let r;
+        if (clave) { if (!(clave in eventos)) eventos[clave] = Math.random() * 100; r = eventos[clave]; }
+        else r = Math.random() * 100;
+        if (r < p * 100) motivos.push(`${am}: aleatorio ${r.toFixed(1)} &lt; umbral ${(p * 100).toFixed(1)}${clave ? " (evento compartido de la zona)" : ""}`);
+      }
+      if (motivos.length) {
+        fallas++;
+        if (a.geom) L.geoJSON(a.geom, { style: { color: "#000", weight: 8, opacity: 0.85 } })
+          .bindPopup(`<b>FALLA (${nombres[k]})</b><br>${motivos.join("<br>")}`)
+          .addTo(capaFallas);
+      }
+    });
+    const ok = fallas === 0;
+    html += `<div style="color:${colores[k]}"><b>${nombres[k]}</b>: ${aristas.length} aristas expuestas, ${fallas} fallaron → ${ok ? "RUTA SOBREVIVE" : "RUTA INTERRUMPIDA"}</div>`;
+  }
+  document.getElementById("sim-resultado").innerHTML = html || "Sin aristas con riesgo.";
+});
