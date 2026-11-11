@@ -747,6 +747,22 @@ def p_efectiva(eid, fs):
     return 1.0 - prod
 
 
+def supervivencia_exacta(route_edges, fs):
+    """Resiliencia de una ruta: P(ninguna amenaza ocurre en ella) = Π(1 - P_evento) sobre los
+    eventos DISTINTOS que cruza (zona de ignición, área protegida, foco, línea de tendido y manzana
+    cuentan una vez; viento por arista). Misma fórmula para las 4 técnicas, por lo que son comparables,
+    y es el valor al que converge la simulación Monte Carlo."""
+    eventos = {}
+    for eid in route_edges or []:
+        for am, p in probs_efectivas(eid, fs).items():
+            zid = ZONAS.get(eid, {}).get(am)
+            eventos[(am, zid if zid is not None else ("e", eid))] = p
+    sv = 1.0
+    for p in eventos.values():
+        sv *= 1.0 - p
+    return sv
+
+
 def _sortear_aristas(edge_ids, fs, eventos=None):
     """Un escenario: devuelve {arista_id: [(amenaza, aleatorio, umbral)]} de las aristas que fallan.
     Cada amenaza se sortea con random(0,100) contra P*100. Las amenazas espaciales comparten
@@ -928,6 +944,14 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
         sim_lp = simular_fallas(cur, e_lp, fs) if e_lp else {}
         sim_aco = simular_fallas(cur, e_aco, fs) if e_aco else {}
 
+        # Resiliencia = supervivencia exacta (comparable entre técnicas). La métrica anterior
+        # (disyunción x seguridad, relativa a la dupla de cada técnica) se conserva como dato secundario.
+        for m_t, e_t in ((m_dijkstra, e_d1), (m_resiliente, e_r1), (m_lp, e_lp), (m_aco, e_aco)):
+            if m_t and e_t:
+                m_t["resiliencia_disyuncion"] = m_t["resiliencia_score"]
+                m_t["resiliencia_score"] = round(supervivencia_exacta(e_t, fs) * 100.0, 1)
+        diff_resil = round(m_resiliente["resiliencia_score"] - m_dijkstra["resiliencia_score"], 1)
+
         resultado = {
             "origen": orig,
             "destino": dest,
@@ -940,7 +964,7 @@ def calcular_rutas_par(origen_key, destino_key, lat=None, lon=None, viento_max_k
             "resiliente_1": {"distancia_m": round(dist_r1, 1), "tramos": len(e_r1), "geom": geom_r1},
             "resiliente_2": {"distancia_m": round(dist_r2, 1), "tramos": len(e_r2), "geom": geom_r2},
             "optimizacion_lp": {"distancia_m": round(dist_lp, 1), "tramos": len(e_lp), "geom": geom_lp, "algoritmo": "Programación Lineal — método Simplex (PuLP/CBC)", "simplex": info_lp, "tiempo_ms": t_lp_ms},
-            "aco": {"distancia_m": round(dist_aco, 1), "tramos": len(e_aco), "geom": geom_aco, "algoritmo": "Ant Colony Optimization (20 hormigas, 30 iter)", "tiempo_ms": t_aco_ms},
+            "aco": {"distancia_m": round(dist_aco, 1), "tramos": len(e_aco), "geom": geom_aco, "algoritmo": "Ant Colony Optimization (30 hormigas, 40 iteraciones)", "tiempo_ms": t_aco_ms},
             "metricas": {
                 "dijkstra": {**m_dijkstra, "algoritmo": "pgr_dijkstra (distancia pura)", "tiempo_ms": t_dijkstra_ms},
                 "resiliente": {**m_resiliente, "algoritmo": "pgr_dijkstra (cost_resiliente multi-amenaza)", "tiempo_ms": t_resil_ms},

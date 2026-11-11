@@ -1,0 +1,156 @@
+{
+  "supervivencia_dijkstra_pct": 20.99,
+  "max_extra_pct": 15.0,
+  "resultados": [
+    {
+      "peso_tendido": 1.2,
+      "peso_ignicion": 1.1,
+      "supervivencia_pct": 32.27,
+      "distancia_extra_pct": 4.66
+    },
+    {
+      "peso_tendido": 1.2,
+      "peso_ignicion": 1.5,
+      "supervivencia_pct": 32.08,
+      "distancia_extra_pct": 6.3
+    },
+    {
+      "peso_tendido": 1.2,
+      "peso_ignicion": 2.0,
+      "supervivencia_pct": 31.81,
+      "distancia_extra_pct": 8.05
+    },
+    {
+      "peso_tendido": 1.2,
+      "peso_ignicion": 3.0,
+      "supervivencia_pct": 31.81,
+      "distancia_extra_pct": 8.21
+    },
+    {
+      "peso_tendido": 1.2,
+      "peso_ignicion": 5.0,
+      "supervivencia_pct": 31.35,
+      "distancia_extra_pct": 8.35
+    },
+    {
+      "peso_tendido": 2.0,
+      "peso_ignicion": 1.1,
+      "supervivencia_pct": 31.75,
+      "distancia_extra_pct": 5.74
+    },
+    {
+      "peso_tendido": 2.0,
+      "peso_ignicion": 1.5,
+      "supervivencia_pct": 31.33,
+      "distancia_extra_pct": 8.0
+    },
+    {
+      "peso_tendido": 2.0,
+      "peso_ignicion": 2.0,
+      "supervivencia_pct": 31.33,
+      "distancia_extra_pct": 8.19
+    },
+    {
+      "peso_tendido": 2.0,
+      "peso_ignicion": 3.0,
+      "supervivencia_pct": 31.28,
+      "distancia_extra_pct": 8.81
+    },
+    {
+      "peso_tendido": 2.0,
+      "peso_ignicion": 5.0,
+      "supervivencia_pct": 31.31,
+      "distancia_extra_pct": 8.88
+    },
+    {
+      "peso_tendido": 5.0,
+      "peso_ignicion": 1.1,
+      "supervivencia_pct": 32.44,
+      "distancia_extra_pct": 6.92
+    },
+    {
+      "peso_tendido": 5.0,
+      "peso_ignicion": 1.5,
+      "supervivencia_pct": 32.24,
+      "distancia_extra_pct": 8.53
+    },
+    {
+      "peso_tendido": 5.0,
+      "peso_ignicion": 2.0,
+      "supervivencia_pct": 31.18,
+      "distancia_extra_pct": 8.82
+    },
+    {
+      "peso_tendido": 5.0,
+      "peso_ignicion": 3.0,
+      "supervivencia_pct": 31.18,
+      "distancia_extra_pct": 8.82
+    },
+    {
+      "peso_tendido": 5.0,
+      "peso_ignicion": 5.0,
+      "supervivencia_pct": 31.18,
+      "distancia_extra_pct": 8.91
+    },
+    {
+      "peso_tendido": 20.0,
+      "peso_ignicion": 1.1,
+      "supervivencia_pct": 36.28,
+      "distancia_extra_pct": 17.41
+    },
+    {
+      "peso_tendido": 20.0,
+      "peso_ignicion": 1.5,
+      "supervivencia_pct": 35.21,
+      "distancia_extra_pct": 15.9
+    },
+    {
+      "peso_tendido": 20.0,
+      "peso_ignicion": 2.0,
+      "supervivencia_pct": 32.94,
+      "distancia_extra_pct": 14.83
+    },
+    {
+      "peso_tendido": 20.0,
+      "peso_ignicion": 3.0,
+      "supervivencia_pct": 32.91,
+      "distancia_extra_pct": 14.61
+    },
+    {
+      "peso_tendido": 20.0,
+      "peso_ignicion": 5.0,
+      "supervivencia_pct": 30.15,
+      "distancia_extra_pct": 16.35
+    },
+    {
+      "peso_tendido": 100.0,
+      "peso_ignicion": 1.1,
+      "supervivencia_pct": 38.04,
+      "distancia_extra_pct": 23.6
+    },
+    {
+      "peso_tendido": 100.0,
+      "peso_ignicion": 1.5,
+      "supervivencia_pct": 38.04,
+      "distancia_extra_pct": 23.62
+    },
+    {
+      "peso_tendido": 100.0,
+      "peso_ignicion": 2.0,
+      "supervivencia_pct": 38.04,
+      "distancia_extra_pct": 23.92
+    },
+    {
+      "peso_tendido": 100.0,
+      "peso_ignicion": 3.0,
+      "supervivencia_pct": 38.04,
+      "distancia_extra_pct": 24.28
+    },
+    {
+      "peso_tendido": 100.0,
+      "peso_ignicion": 5.0,
+      "supervivencia_pct": 36.68,
+      "distancia_extra_pct": 24.06
+    }
+  ]
+}

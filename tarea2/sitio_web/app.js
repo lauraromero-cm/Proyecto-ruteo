@@ -412,21 +412,21 @@ function renderizarRuta(rutaData) {
   [["dijkstra","dijkstra","Dijkstra (distancia)"],["resil","resiliente","pgr_dijkstra multi-amenaza"],["lp","optimizacion_lp","Simplex (PL)"],["aco","aco","Ant Colony"]].forEach(([id,k,nom]) => {
     const el = document.getElementById("leg-" + id);
     const t = m[k];
-    el.innerText = t && t.resiliencia_score !== undefined ? `${nom} · ${t.tiempo_ms} ms · R = ${t.resiliencia_score}%` : `${nom} · sin ruta`;
+    el.innerText = t && t.resiliencia_score !== undefined ? `${nom} · ${t.tiempo_ms} ms · resiliencia ${t.resiliencia_score}%` : `${nom} · sin ruta`;
   });
 
   // Badge: mejor técnica
   const tecnicas = [
-    { nombre: "Dijkstra", score: m.dijkstra?.resiliencia_score || 0 },
-    { nombre: "Resiliente", score: m.resiliente?.resiliencia_score || 0 },
-    { nombre: "LP Simplex", score: m.optimizacion_lp?.resiliencia_score || 0 },
-    { nombre: "ACO", score: m.aco?.resiliencia_score || 0 },
-  ].filter(t => t.score > 0);
+    { nombre: "Dijkstra", score: m.dijkstra?.resiliencia_score ?? null },
+    { nombre: "Resiliente", score: m.resiliente?.resiliencia_score ?? null },
+    { nombre: "LP Simplex", score: m.optimizacion_lp?.resiliencia_score ?? null },
+    { nombre: "ACO", score: m.aco?.resiliencia_score ?? null },
+  ].filter(t => t.score !== null);
   const badge = document.getElementById("badge-diferencial");
   if (tecnicas.length > 0) {
     tecnicas.sort((a, b) => b.score - a.score);
     const mejor = tecnicas[0];
-    badge.innerText = `Técnica más resiliente: ${mejor.nombre} (R = ${mejor.score}%)`;
+    badge.innerText = `Técnica más resiliente: ${mejor.nombre} (resiliencia ${mejor.score}%)`;
     badge.style.background = "#ebfbee";
     badge.style.color = "#2b8a3e";
     badge.style.borderColor = "#b2f2bb";
@@ -667,6 +667,10 @@ document.getElementById("btn-sim").addEventListener("click", () => {
     Object.values(eventosFallidos).forEach(am => { porTipo[am] = (porTipo[am] || 0) + 1; });
     const detalle = Object.entries(porTipo).map(([am, n]) => `${n} ${etiquetaAm[am] || am}`).join(", ");
     const ok = aristasFallan === 0;
+    if (aristas.length === 0) {
+      html += `<div style="color:${colores[k]}; margin-bottom:3px;"><b>${nombres[k]}</b>: ninguna arista de la ruta tiene probabilidad de falla &gt; 0 → <b>RUTA SOBREVIVE</b> (no hay nada que sortear)</div>`;
+      continue;
+    }
     html += `<div style="color:${colores[k]}; margin-bottom:3px;"><b>${nombres[k]}</b>: ${aristas.length} aristas expuestas → ` +
       (ok ? "<b>RUTA SOBREVIVE</b>" : `<b>RUTA INTERRUMPIDA</b> (${Object.keys(eventosFallidos).length} evento(s): ${detalle}; ${aristasFallan} aristas afectadas)`) + "</div>";
   }
@@ -675,5 +679,7 @@ document.getElementById("btn-sim").addEventListener("click", () => {
       .bindPopup(`<b>FALLA</b> — rutas afectadas: ${[...f.tecnicas].join(", ")}<br>${Object.values(f.motivos).join("<br>")}`)
       .addTo(capaFallas);
   });
-  document.getElementById("sim-resultado").innerHTML = html || "Sin aristas con riesgo.";
+  const hayExpuestas = Object.values(ultimoResultado.aristas_vulnerables || {}).some(l => l.length > 0);
+  const nota = hayExpuestas ? "" : `<div style="margin-top:4px; color:#718096;">Este trayecto no cruza amenazas activas para este destino (p. ej. un sismo débil o profundo no daña edificios), por eso la supervivencia es 100%. Prueba otro destino, como el sismo 100 o el 96.</div>`;
+  document.getElementById("sim-resultado").innerHTML = (html || "Sin rutas calculadas.") + nota;
 });

@@ -96,7 +96,7 @@ En la planificación de trayectorias para drones BVLOS en escenarios post-emerge
    Confiar en que el dron detectará cables en vuelo en tiempo real mediante sensores a bordo es inviable físicamente. Conforme analiza **[Paper 6: RMIT University]** (*"LIDAR Obstacle Warning and Avoidance System for Unmanned Aerial Vehicles"*, [https://www.researchgate.net/publication/303693075_LIDAR_obstacle_warning_and_avoidance_system_for_unmanned_aerial_vehicle_sense-and-avoid](https://www.researchgate.net/publication/303693075_LIDAR_obstacle_warning_and_avoidance_system_for_unmanned_aerial_vehicle_sense-and-avoid)), a velocidades crucero de 8 a 15 m/s (con distancias de frenado cinético seguro superiores a 30 metros), un cable de 10 a 20 mm proyecta una huella visual subpíxel (<0.5 px) y el haz de un LiDAR ligero presenta una divergencia angular que provoca que la mayoría de los pulsos pasen de largo o no reúnan la densidad de retornos requerida para que los algoritmos de agrupamiento reconozcan el obstáculo, agravado en escenarios post-catástrofe por polvo, humo y cables cortados a media cota. Por ello, la evasión **debe ser planificada de forma proactiva en el grafo antes del despegue**.
 
 6. **Formulación algorítmica de la función de costo en el ruteo resiliente:**  
-   Como fundamenta **[Paper 1: MDPI Applied Sciences 2024]** (*"Three-Dimensional Path Planning for Post-Disaster Rescue UAV"*, [https://www.mdpi.com/2076-3417/14/11/4461](https://www.mdpi.com/2076-3417/14/11/4461)), la optimización de trayectorias multiobjetivo en espacios tridimensionales penaliza cuadráticamente el incremento de altitud ($J_{sensor}$) por degradación sensorial del objetivo, impidiendo que la altura sea una variable de escape libre. En nuestro proyecto, esto justifica matemáticamente que el algoritmo de ruteo (`sitio_web/generar_rutas_comparativas.py` y `sitio_web/servidor.py`) asigne una **penalización en `cost_resiliente` ($\times 1.5$)** a las aristas viales que intersectan o colindan con el tendido eléctrico (`metadata_tendido_electrico`), forzando al dron a maniobrar en el plano horizontal y seleccionar corredores viales despejados de cables de alta tensión.
+   Como fundamenta **[Paper 1: MDPI Applied Sciences 2024]** (*"Three-Dimensional Path Planning for Post-Disaster Rescue UAV"*, [https://www.mdpi.com/2076-3417/14/11/4461](https://www.mdpi.com/2076-3417/14/11/4461)), la optimización de trayectorias multiobjetivo en espacios tridimensionales penaliza cuadráticamente el incremento de altitud ($J_{sensor}$) por degradación sensorial del objetivo, impidiendo que la altura sea una variable de escape libre. En nuestro proyecto, esto justifica matemáticamente que el algoritmo de ruteo (`sitio_web/generar_rutas_comparativas.py` y `sitio_web/servidor.py`) asigne una **penalización en `cost_resiliente` ($\times 1.2$, valor calibrado, ver sección 12)** a las aristas viales que intersectan o colindan con el tendido eléctrico (`metadata_tendido_electrico`), forzando al dron a maniobrar en el plano horizontal y seleccionar corredores viales despejados de cables de alta tensión.
 
 ---
 
@@ -128,8 +128,8 @@ Todo el modelamiento vive en [`sitio_web/generar_rutas_comparativas.py`](sitio_w
 
 | Fuente | Operador espacial | Mecanismo |
 |---|---|---|
-| Tendido eléctrico | `ST_DWithin(arista, linea, 0.0002°)` (~22m) | **Penalización** ×1.5 — riesgo de colisión, no excluye porque el dron puede pasar cerca con precaución |
-| CONAF ignición | `ST_Intersects(arista, polígono)` | **Penalización** ×1.3 — riesgo de incendio activo en 5 días, gradual según el polígono que cruce |
+| Tendido eléctrico | `ST_DWithin(arista, linea, 0.0002°)` (~22m) | **Penalización** ×1.2 (calibrado) — riesgo de colisión, no excluye porque el dron puede pasar cerca con precaución |
+| CONAF ignición | `ST_Intersects(arista, polígono)` | **Penalización** ×1.1 (calibrado) — riesgo de incendio activo en 5 días, gradual según el polígono que cruce |
 | CONAF áreas protegidas | `ST_Intersects(arista, polígono)` | **Exclusión efectiva** ×1000 — vuelo prohibido/no deseable en SNASPE |
 | FIRMS (incendio activo) | `ST_DWithin(arista, foco, 0.005°)` (~500m) | **Exclusión efectiva** ×1000 — peligro físico inmediato, se evita por completo |
 | Permisos de edificación (antigüedad) | `ST_Intersects(arista, manzana)` | **Penalización condicional** ×(1 + 0.3·índice), **solo si el destino es un sismo** (ver más abajo) |
@@ -137,7 +137,7 @@ Todo el modelamiento vive en [`sitio_web/generar_rutas_comparativas.py`](sitio_w
 
 Esta distinción (excluir vs. penalizar vs. priorizar) sigue la taxonomía de `codigo/RESULTADOS.md`: un incendio activo o una zona protegida son peligros de los que hay que alejarse (exclusión), mientras que el tendido eléctrico o una ignición pronosticada son riesgos que se pueden asumir con precaución (penalización leve). La sismicidad es distinta de ambas: define el **objetivo** de la misión (ir a evaluar daños), así que nunca se "evita" — en cambio, condiciona un riesgo secundario (ver abajo).
 
-**Caso especial — por qué los sismos no penalizan, sino que condicionan**: la edificación antigua (proxy via permisos de edificación 2010-2018, `metadata_poblacion.indice_antiguedad`) representa riesgo de escombros/obstrucción de calle, que solo es relevante si la misión es justamente evaluar daños post-sismo. Por eso el costo `cost_resiliente * (1 + 0.3 * factor_antiguedad_zona)` solo se activa cuando `destino.tipo == "sismo"` — para un destino de tipo incendio, no se aplica en absoluto. El peso `0.3` se eligió deliberadamente bajo para que nunca domine sobre tendido eléctrico (×1.5) o CONAF (×1000), que son riesgos físicos directos e inmediatos, mientras que la edificación antigua es un riesgo indirecto y secundario.
+**Caso especial — por qué los sismos no penalizan, sino que condicionan**: la edificación antigua (proxy via permisos de edificación 2010-2018, `metadata_poblacion.indice_antiguedad`) representa riesgo de escombros/obstrucción de calle, que solo es relevante si la misión es justamente evaluar daños post-sismo. Por eso el costo `cost_resiliente * (1 + 0.3 * factor_antiguedad_zona)` solo se activa cuando `destino.tipo == "sismo"` — para un destino de tipo incendio, no se aplica en absoluto. El peso `0.3` se mantuvo tras la calibración (sección 12): variarlo entre 0.1 y 1.0 cambió la resiliencia en solo 0.03 puntos, es decir, el resultado es insensible a él.
 
 **Qué sismos son destinos válidos**: se excluyen de antemano los sismos cuyo epicentro está demasiado lejos del nodo vial más cercano — un dron BVLOS evalúa daños siguiendo calles, no sobrevolando el océano. En vez de un número fijo, el umbral combina dos criterios reales (funciones SQL en `db/schema.sql`):
 
@@ -152,14 +152,14 @@ Todos los pesos son multiplicadores sobre `length_m` (o sobre el costo ya penali
 
 ```
 cost_resiliente = length_m
-                × 1.5   si cruza/corre paralelo a tendido eléctrico
-                × 1.3   si está dentro de un polígono CONAF de ignición
+                × 1.2   si cruza/corre paralelo a tendido eléctrico
+                × 1.1   si está dentro de un polígono CONAF de ignición
                 × 1000  si está dentro de un área protegida CONAF
                 × 1000  si está a <500m de un foco FIRMS activo
                 × (1 + 0.3 × factor_antiguedad_zona)   SOLO si el destino es un sismo
 ```
 
-Los multiplicadores ×1000 son, en la práctica, una **exclusión**: `pgr_dijkstra` evitará esas aristas salvo que sean la única forma físicamente posible de llegar al destino. Los multiplicadores ×1.3/×1.5 son **penalizaciones graduales**: el algoritmo puede optar por cruzarlas si la alternativa es mucho más larga.
+Los multiplicadores ×1000 son, en la práctica, una **exclusión**: `pgr_dijkstra` evitará esas aristas salvo que sean la única forma físicamente posible de llegar al destino. Los multiplicadores ×1.1/×1.2 son **penalizaciones graduales**: el algoritmo puede optar por cruzarlas si la alternativa es mucho más larga.
 
 ---
 
@@ -261,7 +261,7 @@ seguridad    = 1 - exposición
 resiliencia  = disyuncion × seguridad × 100
 ```
 
-`costo_real` es **exactamente** la función de costo que usa el ruteo resiliente (amenazas + restricción de viento + antigüedad si el destino es un sismo) y `costo_base` es solo la distancia (con el sesgo de antigüedad cuando aplica). La gravedad usa escala logarítmica porque las penalizaciones son multiplicativas: ×1000 (área protegida, foco FIRMS, viento sobre el umbral) cuenta como gravedad máxima (1.0), ×1.5 (tendido) ≈ 0.06 y ×1.3 (ignición CONAF) ≈ 0.04. "Aristas en riesgo" cuenta las aristas del par con cualquier penalización física o viento sobre el umbral.
+`costo_real` es **exactamente** la función de costo que usa el ruteo resiliente (amenazas + restricción de viento + antigüedad si el destino es un sismo) y `costo_base` es solo la distancia (con el sesgo de antigüedad cuando aplica). La gravedad usa escala logarítmica porque las penalizaciones son multiplicativas: ×1000 (área protegida, foco FIRMS, viento sobre el umbral) cuenta como gravedad máxima (1.0), ×1.2 (tendido) ≈ 0.03 y ×1.1 (ignición CONAF) ≈ 0.01. "Aristas en riesgo" cuenta las aristas del par con cualquier penalización física o viento sobre el umbral.
 
 **Justificación**: una dupla de rutas es más resiliente cuanto (a) más independientes son entre sí (si una se corta por una amenaza imprevista, la otra sigue siendo viable — *disyunción*), y (b) menos distancia recorren por zonas penalizadas, ponderada por la gravedad de la penalización (*seguridad*). Se versionó respecto a una primera métrica que solo contaba aristas penalizadas (todas por igual): esa métrica no medía lo que el ruteo optimiza y podía dar diferenciales negativos grandes (hasta −6) aunque la ruta resiliente evitara las zonas más graves. Con la métrica actual el diferencial refleja la exposición real al riesgo; los pocos pares con diferencial levemente negativo (≤ 1 punto) se deben a la disyunción del par (el bypass de la ruta 2 no es óptimo), no a mayor riesgo. Se calcula tanto para el par Dijkstra como para el Resiliente (sección 11.2).
 
@@ -363,3 +363,37 @@ tarea2/
 ```
 
 Ver también [`../codigo/RESULTADOS.md`](../codigo/RESULTADOS.md) para el detalle de verificación de cada fuente de datos (Tarea 1) y las decisiones de diseño que anteceden a esta Tarea 2.
+
+
+## 12. Tarea 3 — Optimización, probabilidades de fallo, simulación y calibración
+
+### 12.1 Probabilidad de fallo (`sitio_web/generar_probabilidad_fallo.py`)
+Genera `sitio_web/data/probabilidad_fallo.json` con P(fallo) por **arista** y por **nodo** para cada amenaza (se ejecuta dentro de `python3 main.py`). Probabilidad combinada de una arista: `P = 1 - Π(1 - P_i)`; la de un nodo es el máximo de sus aristas incidentes (una intersección queda inutilizable si cualquier tramo que llega a ella está bloqueado).
+
+| Amenaza | Modelo de P(fallo) | Justificación |
+|---|---|---|
+| Tendido eléctrico | 0.35 (buffer 20 m) | riesgo de colisión / interferencia electromagnética a baja altura (README 2.1) |
+| Ignición CONAF | decil/100 | la propia capa CONAF codifica la probabilidad de ignición |
+| Áreas protegidas SNASPE | 0.95 | restricción legal, vuelo prohibido salvo autorización |
+| Focos FIRMS | 0.80 (buffer 500 m) | foco activo detectado por satélite implica humo/calor |
+| Viento | lineal sobre el umbral del DJI M300 (43.2 km/h) | operación imposible sobre el umbral |
+| Sismo + edificación antigua | vulnerabilidad = índice de antigüedad × f(MMI del sismo) | un sismo débil o profundo no daña edificios; f sube de 0 (MMI ≤ V) a 1 (MMI ≥ IX) con una atenuación simplificada `MMI = 0.9 + 1.5·M − 3.5·log10(R)` (coeficientes de orden de magnitud, no de una GMPE publicada) |
+
+### 12.2 Técnicas de ruteo
+1. `pgr_dijkstra` con costo = metros.
+2. **Programación Lineal resuelta con Simplex** (PuLP + CBC): variables `x_e ∈ [0,1]`, minimizar `Σ c_e·x_e` sujeto a conservación de flujo en cada nodo y a `Σ P_e·x_e ≤ riesgo de la ruta resiliente de referencia`. La matriz de incidencia nodo-arco es totalmente unimodular, por lo que el vértice óptimo del Simplex ya es entero. Se usa CBC (código abierto) como equivalente de CPLEX/Gurobi: el modelo es el mismo y no requiere licencia en Docker.
+3. `pgr_dijkstra` con `cost_resiliente` (multi-amenaza + restricción de viento).
+4. **Ant Colony Optimization** (30 hormigas, 40 iteraciones, α=1, β=3, ρ=0.3), con arranque en caliente desde un camino greedy.
+
+LP y ACO trabajan sobre un corredor alrededor de las rutas Dijkstra y resiliente (máx. 30.000 aristas) porque el grafo completo (126.480 aristas) es inviable para ellos.
+
+### 12.3 Simulación de fallas aleatorias
+Botón "Sortear fallas": por cada amenaza se sortea un número en [0,100] y falla si es menor que P×100. Las amenazas espaciales (zona de ignición, área protegida, foco, línea de tendido, manzana) se sortean **una vez por evento** y valen para todas las aristas y rutas (un escenario coherente). La tabla muestra la supervivencia en 100 escenarios.
+
+### 12.4 Calibración de pesos
+Se probaron combinaciones de pesos y se adoptó el óptimo:
+- Barrido 1 (125 combinaciones, objetivo: métrica R): óptimo tendido 1.2, ignición 1.1, antigüedad 0.3.
+- Barrido 2 (25 combinaciones, objetivo: supervivencia analítica sobre 48 pares, con distancia extra ≤ 15 %; `sitio_web/calibrar_pesos.py`): Dijkstra 21,0 % de supervivencia promedio; con tendido 1.2 / ignición 1.1 se alcanza 32,3 % con +4,7 % de distancia. Subir el peso del tendido a ×20 solo suma 0,7 puntos con +14,8 % de distancia, y ×100 supera el tope de distancia. Se mantuvieron **1.2 / 1.1 / 0.3**.
+
+### 12.5 Métrica de resiliencia por técnica
+La resiliencia de cada ruta es su **supervivencia exacta**: `Π (1 − P_evento)` sobre los eventos distintos que cruza (las amenazas espaciales cuentan una vez por zona). Se usa la misma fórmula para las cuatro técnicas, de modo que son comparables, y la simulación Monte Carlo la valida. La métrica anterior (disyunción × seguridad, sección 11) mide la independencia de una dupla de rutas y depende de la referencia de cada técnica, por lo que no permite comparar técnicas entre sí; se conserva en la API como `resiliencia_disyuncion`.
