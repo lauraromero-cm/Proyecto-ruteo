@@ -213021,7 +213021,7 @@
     "8940": {
       "tendido": 69,
       "ignicion": 6,
-      "sismo_edificacion": 2
+      "sismo_edificacion": 38
     },
     "9014": {
       "tendido": 27
@@ -213287,7 +213287,7 @@
     },
     "13964": {
       "tendido": 27,
-      "sismo_edificacion": 725
+      "sismo_edificacion": 746
     },
     "13969": {
       "tendido": 27,
@@ -213303,7 +213303,7 @@
     },
     "13980": {
       "tendido": 27,
-      "sismo_edificacion": 725
+      "sismo_edificacion": 746
     },
     "13983": {
       "tendido": 27
@@ -213333,7 +213333,7 @@
     },
     "14013": {
       "tendido": 27,
-      "sismo_edificacion": 568
+      "sismo_edificacion": 592
     },
     "14021": {
       "tendido": 27,
@@ -216994,7 +216994,7 @@
     "82422": {
       "tendido": 3,
       "ignicion": 6,
-      "sismo_edificacion": 305
+      "sismo_edificacion": 6
     },
     "82426": {
       "tendido": 69,
@@ -217007,7 +217007,7 @@
     "82428": {
       "tendido": 69,
       "ignicion": 6,
-      "sismo_edificacion": 2
+      "sismo_edificacion": 38
     },
     "82429": {
       "tendido": 69,
@@ -223472,7 +223472,7 @@
     },
     "8764": {
       "ignicion": 6,
-      "sismo_edificacion": 118
+      "sismo_edificacion": 140
     },
     "8765": {
       "ignicion": 6,
@@ -223480,7 +223480,7 @@
     },
     "8766": {
       "ignicion": 6,
-      "sismo_edificacion": 140
+      "sismo_edificacion": 112
     },
     "8767": {
       "ignicion": 6,
@@ -223516,11 +223516,11 @@
     },
     "8805": {
       "ignicion": 6,
-      "sismo_edificacion": 112
+      "sismo_edificacion": 100
     },
     "8806": {
       "ignicion": 6,
-      "sismo_edificacion": 100
+      "sismo_edificacion": 297
     },
     "8807": {
       "ignicion": 6,
@@ -224230,11 +224230,11 @@
     },
     "9854": {
       "ignicion": 6,
-      "sismo_edificacion": 34
+      "sismo_edificacion": 22
     },
     "9871": {
       "ignicion": 6,
-      "sismo_edificacion": 34
+      "sismo_edificacion": 22
     },
     "9879": {
       "ignicion": 6
@@ -227128,7 +227128,7 @@
     },
     "23987": {
       "ignicion": 4,
-      "sismo_edificacion": 1274
+      "sismo_edificacion": 1269
     },
     "23988": {
       "ignicion": 4
@@ -227147,7 +227147,7 @@
     },
     "23994": {
       "ignicion": 4,
-      "sismo_edificacion": 1274
+      "sismo_edificacion": 1269
     },
     "23996": {
       "ignicion": 4,
@@ -232653,11 +232653,11 @@
     },
     "34121": {
       "ignicion": 6,
-      "sismo_edificacion": 102
+      "sismo_edificacion": 80
     },
     "34122": {
       "ignicion": 6,
-      "sismo_edificacion": 82
+      "sismo_edificacion": 80
     },
     "34123": {
       "ignicion": 6,
@@ -232801,7 +232801,7 @@
     },
     "34168": {
       "ignicion": 6,
-      "sismo_edificacion": 102
+      "sismo_edificacion": 131
     },
     "34169": {
       "ignicion": 6,
@@ -232809,15 +232809,15 @@
     },
     "34170": {
       "ignicion": 6,
-      "sismo_edificacion": 131
+      "sismo_edificacion": 142
     },
     "34171": {
       "ignicion": 6,
-      "sismo_edificacion": 134
+      "sismo_edificacion": 131
     },
     "34172": {
       "ignicion": 6,
-      "sismo_edificacion": 129
+      "sismo_edificacion": 131
     },
     "34173": {
       "ignicion": 6,
@@ -232829,7 +232829,7 @@
     },
     "34175": {
       "ignicion": 6,
-      "sismo_edificacion": 152
+      "sismo_edificacion": 145
     },
     "34176": {
       "ignicion": 6,
@@ -232845,7 +232845,7 @@
     },
     "34179": {
       "ignicion": 6,
-      "sismo_edificacion": 161
+      "sismo_edificacion": 164
     },
     "34180": {
       "ignicion": 6,
@@ -232873,11 +232873,11 @@
     },
     "34186": {
       "ignicion": 6,
-      "sismo_edificacion": 134
+      "sismo_edificacion": 131
     },
     "34187": {
       "ignicion": 6,
-      "sismo_edificacion": 309
+      "sismo_edificacion": 134
     },
     "34188": {
       "ignicion": 6,
@@ -232889,7 +232889,7 @@
     },
     "34190": {
       "ignicion": 6,
-      "sismo_edificacion": 85
+      "sismo_edificacion": 103
     },
     "34191": {
       "ignicion": 6,
@@ -232901,7 +232901,7 @@
     },
     "34193": {
       "ignicion": 6,
-      "sismo_edificacion": 134
+      "sismo_edificacion": 142
     },
     "34194": {
       "ignicion": 6,
@@ -232917,7 +232917,7 @@
     },
     "34197": {
       "ignicion": 6,
-      "sismo_edificacion": 309
+      "sismo_edificacion": 124
     },
     "34198": {
       "ignicion": 6,
@@ -232925,11 +232925,11 @@
     },
     "34201": {
       "ignicion": 6,
-      "sismo_edificacion": 309
+      "sismo_edificacion": 124
     },
     "34203": {
       "ignicion": 6,
-      "sismo_edificacion": 166
+      "sismo_edificacion": 164
     },
     "34204": {
       "ignicion": 6,
@@ -232937,7 +232937,7 @@
     },
     "34205": {
       "ignicion": 6,
-      "sismo_edificacion": 158
+      "sismo_edificacion": 166
     },
     "34206": {
       "ignicion": 6,
@@ -232949,15 +232949,15 @@
     },
     "34208": {
       "ignicion": 6,
-      "sismo_edificacion": 161
+      "sismo_edificacion": 164
     },
     "34209": {
       "ignicion": 6,
-      "sismo_edificacion": 164
+      "sismo_edificacion": 166
     },
     "34210": {
       "ignicion": 6,
-      "sismo_edificacion": 161
+      "sismo_edificacion": 164
     },
     "34211": {
       "ignicion": 6
@@ -232983,11 +232983,11 @@
     },
     "34228": {
       "ignicion": 6,
-      "sismo_edificacion": 187
+      "sismo_edificacion": 188
     },
     "34229": {
       "ignicion": 6,
-      "sismo_edificacion": 187
+      "sismo_edificacion": 179
     },
     "34232": {
       "ignicion": 6,
@@ -233034,7 +233034,7 @@
     },
     "34244": {
       "ignicion": 6,
-      "sismo_edificacion": 196
+      "sismo_edificacion": 192
     },
     "34245": {
       "ignicion": 6,
@@ -233142,7 +233142,7 @@
     },
     "34278": {
       "ignicion": 6,
-      "sismo_edificacion": 204
+      "sismo_edificacion": 219
     },
     "34279": {
       "ignicion": 6,
@@ -234191,7 +234191,7 @@
     },
     "35582": {
       "ignicion": 4,
-      "sismo_edificacion": 1206
+      "sismo_edificacion": 1219
     },
     "35583": {
       "ignicion": 4,
@@ -250712,7 +250712,7 @@
     },
     "48359": {
       "ignicion": 6,
-      "sismo_edificacion": 16
+      "sismo_edificacion": 18
     },
     "48360": {
       "ignicion": 6,
@@ -250778,7 +250778,7 @@
     },
     "48382": {
       "ignicion": 6,
-      "sismo_edificacion": 12
+      "sismo_edificacion": 9
     },
     "48383": {
       "ignicion": 6
@@ -250806,7 +250806,7 @@
     },
     "48394": {
       "ignicion": 6,
-      "sismo_edificacion": 12
+      "sismo_edificacion": 9
     },
     "48395": {
       "ignicion": 6,
@@ -250905,7 +250905,7 @@
     },
     "48424": {
       "ignicion": 6,
-      "sismo_edificacion": 18
+      "sismo_edificacion": 16
     },
     "48425": {
       "ignicion": 6,
@@ -262242,7 +262242,7 @@
     },
     "57060": {
       "ignicion": 4,
-      "sismo_edificacion": 1244
+      "sismo_edificacion": 1247
     },
     "57061": {
       "ignicion": 4,
@@ -262291,7 +262291,7 @@
     },
     "57075": {
       "ignicion": 4,
-      "sismo_edificacion": 1247
+      "sismo_edificacion": 1244
     },
     "57076": {
       "ignicion": 4,
@@ -266621,7 +266621,7 @@
     },
     "66655": {
       "ignicion": 4,
-      "sismo_edificacion": 1233
+      "sismo_edificacion": 1240
     },
     "66656": {
       "ignicion": 4,
@@ -267317,7 +267317,7 @@
     },
     "66924": {
       "ignicion": 4,
-      "sismo_edificacion": 1206
+      "sismo_edificacion": 1217
     },
     "66925": {
       "ignicion": 4,
@@ -267355,7 +267355,7 @@
     },
     "66934": {
       "ignicion": 4,
-      "sismo_edificacion": 1218
+      "sismo_edificacion": 1206
     },
     "66935": {
       "ignicion": 4,
@@ -267502,7 +267502,7 @@
     },
     "66990": {
       "ignicion": 4,
-      "sismo_edificacion": 1209
+      "sismo_edificacion": 1226
     },
     "66991": {
       "ignicion": 4,
@@ -268150,7 +268150,7 @@
     },
     "69058": {
       "ignicion": 4,
-      "sismo_edificacion": 1646
+      "sismo_edificacion": 1645
     },
     "69059": {
       "ignicion": 4,
@@ -268178,7 +268178,7 @@
     },
     "69131": {
       "ignicion": 4,
-      "sismo_edificacion": 1679
+      "sismo_edificacion": 1603
     },
     "69132": {
       "ignicion": 4,
@@ -268270,7 +268270,7 @@
     },
     "69259": {
       "ignicion": 4,
-      "sismo_edificacion": 1676
+      "sismo_edificacion": 1671
     },
     "69260": {
       "ignicion": 4,
@@ -268282,11 +268282,11 @@
     },
     "69265": {
       "ignicion": 4,
-      "sismo_edificacion": 1645
+      "sismo_edificacion": 1646
     },
     "69266": {
       "ignicion": 4,
-      "sismo_edificacion": 1643
+      "sismo_edificacion": 1645
     },
     "69277": {
       "ignicion": 4,
@@ -268362,7 +268362,7 @@
     },
     "69379": {
       "ignicion": 6,
-      "sismo_edificacion": 1712
+      "sismo_edificacion": 1882
     },
     "69380": {
       "ignicion": 6
@@ -269108,7 +269108,7 @@
     },
     "70156": {
       "ignicion": 4,
-      "sismo_edificacion": 1672
+      "sismo_edificacion": 1669
     },
     "70157": {
       "ignicion": 4,
@@ -269227,7 +269227,7 @@
     },
     "70651": {
       "ignicion": 4,
-      "sismo_edificacion": 1649
+      "sismo_edificacion": 1757
     },
     "70658": {
       "ignicion": 4,
@@ -269414,7 +269414,7 @@
     },
     "71485": {
       "ignicion": 4,
-      "sismo_edificacion": 1672
+      "sismo_edificacion": 1669
     },
     "71486": {
       "ignicion": 4,
@@ -270212,7 +270212,7 @@
     },
     "72984": {
       "ignicion": 4,
-      "sismo_edificacion": 444
+      "sismo_edificacion": 442
     },
     "72985": {
       "ignicion": 4,
@@ -270223,7 +270223,7 @@
     },
     "72987": {
       "ignicion": 4,
-      "sismo_edificacion": 442
+      "sismo_edificacion": 444
     },
     "72988": {
       "ignicion": 4,
@@ -270783,7 +270783,7 @@
     },
     "73359": {
       "ignicion": 3,
-      "sismo_edificacion": 1832
+      "sismo_edificacion": 1831
     },
     "73360": {
       "ignicion": 3
@@ -272215,7 +272215,7 @@
     },
     "74469": {
       "ignicion": 3,
-      "sismo_edificacion": 1831
+      "sismo_edificacion": 1832
     },
     "74470": {
       "ignicion": 6
@@ -272873,7 +272873,7 @@
     },
     "75167": {
       "ignicion": 6,
-      "sismo_edificacion": 68
+      "sismo_edificacion": 77
     },
     "75168": {
       "ignicion": 6,
@@ -272881,11 +272881,11 @@
     },
     "75169": {
       "ignicion": 6,
-      "sismo_edificacion": 68
+      "sismo_edificacion": 83
     },
     "75170": {
       "ignicion": 6,
-      "sismo_edificacion": 68
+      "sismo_edificacion": 79
     },
     "75171": {
       "ignicion": 6,
@@ -272901,7 +272901,7 @@
     },
     "75174": {
       "ignicion": 6,
-      "sismo_edificacion": 84
+      "sismo_edificacion": 83
     },
     "75175": {
       "ignicion": 6,
@@ -272913,7 +272913,7 @@
     },
     "75177": {
       "ignicion": 6,
-      "sismo_edificacion": 101
+      "sismo_edificacion": 105
     },
     "75178": {
       "ignicion": 6,
@@ -272933,7 +272933,7 @@
     },
     "75182": {
       "ignicion": 6,
-      "sismo_edificacion": 105
+      "sismo_edificacion": 101
     },
     "75183": {
       "ignicion": 6,
@@ -272945,7 +272945,7 @@
     },
     "75185": {
       "ignicion": 6,
-      "sismo_edificacion": 105
+      "sismo_edificacion": 77
     },
     "75186": {
       "ignicion": 6,
@@ -272959,11 +272959,11 @@
     },
     "75189": {
       "ignicion": 6,
-      "sismo_edificacion": 116
+      "sismo_edificacion": 115
     },
     "75190": {
       "ignicion": 6,
-      "sismo_edificacion": 77
+      "sismo_edificacion": 115
     },
     "75191": {
       "ignicion": 6,
@@ -273003,7 +273003,7 @@
     },
     "75259": {
       "ignicion": 6,
-      "sismo_edificacion": 204
+      "sismo_edificacion": 196
     },
     "75260": {
       "ignicion": 6,
@@ -273027,7 +273027,7 @@
     },
     "75265": {
       "ignicion": 6,
-      "sismo_edificacion": 192
+      "sismo_edificacion": 196
     },
     "75266": {
       "ignicion": 6,
@@ -273240,7 +273240,7 @@
     },
     "75334": {
       "ignicion": 6,
-      "sismo_edificacion": 150
+      "sismo_edificacion": 115
     },
     "75335": {
       "ignicion": 6,
@@ -273290,7 +273290,7 @@
     },
     "75347": {
       "ignicion": 6,
-      "sismo_edificacion": 117
+      "sismo_edificacion": 115
     },
     "75348": {
       "ignicion": 6,
@@ -273298,7 +273298,7 @@
     },
     "75349": {
       "ignicion": 6,
-      "sismo_edificacion": 139
+      "sismo_edificacion": 133
     },
     "75350": {
       "ignicion": 6,
@@ -273350,11 +273350,11 @@
     },
     "75362": {
       "ignicion": 6,
-      "sismo_edificacion": 151
+      "sismo_edificacion": 153
     },
     "75363": {
       "ignicion": 6,
-      "sismo_edificacion": 153
+      "sismo_edificacion": 119
     },
     "75364": {
       "ignicion": 6,
@@ -273402,11 +273402,11 @@
     },
     "75379": {
       "ignicion": 6,
-      "sismo_edificacion": 120
+      "sismo_edificacion": 121
     },
     "75380": {
       "ignicion": 6,
-      "sismo_edificacion": 119
+      "sismo_edificacion": 120
     },
     "75381": {
       "ignicion": 6,
@@ -273426,11 +273426,11 @@
     },
     "75385": {
       "ignicion": 6,
-      "sismo_edificacion": 154
+      "sismo_edificacion": 157
     },
     "75386": {
       "ignicion": 6,
-      "sismo_edificacion": 154
+      "sismo_edificacion": 153
     },
     "75387": {
       "ignicion": 6,
@@ -273438,7 +273438,7 @@
     },
     "75388": {
       "ignicion": 6,
-      "sismo_edificacion": 120
+      "sismo_edificacion": 121
     },
     "75389": {
       "ignicion": 6,
@@ -273450,11 +273450,11 @@
     },
     "75391": {
       "ignicion": 6,
-      "sismo_edificacion": 86
+      "sismo_edificacion": 121
     },
     "75392": {
       "ignicion": 6,
-      "sismo_edificacion": 86
+      "sismo_edificacion": 84
     },
     "75393": {
       "ignicion": 6,
@@ -273470,7 +273470,7 @@
     },
     "75396": {
       "ignicion": 6,
-      "sismo_edificacion": 154
+      "sismo_edificacion": 157
     },
     "75397": {
       "ignicion": 6,
@@ -273478,7 +273478,7 @@
     },
     "75398": {
       "ignicion": 6,
-      "sismo_edificacion": 121
+      "sismo_edificacion": 157
     },
     "75399": {
       "ignicion": 6,
@@ -273494,7 +273494,7 @@
     },
     "75402": {
       "ignicion": 6,
-      "sismo_edificacion": 174
+      "sismo_edificacion": 150
     },
     "75403": {
       "ignicion": 6,
@@ -273630,7 +273630,7 @@
     },
     "75644": {
       "ignicion": 6,
-      "sismo_edificacion": 139
+      "sismo_edificacion": 143
     },
     "75645": {
       "ignicion": 6,
@@ -273642,7 +273642,7 @@
     },
     "75647": {
       "ignicion": 6,
-      "sismo_edificacion": 174
+      "sismo_edificacion": 151
     },
     "75648": {
       "ignicion": 6,
@@ -274112,7 +274112,7 @@
     },
     "76435": {
       "ignicion": 6,
-      "sismo_edificacion": 120
+      "sismo_edificacion": 119
     },
     "76436": {
       "ignicion": 6,
@@ -274120,7 +274120,7 @@
     },
     "76437": {
       "ignicion": 6,
-      "sismo_edificacion": 83
+      "sismo_edificacion": 119
     },
     "76497": {
       "ignicion": 6,
@@ -274128,7 +274128,7 @@
     },
     "76498": {
       "ignicion": 6,
-      "sismo_edificacion": 147
+      "sismo_edificacion": 169
     },
     "76499": {
       "ignicion": 6,
@@ -274139,26 +274139,26 @@
     },
     "76501": {
       "ignicion": 6,
-      "sismo_edificacion": 176
+      "sismo_edificacion": 147
     },
     "76502": {
       "ignicion": 6
     },
     "76503": {
       "ignicion": 6,
-      "sismo_edificacion": 123
+      "sismo_edificacion": 122
     },
     "76504": {
       "ignicion": 6,
-      "sismo_edificacion": 123
+      "sismo_edificacion": 117
     },
     "76505": {
       "ignicion": 6,
-      "sismo_edificacion": 147
+      "sismo_edificacion": 123
     },
     "76506": {
       "ignicion": 6,
-      "sismo_edificacion": 123
+      "sismo_edificacion": 284
     },
     "76507": {
       "ignicion": 6,
@@ -274170,7 +274170,7 @@
     },
     "76509": {
       "ignicion": 6,
-      "sismo_edificacion": 147
+      "sismo_edificacion": 123
     },
     "76510": {
       "ignicion": 6
@@ -274203,11 +274203,11 @@
     },
     "76518": {
       "ignicion": 6,
-      "sismo_edificacion": 181
+      "sismo_edificacion": 147
     },
     "76519": {
       "ignicion": 6,
-      "sismo_edificacion": 147
+      "sismo_edificacion": 169
     },
     "76520": {
       "ignicion": 6,
@@ -274219,7 +274219,7 @@
     },
     "76522": {
       "ignicion": 6,
-      "sismo_edificacion": 147
+      "sismo_edificacion": 181
     },
     "76523": {
       "ignicion": 6
@@ -275693,7 +275693,7 @@
     },
     "77258": {
       "ignicion": 3,
-      "sismo_edificacion": 1781
+      "sismo_edificacion": 1782
     },
     "77259": {
       "ignicion": 3
@@ -275776,7 +275776,7 @@
     },
     "77283": {
       "ignicion": 3,
-      "sismo_edificacion": 1782
+      "sismo_edificacion": 1781
     },
     "77284": {
       "ignicion": 3,
@@ -275821,7 +275821,7 @@
     },
     "77321": {
       "ignicion": 6,
-      "sismo_edificacion": 117
+      "sismo_edificacion": 123
     },
     "77322": {
       "ignicion": 6,
@@ -275855,7 +275855,7 @@
     },
     "77330": {
       "ignicion": 6,
-      "sismo_edificacion": 127
+      "sismo_edificacion": 283
     },
     "77331": {
       "ignicion": 6,
@@ -275889,7 +275889,7 @@
     },
     "77339": {
       "ignicion": 6,
-      "sismo_edificacion": 127
+      "sismo_edificacion": 286
     },
     "77340": {
       "ignicion": 6,
@@ -278092,7 +278092,7 @@
     },
     "79255": {
       "ignicion": 6,
-      "sismo_edificacion": 156
+      "sismo_edificacion": 280
     },
     "79256": {
       "ignicion": 6,
@@ -278100,7 +278100,7 @@
     },
     "79257": {
       "ignicion": 6,
-      "sismo_edificacion": 156
+      "sismo_edificacion": 281
     },
     "79258": {
       "ignicion": 6,
@@ -278112,7 +278112,7 @@
     },
     "79260": {
       "ignicion": 6,
-      "sismo_edificacion": 180
+      "sismo_edificacion": 306
     },
     "79261": {
       "ignicion": 6,
@@ -278132,7 +278132,7 @@
     },
     "79265": {
       "ignicion": 6,
-      "sismo_edificacion": 280
+      "sismo_edificacion": 281
     },
     "79266": {
       "ignicion": 6,
@@ -278140,7 +278140,7 @@
     },
     "79267": {
       "ignicion": 6,
-      "sismo_edificacion": 282
+      "sismo_edificacion": 283
     },
     "79268": {
       "ignicion": 6,
@@ -278428,7 +278428,7 @@
     },
     "79445": {
       "ignicion": 6,
-      "sismo_edificacion": 180
+      "sismo_edificacion": 175
     },
     "79446": {
       "ignicion": 6,
@@ -278436,7 +278436,7 @@
     },
     "79447": {
       "ignicion": 6,
-      "sismo_edificacion": 172
+      "sismo_edificacion": 175
     },
     "79448": {
       "ignicion": 6,
@@ -278456,7 +278456,7 @@
     },
     "79452": {
       "ignicion": 6,
-      "sismo_edificacion": 175
+      "sismo_edificacion": 172
     },
     "79453": {
       "ignicion": 6,
@@ -278464,7 +278464,7 @@
     },
     "79454": {
       "ignicion": 6,
-      "sismo_edificacion": 167
+      "sismo_edificacion": 283
     },
     "79455": {
       "ignicion": 6,
@@ -278517,7 +278517,7 @@
     },
     "79468": {
       "ignicion": 6,
-      "sismo_edificacion": 261
+      "sismo_edificacion": 264
     },
     "79469": {
       "ignicion": 6,
@@ -278529,7 +278529,7 @@
     },
     "79471": {
       "ignicion": 6,
-      "sismo_edificacion": 265
+      "sismo_edificacion": 261
     },
     "79472": {
       "ignicion": 6,
@@ -278557,7 +278557,7 @@
     },
     "79478": {
       "ignicion": 6,
-      "sismo_edificacion": 261
+      "sismo_edificacion": 265
     },
     "79479": {
       "ignicion": 6,
@@ -282569,7 +282569,7 @@
     },
     "82564": {
       "ignicion": 6,
-      "sismo_edificacion": 1712
+      "sismo_edificacion": 1882
     },
     "82565": {
       "ignicion": 6,
@@ -287611,7 +287611,7 @@
     },
     "88249": {
       "ignicion": 4,
-      "sismo_edificacion": 1206
+      "sismo_edificacion": 1217
     },
     "88250": {
       "ignicion": 4,
@@ -287756,7 +287756,7 @@
     },
     "88571": {
       "ignicion": 4,
-      "sismo_edificacion": 1214
+      "sismo_edificacion": 1219
     },
     "88572": {
       "ignicion": 4,
@@ -290612,7 +290612,7 @@
     },
     "90316": {
       "ignicion": 6,
-      "sismo_edificacion": 195
+      "sismo_edificacion": 265
     },
     "90317": {
       "ignicion": 6,
@@ -290729,7 +290729,7 @@
     },
     "90348": {
       "ignicion": 6,
-      "sismo_edificacion": 280
+      "sismo_edificacion": 146
     },
     "90349": {
       "ignicion": 6,
@@ -290765,7 +290765,7 @@
     },
     "90357": {
       "ignicion": 6,
-      "sismo_edificacion": 306
+      "sismo_edificacion": 146
     },
     "90358": {
       "ignicion": 6,
@@ -290799,7 +290799,7 @@
     },
     "90366": {
       "ignicion": 6,
-      "sismo_edificacion": 182
+      "sismo_edificacion": 306
     },
     "90367": {
       "ignicion": 6,
@@ -290815,7 +290815,7 @@
     },
     "90370": {
       "ignicion": 6,
-      "sismo_edificacion": 306
+      "sismo_edificacion": 184
     },
     "90371": {
       "ignicion": 6,
@@ -290823,7 +290823,7 @@
     },
     "90372": {
       "ignicion": 6,
-      "sismo_edificacion": 184
+      "sismo_edificacion": 306
     },
     "90373": {
       "ignicion": 6,
@@ -290853,11 +290853,11 @@
     },
     "90380": {
       "ignicion": 6,
-      "sismo_edificacion": 260
+      "sismo_edificacion": 261
     },
     "90381": {
       "ignicion": 6,
-      "sismo_edificacion": 260
+      "sismo_edificacion": 261
     },
     "90382": {
       "ignicion": 6,
@@ -290873,7 +290873,7 @@
     },
     "90385": {
       "ignicion": 6,
-      "sismo_edificacion": 260
+      "sismo_edificacion": 261
     },
     "90386": {
       "ignicion": 6
@@ -290888,7 +290888,7 @@
     },
     "90389": {
       "ignicion": 6,
-      "sismo_edificacion": 313
+      "sismo_edificacion": 231
     },
     "90390": {
       "ignicion": 6,
@@ -290900,7 +290900,7 @@
     },
     "90392": {
       "ignicion": 6,
-      "sismo_edificacion": 313
+      "sismo_edificacion": 231
     },
     "90393": {
       "ignicion": 6,
@@ -291954,7 +291954,7 @@
     },
     "90931": {
       "ignicion": 6,
-      "sismo_edificacion": 19
+      "sismo_edificacion": 20
     },
     "90932": {
       "ignicion": 6,
@@ -303512,7 +303512,7 @@
     },
     "98749": {
       "ignicion": 6,
-      "sismo_edificacion": 284
+      "sismo_edificacion": 105
     },
     "98750": {
       "ignicion": 6
@@ -303525,7 +303525,7 @@
     },
     "98753": {
       "ignicion": 6,
-      "sismo_edificacion": 285
+      "sismo_edificacion": 284
     },
     "98754": {
       "ignicion": 6,
@@ -303533,7 +303533,7 @@
     },
     "98755": {
       "ignicion": 6,
-      "sismo_edificacion": 285
+      "sismo_edificacion": 286
     },
     "98756": {
       "ignicion": 6,
@@ -308050,7 +308050,7 @@
     },
     "101466": {
       "ignicion": 4,
-      "sismo_edificacion": 1206
+      "sismo_edificacion": 1218
     },
     "101467": {
       "ignicion": 4,
@@ -309501,7 +309501,7 @@
     },
     "102066": {
       "ignicion": 4,
-      "sismo_edificacion": 1279
+      "sismo_edificacion": 1297
     },
     "102067": {
       "ignicion": 6
@@ -354711,7 +354711,7 @@
     },
     "7894": {
       "areas_protegidas": 9,
-      "sismo_edificacion": 395
+      "sismo_edificacion": 378
     },
     "7895": {
       "areas_protegidas": 9
@@ -355175,7 +355175,7 @@
     },
     "93144": {
       "areas_protegidas": 9,
-      "sismo_edificacion": 379
+      "sismo_edificacion": 389
     },
     "93145": {
       "areas_protegidas": 9
@@ -355305,7 +355305,7 @@
       "areas_protegidas": 9
     },
     "47": {
-      "sismo_edificacion": 635
+      "sismo_edificacion": 637
     },
     "48": {
       "sismo_edificacion": 637
@@ -355458,7 +355458,7 @@
       "sismo_edificacion": 318
     },
     "4784": {
-      "sismo_edificacion": 328
+      "sismo_edificacion": 320
     },
     "4792": {
       "sismo_edificacion": 320
@@ -355485,7 +355485,7 @@
       "sismo_edificacion": 360
     },
     "4874": {
-      "sismo_edificacion": 348
+      "sismo_edificacion": 369
     },
     "4881": {
       "sismo_edificacion": 335
@@ -355506,7 +355506,7 @@
       "sismo_edificacion": 348
     },
     "4888": {
-      "sismo_edificacion": 348
+      "sismo_edificacion": 360
     },
     "4889": {
       "sismo_edificacion": 335
@@ -355578,7 +355578,7 @@
       "sismo_edificacion": 348
     },
     "4992": {
-      "sismo_edificacion": 348
+      "sismo_edificacion": 369
     },
     "5052": {
       "sismo_edificacion": 722
@@ -355728,7 +355728,7 @@
       "sismo_edificacion": 398
     },
     "6245": {
-      "sismo_edificacion": 387
+      "sismo_edificacion": 400
     },
     "6248": {
       "sismo_edificacion": 387
@@ -355752,7 +355752,7 @@
       "sismo_edificacion": 850
     },
     "6546": {
-      "sismo_edificacion": 886
+      "sismo_edificacion": 904
     },
     "6597": {
       "sismo_edificacion": 951
@@ -356313,7 +356313,7 @@
       "sismo_edificacion": 70
     },
     "9686": {
-      "sismo_edificacion": 54
+      "sismo_edificacion": 60
     },
     "9687": {
       "sismo_edificacion": 61
@@ -356334,7 +356334,7 @@
       "sismo_edificacion": 23
     },
     "9699": {
-      "sismo_edificacion": 51
+      "sismo_edificacion": 50
     },
     "9702": {
       "sismo_edificacion": 47
@@ -356346,7 +356346,7 @@
       "sismo_edificacion": 47
     },
     "9705": {
-      "sismo_edificacion": 47
+      "sismo_edificacion": 59
     },
     "9706": {
       "sismo_edificacion": 59
@@ -356403,7 +356403,7 @@
       "sismo_edificacion": 54
     },
     "9735": {
-      "sismo_edificacion": 54
+      "sismo_edificacion": 60
     },
     "9736": {
       "sismo_edificacion": 34
@@ -356427,7 +356427,7 @@
       "sismo_edificacion": 65
     },
     "9745": {
-      "sismo_edificacion": 24
+      "sismo_edificacion": 29
     },
     "9747": {
       "sismo_edificacion": 24
@@ -356445,7 +356445,7 @@
       "sismo_edificacion": 46
     },
     "9757": {
-      "sismo_edificacion": 58
+      "sismo_edificacion": 59
     },
     "9759": {
       "sismo_edificacion": 62
@@ -356541,13 +356541,13 @@
       "sismo_edificacion": 93
     },
     "9816": {
-      "sismo_edificacion": 70
+      "sismo_edificacion": 93
     },
     "9817": {
       "sismo_edificacion": 113
     },
     "9818": {
-      "sismo_edificacion": 110
+      "sismo_edificacion": 113
     },
     "9819": {
       "sismo_edificacion": 113
@@ -356622,10 +356622,10 @@
       "sismo_edificacion": 36
     },
     "9868": {
-      "sismo_edificacion": 33
+      "sismo_edificacion": 32
     },
     "9869": {
-      "sismo_edificacion": 33
+      "sismo_edificacion": 34
     },
     "9870": {
       "sismo_edificacion": 34
@@ -356634,19 +356634,19 @@
       "sismo_edificacion": 34
     },
     "9873": {
-      "sismo_edificacion": 32
+      "sismo_edificacion": 33
     },
     "9874": {
       "sismo_edificacion": 33
     },
     "9875": {
-      "sismo_edificacion": 33
+      "sismo_edificacion": 6
     },
     "9876": {
       "sismo_edificacion": 33
     },
     "9877": {
-      "sismo_edificacion": 6
+      "sismo_edificacion": 33
     },
     "9880": {
       "sismo_edificacion": 30
@@ -356817,7 +356817,7 @@
       "sismo_edificacion": 1
     },
     "12189": {
-      "sismo_edificacion": 1530
+      "sismo_edificacion": 1543
     },
     "12196": {
       "sismo_edificacion": 1588
@@ -356850,13 +356850,13 @@
       "sismo_edificacion": 1034
     },
     "12438": {
-      "sismo_edificacion": 1029
-    },
-    "12443": {
       "sismo_edificacion": 1047
     },
+    "12443": {
+      "sismo_edificacion": 1029
+    },
     "12444": {
-      "sismo_edificacion": 1025
+      "sismo_edificacion": 1039
     },
     "12454": {
       "sismo_edificacion": 1004
@@ -356877,7 +356877,7 @@
       "sismo_edificacion": 975
     },
     "12477": {
-      "sismo_edificacion": 1007
+      "sismo_edificacion": 975
     },
     "12481": {
       "sismo_edificacion": 959
@@ -356898,7 +356898,7 @@
       "sismo_edificacion": 931
     },
     "12517": {
-      "sismo_edificacion": 1025
+      "sismo_edificacion": 1039
     },
     "12545": {
       "sismo_edificacion": 975
@@ -356973,10 +356973,10 @@
       "sismo_edificacion": 1116
     },
     "12826": {
-      "sismo_edificacion": 1090
+      "sismo_edificacion": 1103
     },
     "12830": {
-      "sismo_edificacion": 1103
+      "sismo_edificacion": 1090
     },
     "12839": {
       "sismo_edificacion": 1064
@@ -357048,13 +357048,13 @@
       "sismo_edificacion": 1087
     },
     "13031": {
-      "sismo_edificacion": 964
+      "sismo_edificacion": 978
     },
     "13038": {
       "sismo_edificacion": 1087
     },
     "13041": {
-      "sismo_edificacion": 1057
+      "sismo_edificacion": 1087
     },
     "13044": {
       "sismo_edificacion": 1030
@@ -357126,7 +357126,7 @@
       "sismo_edificacion": 908
     },
     "13148": {
-      "sismo_edificacion": 910
+      "sismo_edificacion": 911
     },
     "13150": {
       "sismo_edificacion": 917
@@ -357312,7 +357312,7 @@
       "sismo_edificacion": 635
     },
     "13936": {
-      "sismo_edificacion": 635
+      "sismo_edificacion": 637
     },
     "13938": {
       "sismo_edificacion": 695
@@ -357354,10 +357354,10 @@
       "sismo_edificacion": 725
     },
     "13965": {
-      "sismo_edificacion": 705
+      "sismo_edificacion": 731
     },
     "13966": {
-      "sismo_edificacion": 705
+      "sismo_edificacion": 731
     },
     "13967": {
       "sismo_edificacion": 705
@@ -357384,10 +357384,10 @@
       "sismo_edificacion": 746
     },
     "13979": {
-      "sismo_edificacion": 788
+      "sismo_edificacion": 746
     },
     "13981": {
-      "sismo_edificacion": 746
+      "sismo_edificacion": 788
     },
     "13984": {
       "sismo_edificacion": 687
@@ -357501,7 +357501,7 @@
       "sismo_edificacion": 645
     },
     "14053": {
-      "sismo_edificacion": 678
+      "sismo_edificacion": 713
     },
     "14054": {
       "sismo_edificacion": 713
@@ -357645,7 +357645,7 @@
       "sismo_edificacion": 737
     },
     "14145": {
-      "sismo_edificacion": 713
+      "sismo_edificacion": 761
     },
     "14146": {
       "sismo_edificacion": 761
@@ -357657,7 +357657,7 @@
       "sismo_edificacion": 761
     },
     "14155": {
-      "sismo_edificacion": 756
+      "sismo_edificacion": 743
     },
     "14156": {
       "sismo_edificacion": 743
@@ -357741,7 +357741,7 @@
       "sismo_edificacion": 749
     },
     "14262": {
-      "sismo_edificacion": 723
+      "sismo_edificacion": 701
     },
     "14264": {
       "sismo_edificacion": 773
@@ -357765,7 +357765,7 @@
       "sismo_edificacion": 789
     },
     "14271": {
-      "sismo_edificacion": 764
+      "sismo_edificacion": 723
     },
     "14297": {
       "sismo_edificacion": 763
@@ -357780,7 +357780,7 @@
       "sismo_edificacion": 773
     },
     "14307": {
-      "sismo_edificacion": 773
+      "sismo_edificacion": 789
     },
     "14309": {
       "sismo_edificacion": 789
@@ -357906,7 +357906,7 @@
       "sismo_edificacion": 1455
     },
     "14414": {
-      "sismo_edificacion": 1482
+      "sismo_edificacion": 1461
     },
     "14415": {
       "sismo_edificacion": 1535
@@ -357984,7 +357984,7 @@
       "sismo_edificacion": 1455
     },
     "14492": {
-      "sismo_edificacion": 1496
+      "sismo_edificacion": 1455
     },
     "14500": {
       "sismo_edificacion": 1488
@@ -358002,7 +358002,7 @@
       "sismo_edificacion": 1470
     },
     "14509": {
-      "sismo_edificacion": 1460
+      "sismo_edificacion": 1455
     },
     "14510": {
       "sismo_edificacion": 1488
@@ -358170,7 +358170,7 @@
       "sismo_edificacion": 1554
     },
     "14609": {
-      "sismo_edificacion": 1565
+      "sismo_edificacion": 1550
     },
     "14612": {
       "sismo_edificacion": 1554
@@ -358179,7 +358179,7 @@
       "sismo_edificacion": 1550
     },
     "14615": {
-      "sismo_edificacion": 1565
+      "sismo_edificacion": 1550
     },
     "14616": {
       "sismo_edificacion": 1550
@@ -358368,10 +358368,10 @@
       "sismo_edificacion": 621
     },
     "15505": {
-      "sismo_edificacion": 578
+      "sismo_edificacion": 594
     },
     "15507": {
-      "sismo_edificacion": 578
+      "sismo_edificacion": 594
     },
     "15508": {
       "sismo_edificacion": 638
@@ -358422,7 +358422,7 @@
       "sismo_edificacion": 322
     },
     "17519": {
-      "sismo_edificacion": 325
+      "sismo_edificacion": 326
     },
     "17526": {
       "sismo_edificacion": 339
@@ -358527,13 +358527,13 @@
       "sismo_edificacion": 701
     },
     "19958": {
-      "sismo_edificacion": 701
+      "sismo_edificacion": 723
     },
     "19959": {
       "sismo_edificacion": 701
     },
     "19960": {
-      "sismo_edificacion": 720
+      "sismo_edificacion": 701
     },
     "19961": {
       "sismo_edificacion": 701
@@ -358542,7 +358542,7 @@
       "sismo_edificacion": 701
     },
     "19963": {
-      "sismo_edificacion": 701
+      "sismo_edificacion": 587
     },
     "19964": {
       "sismo_edificacion": 701
@@ -358551,7 +358551,7 @@
       "sismo_edificacion": 701
     },
     "19966": {
-      "sismo_edificacion": 587
+      "sismo_edificacion": 701
     },
     "19967": {
       "sismo_edificacion": 701
@@ -358638,7 +358638,7 @@
       "sismo_edificacion": 797
     },
     "20174": {
-      "sismo_edificacion": 712
+      "sismo_edificacion": 719
     },
     "20177": {
       "sismo_edificacion": 663
@@ -358650,7 +358650,7 @@
       "sismo_edificacion": 663
     },
     "20182": {
-      "sismo_edificacion": 571
+      "sismo_edificacion": 618
     },
     "20191": {
       "sismo_edificacion": 571
@@ -358761,7 +358761,7 @@
       "sismo_edificacion": 574
     },
     "20349": {
-      "sismo_edificacion": 547
+      "sismo_edificacion": 573
     },
     "20350": {
       "sismo_edificacion": 589
@@ -358770,7 +358770,7 @@
       "sismo_edificacion": 574
     },
     "20352": {
-      "sismo_edificacion": 589
+      "sismo_edificacion": 573
     },
     "20353": {
       "sismo_edificacion": 598
@@ -358860,7 +358860,7 @@
       "sismo_edificacion": 493
     },
     "22074": {
-      "sismo_edificacion": 493
+      "sismo_edificacion": 503
     },
     "22086": {
       "sismo_edificacion": 479
@@ -358869,7 +358869,7 @@
       "sismo_edificacion": 485
     },
     "23265": {
-      "sismo_edificacion": 1308
+      "sismo_edificacion": 1415
     },
     "23338": {
       "sismo_edificacion": 1295
@@ -359073,7 +359073,7 @@
       "sismo_edificacion": 1384
     },
     "23877": {
-      "sismo_edificacion": 1404
+      "sismo_edificacion": 1384
     },
     "23878": {
       "sismo_edificacion": 1384
@@ -359148,7 +359148,7 @@
       "sismo_edificacion": 1401
     },
     "23920": {
-      "sismo_edificacion": 1401
+      "sismo_edificacion": 1418
     },
     "23921": {
       "sismo_edificacion": 1401
@@ -359220,7 +359220,7 @@
       "sismo_edificacion": 1593
     },
     "24061": {
-      "sismo_edificacion": 1593
+      "sismo_edificacion": 1512
     },
     "24062": {
       "sismo_edificacion": 1512
@@ -359235,7 +359235,7 @@
       "sismo_edificacion": 1512
     },
     "24067": {
-      "sismo_edificacion": 1512
+      "sismo_edificacion": 1593
     },
     "24068": {
       "sismo_edificacion": 1512
@@ -359775,7 +359775,7 @@
       "sismo_edificacion": 433
     },
     "31266": {
-      "sismo_edificacion": 422
+      "sismo_edificacion": 452
     },
     "31267": {
       "sismo_edificacion": 452
@@ -359784,7 +359784,7 @@
       "sismo_edificacion": 409
     },
     "31286": {
-      "sismo_edificacion": 452
+      "sismo_edificacion": 440
     },
     "31289": {
       "sismo_edificacion": 440
@@ -359883,7 +359883,7 @@
       "sismo_edificacion": 615
     },
     "31524": {
-      "sismo_edificacion": 595
+      "sismo_edificacion": 593
     },
     "31525": {
       "sismo_edificacion": 593
@@ -359898,7 +359898,7 @@
       "sismo_edificacion": 595
     },
     "31529": {
-      "sismo_edificacion": 593
+      "sismo_edificacion": 595
     },
     "31530": {
       "sismo_edificacion": 554
@@ -359907,7 +359907,7 @@
       "sismo_edificacion": 595
     },
     "31532": {
-      "sismo_edificacion": 599
+      "sismo_edificacion": 602
     },
     "31533": {
       "sismo_edificacion": 595
@@ -359916,7 +359916,7 @@
       "sismo_edificacion": 602
     },
     "31537": {
-      "sismo_edificacion": 599
+      "sismo_edificacion": 602
     },
     "31538": {
       "sismo_edificacion": 602
@@ -359931,10 +359931,10 @@
       "sismo_edificacion": 602
     },
     "31544": {
-      "sismo_edificacion": 526
+      "sismo_edificacion": 604
     },
     "31545": {
-      "sismo_edificacion": 526
+      "sismo_edificacion": 604
     },
     "31546": {
       "sismo_edificacion": 526
@@ -359976,7 +359976,7 @@
       "sismo_edificacion": 622
     },
     "31564": {
-      "sismo_edificacion": 622
+      "sismo_edificacion": 616
     },
     "31565": {
       "sismo_edificacion": 656
@@ -359997,7 +359997,7 @@
       "sismo_edificacion": 506
     },
     "31584": {
-      "sismo_edificacion": 524
+      "sismo_edificacion": 526
     },
     "31594": {
       "sismo_edificacion": 519
@@ -360024,7 +360024,7 @@
       "sismo_edificacion": 476
     },
     "31655": {
-      "sismo_edificacion": 562
+      "sismo_edificacion": 526
     },
     "31659": {
       "sismo_edificacion": 526
@@ -360033,7 +360033,7 @@
       "sismo_edificacion": 526
     },
     "31662": {
-      "sismo_edificacion": 526
+      "sismo_edificacion": 524
     },
     "31663": {
       "sismo_edificacion": 562
@@ -360165,7 +360165,7 @@
       "sismo_edificacion": 552
     },
     "31764": {
-      "sismo_edificacion": 552
+      "sismo_edificacion": 566
     },
     "31765": {
       "sismo_edificacion": 629
@@ -360180,7 +360180,7 @@
       "sismo_edificacion": 571
     },
     "31833": {
-      "sismo_edificacion": 607
+      "sismo_edificacion": 627
     },
     "31834": {
       "sismo_edificacion": 607
@@ -360300,7 +360300,7 @@
       "sismo_edificacion": 210
     },
     "33864": {
-      "sismo_edificacion": 125
+      "sismo_edificacion": 159
     },
     "33865": {
       "sismo_edificacion": 159
@@ -360417,7 +360417,7 @@
       "sismo_edificacion": 193
     },
     "33943": {
-      "sismo_edificacion": 206
+      "sismo_edificacion": 212
     },
     "33945": {
       "sismo_edificacion": 202
@@ -360426,7 +360426,7 @@
       "sismo_edificacion": 212
     },
     "33948": {
-      "sismo_edificacion": 212
+      "sismo_edificacion": 206
     },
     "33949": {
       "sismo_edificacion": 212
@@ -360435,7 +360435,7 @@
       "sismo_edificacion": 212
     },
     "33953": {
-      "sismo_edificacion": 200
+      "sismo_edificacion": 203
     },
     "33954": {
       "sismo_edificacion": 203
@@ -360744,7 +360744,7 @@
       "sismo_edificacion": 87
     },
     "34117": {
-      "sismo_edificacion": 309
+      "sismo_edificacion": 85
     },
     "34119": {
       "sismo_edificacion": 309
@@ -360759,7 +360759,7 @@
       "sismo_edificacion": 309
     },
     "34167": {
-      "sismo_edificacion": 309
+      "sismo_edificacion": 85
     },
     "34199": {
       "sismo_edificacion": 309
@@ -360834,7 +360834,7 @@
       "sismo_edificacion": 290
     },
     "34303": {
-      "sismo_edificacion": 290
+      "sismo_edificacion": 227
     },
     "34304": {
       "sismo_edificacion": 227
@@ -361050,7 +361050,7 @@
       "sismo_edificacion": 296
     },
     "34404": {
-      "sismo_edificacion": 296
+      "sismo_edificacion": 216
     },
     "34405": {
       "sismo_edificacion": 296
@@ -361062,7 +361062,7 @@
       "sismo_edificacion": 296
     },
     "34408": {
-      "sismo_edificacion": 216
+      "sismo_edificacion": 296
     },
     "34409": {
       "sismo_edificacion": 295
@@ -361155,7 +361155,7 @@
       "sismo_edificacion": 1800
     },
     "35242": {
-      "sismo_edificacion": 1603
+      "sismo_edificacion": 1708
     },
     "35243": {
       "sismo_edificacion": 1708
@@ -361221,7 +361221,7 @@
       "sismo_edificacion": 1680
     },
     "35394": {
-      "sismo_edificacion": 1680
+      "sismo_edificacion": 1683
     },
     "35396": {
       "sismo_edificacion": 1691
@@ -361332,10 +361332,10 @@
       "sismo_edificacion": 353
     },
     "37294": {
-      "sismo_edificacion": 242
+      "sismo_edificacion": 243
     },
     "37295": {
-      "sismo_edificacion": 243
+      "sismo_edificacion": 242
     },
     "37296": {
       "sismo_edificacion": 242
@@ -361443,7 +361443,7 @@
       "sismo_edificacion": 236
     },
     "37457": {
-      "sismo_edificacion": 238
+      "sismo_edificacion": 236
     },
     "37458": {
       "sismo_edificacion": 238
@@ -361485,7 +361485,7 @@
       "sismo_edificacion": 238
     },
     "37473": {
-      "sismo_edificacion": 236
+      "sismo_edificacion": 238
     },
     "37474": {
       "sismo_edificacion": 238
@@ -361617,7 +361617,7 @@
       "sismo_edificacion": 291
     },
     "37549": {
-      "sismo_edificacion": 223
+      "sismo_edificacion": 291
     },
     "37550": {
       "sismo_edificacion": 291
@@ -361629,7 +361629,7 @@
       "sismo_edificacion": 225
     },
     "37553": {
-      "sismo_edificacion": 225
+      "sismo_edificacion": 215
     },
     "37554": {
       "sismo_edificacion": 225
@@ -361845,13 +361845,13 @@
       "sismo_edificacion": 484
     },
     "46076": {
-      "sismo_edificacion": 468
+      "sismo_edificacion": 484
     },
     "46077": {
-      "sismo_edificacion": 468
+      "sismo_edificacion": 484
     },
     "46078": {
-      "sismo_edificacion": 484
+      "sismo_edificacion": 468
     },
     "46082": {
       "sismo_edificacion": 652
@@ -361893,7 +361893,7 @@
       "sismo_edificacion": 468
     },
     "46106": {
-      "sismo_edificacion": 468
+      "sismo_edificacion": 484
     },
     "46108": {
       "sismo_edificacion": 528
@@ -361902,7 +361902,7 @@
       "sismo_edificacion": 530
     },
     "46116": {
-      "sismo_edificacion": 670
+      "sismo_edificacion": 663
     },
     "46117": {
       "sismo_edificacion": 663
@@ -361920,7 +361920,7 @@
       "sismo_edificacion": 596
     },
     "46126": {
-      "sismo_edificacion": 613
+      "sismo_edificacion": 528
     },
     "46127": {
       "sismo_edificacion": 528
@@ -361932,7 +361932,7 @@
       "sismo_edificacion": 565
     },
     "46131": {
-      "sismo_edificacion": 580
+      "sismo_edificacion": 579
     },
     "46132": {
       "sismo_edificacion": 702
@@ -361950,7 +361950,7 @@
       "sismo_edificacion": 670
     },
     "46145": {
-      "sismo_edificacion": 670
+      "sismo_edificacion": 663
     },
     "46146": {
       "sismo_edificacion": 670
@@ -361959,7 +361959,7 @@
       "sismo_edificacion": 565
     },
     "46149": {
-      "sismo_edificacion": 565
+      "sismo_edificacion": 538
     },
     "46151": {
       "sismo_edificacion": 664
@@ -362025,7 +362025,7 @@
       "sismo_edificacion": 664
     },
     "46219": {
-      "sismo_edificacion": 538
+      "sismo_edificacion": 565
     },
     "46230": {
       "sismo_edificacion": 472
@@ -362049,25 +362049,25 @@
       "sismo_edificacion": 663
     },
     "46239": {
-      "sismo_edificacion": 712
+      "sismo_edificacion": 730
     },
     "46242": {
       "sismo_edificacion": 712
     },
     "46243": {
-      "sismo_edificacion": 719
+      "sismo_edificacion": 712
     },
     "46244": {
       "sismo_edificacion": 712
     },
     "46245": {
-      "sismo_edificacion": 730
+      "sismo_edificacion": 712
     },
     "46249": {
       "sismo_edificacion": 652
     },
     "46256": {
-      "sismo_edificacion": 597
+      "sismo_edificacion": 538
     },
     "46263": {
       "sismo_edificacion": 472
@@ -362088,7 +362088,7 @@
       "sismo_edificacion": 579
     },
     "46270": {
-      "sismo_edificacion": 555
+      "sismo_edificacion": 579
     },
     "46271": {
       "sismo_edificacion": 489
@@ -362103,7 +362103,7 @@
       "sismo_edificacion": 528
     },
     "46280": {
-      "sismo_edificacion": 613
+      "sismo_edificacion": 528
     },
     "46282": {
       "sismo_edificacion": 663
@@ -362145,13 +362145,13 @@
       "sismo_edificacion": 663
     },
     "46295": {
-      "sismo_edificacion": 597
+      "sismo_edificacion": 538
     },
     "46296": {
       "sismo_edificacion": 565
     },
     "46297": {
-      "sismo_edificacion": 565
+      "sismo_edificacion": 538
     },
     "46298": {
       "sismo_edificacion": 528
@@ -362307,7 +362307,7 @@
       "sismo_edificacion": 61
     },
     "48452": {
-      "sismo_edificacion": 61
+      "sismo_edificacion": 59
     },
     "48453": {
       "sismo_edificacion": 62
@@ -362355,7 +362355,7 @@
       "sismo_edificacion": 63
     },
     "48489": {
-      "sismo_edificacion": 24
+      "sismo_edificacion": 29
     },
     "48490": {
       "sismo_edificacion": 29
@@ -362364,7 +362364,7 @@
       "sismo_edificacion": 29
     },
     "48492": {
-      "sismo_edificacion": 23
+      "sismo_edificacion": 29
     },
     "48493": {
       "sismo_edificacion": 23
@@ -362376,7 +362376,7 @@
       "sismo_edificacion": 73
     },
     "48498": {
-      "sismo_edificacion": 23
+      "sismo_edificacion": 29
     },
     "48503": {
       "sismo_edificacion": 60
@@ -362421,7 +362421,7 @@
       "sismo_edificacion": 514
     },
     "55405": {
-      "sismo_edificacion": 654
+      "sismo_edificacion": 609
     },
     "55406": {
       "sismo_edificacion": 622
@@ -362451,7 +362451,7 @@
       "sismo_edificacion": 938
     },
     "56042": {
-      "sismo_edificacion": 941
+      "sismo_edificacion": 949
     },
     "56046": {
       "sismo_edificacion": 941
@@ -362469,7 +362469,7 @@
       "sismo_edificacion": 954
     },
     "56054": {
-      "sismo_edificacion": 954
+      "sismo_edificacion": 953
     },
     "56062": {
       "sismo_edificacion": 931
@@ -362586,7 +362586,7 @@
       "sismo_edificacion": 980
     },
     "65594": {
-      "sismo_edificacion": 980
+      "sismo_edificacion": 977
     },
     "65601": {
       "sismo_edificacion": 997
@@ -362910,7 +362910,7 @@
       "sismo_edificacion": 1530
     },
     "67465": {
-      "sismo_edificacion": 1543
+      "sismo_edificacion": 1530
     },
     "67468": {
       "sismo_edificacion": 1599
@@ -362961,7 +362961,7 @@
       "sismo_edificacion": 1331
     },
     "67507": {
-      "sismo_edificacion": 1352
+      "sismo_edificacion": 1344
     },
     "67509": {
       "sismo_edificacion": 1300
@@ -363015,7 +363015,7 @@
       "sismo_edificacion": 1260
     },
     "67571": {
-      "sismo_edificacion": 1260
+      "sismo_edificacion": 1305
     },
     "67572": {
       "sismo_edificacion": 1260
@@ -363357,7 +363357,7 @@
       "sismo_edificacion": 1707
     },
     "68710": {
-      "sismo_edificacion": 1902
+      "sismo_edificacion": 1919
     },
     "68711": {
       "sismo_edificacion": 1919
@@ -363450,10 +363450,10 @@
       "sismo_edificacion": 1927
     },
     "69048": {
-      "sismo_edificacion": 1680
+      "sismo_edificacion": 1683
     },
     "69049": {
-      "sismo_edificacion": 1691
+      "sismo_edificacion": 1683
     },
     "69050": {
       "sismo_edificacion": 1683
@@ -363510,7 +363510,7 @@
       "sismo_edificacion": 1691
     },
     "69179": {
-      "sismo_edificacion": 1680
+      "sismo_edificacion": 1691
     },
     "69204": {
       "sismo_edificacion": 1612
@@ -363699,7 +363699,7 @@
       "sismo_edificacion": 1695
     },
     "70160": {
-      "sismo_edificacion": 1695
+      "sismo_edificacion": 1686
     },
     "70161": {
       "sismo_edificacion": 1695
@@ -363711,7 +363711,7 @@
       "sismo_edificacion": 1601
     },
     "70170": {
-      "sismo_edificacion": 1601
+      "sismo_edificacion": 1603
     },
     "70172": {
       "sismo_edificacion": 1612
@@ -363906,7 +363906,7 @@
       "sismo_edificacion": 1603
     },
     "70339": {
-      "sismo_edificacion": 1603
+      "sismo_edificacion": 1601
     },
     "70340": {
       "sismo_edificacion": 1609
@@ -363990,7 +363990,7 @@
       "sismo_edificacion": 1611
     },
     "70394": {
-      "sismo_edificacion": 1611
+      "sismo_edificacion": 1617
     },
     "70403": {
       "sismo_edificacion": 1611
@@ -364038,7 +364038,7 @@
       "sismo_edificacion": 1806
     },
     "70461": {
-      "sismo_edificacion": 1633
+      "sismo_edificacion": 1632
     },
     "70464": {
       "sismo_edificacion": 1670
@@ -364062,7 +364062,7 @@
       "sismo_edificacion": 1812
     },
     "70484": {
-      "sismo_edificacion": 1805
+      "sismo_edificacion": 1607
     },
     "70485": {
       "sismo_edificacion": 1805
@@ -364080,7 +364080,7 @@
       "sismo_edificacion": 1611
     },
     "70494": {
-      "sismo_edificacion": 1636
+      "sismo_edificacion": 1805
     },
     "70495": {
       "sismo_edificacion": 1756
@@ -364170,7 +364170,7 @@
       "sismo_edificacion": 1619
     },
     "70591": {
-      "sismo_edificacion": 1619
+      "sismo_edificacion": 1756
     },
     "70592": {
       "sismo_edificacion": 1805
@@ -364179,7 +364179,7 @@
       "sismo_edificacion": 1803
     },
     "70594": {
-      "sismo_edificacion": 1803
+      "sismo_edificacion": 1805
     },
     "70597": {
       "sismo_edificacion": 1805
@@ -364248,7 +364248,7 @@
       "sismo_edificacion": 1619
     },
     "70657": {
-      "sismo_edificacion": 1619
+      "sismo_edificacion": 1622
     },
     "70659": {
       "sismo_edificacion": 1611
@@ -364314,7 +364314,7 @@
       "sismo_edificacion": 1803
     },
     "70751": {
-      "sismo_edificacion": 1611
+      "sismo_edificacion": 1617
     },
     "70756": {
       "sismo_edificacion": 1617
@@ -364413,7 +364413,7 @@
       "sismo_edificacion": 1299
     },
     "71065": {
-      "sismo_edificacion": 1299
+      "sismo_edificacion": 1291
     },
     "71066": {
       "sismo_edificacion": 1299
@@ -364440,7 +364440,7 @@
       "sismo_edificacion": 1277
     },
     "71101": {
-      "sismo_edificacion": 1291
+      "sismo_edificacion": 1299
     },
     "71114": {
       "sismo_edificacion": 1403
@@ -364488,7 +364488,7 @@
       "sismo_edificacion": 1291
     },
     "71156": {
-      "sismo_edificacion": 1291
+      "sismo_edificacion": 1252
     },
     "71157": {
       "sismo_edificacion": 1291
@@ -364692,7 +364692,7 @@
       "sismo_edificacion": 1486
     },
     "72391": {
-      "sismo_edificacion": 1485
+      "sismo_edificacion": 1493
     },
     "72420": {
       "sismo_edificacion": 1456
@@ -364737,7 +364737,7 @@
       "sismo_edificacion": 1456
     },
     "72472": {
-      "sismo_edificacion": 1485
+      "sismo_edificacion": 1486
     },
     "72493": {
       "sismo_edificacion": 1567
@@ -364980,7 +364980,7 @@
       "sismo_edificacion": 776
     },
     "73606": {
-      "sismo_edificacion": 784
+      "sismo_edificacion": 774
     },
     "73607": {
       "sismo_edificacion": 770
@@ -364995,7 +364995,7 @@
       "sismo_edificacion": 792
     },
     "73643": {
-      "sismo_edificacion": 710
+      "sismo_edificacion": 767
     },
     "73654": {
       "sismo_edificacion": 774
@@ -365037,10 +365037,10 @@
       "sismo_edificacion": 624
     },
     "73690": {
-      "sismo_edificacion": 732
+      "sismo_edificacion": 751
     },
     "73691": {
-      "sismo_edificacion": 710
+      "sismo_edificacion": 751
     },
     "73692": {
       "sismo_edificacion": 751
@@ -365061,7 +365061,7 @@
       "sismo_edificacion": 726
     },
     "73700": {
-      "sismo_edificacion": 755
+      "sismo_edificacion": 740
     },
     "73701": {
       "sismo_edificacion": 711
@@ -365139,7 +365139,7 @@
       "sismo_edificacion": 478
     },
     "74800": {
-      "sismo_edificacion": 529
+      "sismo_edificacion": 478
     },
     "74933": {
       "sismo_edificacion": 495
@@ -365394,7 +365394,7 @@
       "sismo_edificacion": 109
     },
     "75409": {
-      "sismo_edificacion": 111
+      "sismo_edificacion": 109
     },
     "75412": {
       "sismo_edificacion": 109
@@ -365586,13 +365586,13 @@
       "sismo_edificacion": 193
     },
     "75686": {
-      "sismo_edificacion": 747
+      "sismo_edificacion": 750
     },
     "75687": {
       "sismo_edificacion": 747
     },
     "75688": {
-      "sismo_edificacion": 750
+      "sismo_edificacion": 747
     },
     "75689": {
       "sismo_edificacion": 750
@@ -365601,7 +365601,7 @@
       "sismo_edificacion": 750
     },
     "75691": {
-      "sismo_edificacion": 747
+      "sismo_edificacion": 750
     },
     "75692": {
       "sismo_edificacion": 750
@@ -365634,7 +365634,7 @@
       "sismo_edificacion": 750
     },
     "75702": {
-      "sismo_edificacion": 747
+      "sismo_edificacion": 750
     },
     "75703": {
       "sismo_edificacion": 750
@@ -366252,10 +366252,10 @@
       "sismo_edificacion": 1838
     },
     "79192": {
-      "sismo_edificacion": 1367
+      "sismo_edificacion": 1370
     },
     "79193": {
-      "sismo_edificacion": 1367
+      "sismo_edificacion": 1370
     },
     "79194": {
       "sismo_edificacion": 1370
@@ -366312,7 +366312,7 @@
       "sismo_edificacion": 337
     },
     "80698": {
-      "sismo_edificacion": 337
+      "sismo_edificacion": 341
     },
     "80700": {
       "sismo_edificacion": 337
@@ -366339,7 +366339,7 @@
       "sismo_edificacion": 1076
     },
     "81164": {
-      "sismo_edificacion": 1127
+      "sismo_edificacion": 1090
     },
     "81202": {
       "sismo_edificacion": 409
@@ -366420,7 +366420,7 @@
       "sismo_edificacion": 904
     },
     "81358": {
-      "sismo_edificacion": 905
+      "sismo_edificacion": 884
     },
     "81359": {
       "sismo_edificacion": 904
@@ -366453,7 +366453,7 @@
       "sismo_edificacion": 943
     },
     "81381": {
-      "sismo_edificacion": 964
+      "sismo_edificacion": 978
     },
     "81382": {
       "sismo_edificacion": 964
@@ -367248,7 +367248,7 @@
       "sismo_edificacion": 1803
     },
     "85227": {
-      "sismo_edificacion": 1803
+      "sismo_edificacion": 1753
     },
     "85228": {
       "sismo_edificacion": 1803
@@ -367260,13 +367260,13 @@
       "sismo_edificacion": 1803
     },
     "85231": {
-      "sismo_edificacion": 1803
+      "sismo_edificacion": 1753
     },
     "85232": {
       "sismo_edificacion": 1803
     },
     "85233": {
-      "sismo_edificacion": 1753
+      "sismo_edificacion": 1803
     },
     "85234": {
       "sismo_edificacion": 1803
@@ -367365,13 +367365,13 @@
       "sismo_edificacion": 526
     },
     "85391": {
-      "sismo_edificacion": 526
+      "sismo_edificacion": 604
     },
     "85392": {
       "sismo_edificacion": 526
     },
     "85395": {
-      "sismo_edificacion": 693
+      "sismo_edificacion": 644
     },
     "85398": {
       "sismo_edificacion": 526
@@ -367389,7 +367389,7 @@
       "sismo_edificacion": 494
     },
     "85589": {
-      "sismo_edificacion": 494
+      "sismo_edificacion": 505
     },
     "85590": {
       "sismo_edificacion": 494
@@ -367398,7 +367398,7 @@
       "sismo_edificacion": 505
     },
     "85592": {
-      "sismo_edificacion": 505
+      "sismo_edificacion": 494
     },
     "85593": {
       "sismo_edificacion": 505
@@ -367416,7 +367416,7 @@
       "sismo_edificacion": 511
     },
     "85604": {
-      "sismo_edificacion": 511
+      "sismo_edificacion": 531
     },
     "85605": {
       "sismo_edificacion": 511
@@ -367524,7 +367524,7 @@
       "sismo_edificacion": 1640
     },
     "86317": {
-      "sismo_edificacion": 1620
+      "sismo_edificacion": 1611
     },
     "86318": {
       "sismo_edificacion": 1611
@@ -367533,7 +367533,7 @@
       "sismo_edificacion": 1611
     },
     "86320": {
-      "sismo_edificacion": 1620
+      "sismo_edificacion": 1611
     },
     "86322": {
       "sismo_edificacion": 1611
@@ -367566,7 +367566,7 @@
       "sismo_edificacion": 663
     },
     "87182": {
-      "sismo_edificacion": 652
+      "sismo_edificacion": 663
     },
     "87183": {
       "sismo_edificacion": 652
@@ -367626,7 +367626,7 @@
       "sismo_edificacion": 587
     },
     "87223": {
-      "sismo_edificacion": 568
+      "sismo_edificacion": 587
     },
     "87956": {
       "sismo_edificacion": 1612
@@ -367635,7 +367635,7 @@
       "sismo_edificacion": 1803
     },
     "87959": {
-      "sismo_edificacion": 1804
+      "sismo_edificacion": 1803
     },
     "87960": {
       "sismo_edificacion": 1803
@@ -367677,7 +367677,7 @@
       "sismo_edificacion": 1804
     },
     "87977": {
-      "sismo_edificacion": 1804
+      "sismo_edificacion": 1803
     },
     "87979": {
       "sismo_edificacion": 1689
@@ -367821,7 +367821,7 @@
       "sismo_edificacion": 1760
     },
     "88175": {
-      "sismo_edificacion": 1761
+      "sismo_edificacion": 1760
     },
     "88176": {
       "sismo_edificacion": 1760
@@ -367833,7 +367833,7 @@
       "sismo_edificacion": 1799
     },
     "88180": {
-      "sismo_edificacion": 1799
+      "sismo_edificacion": 1760
     },
     "88181": {
       "sismo_edificacion": 1799
@@ -368070,7 +368070,7 @@
       "sismo_edificacion": 1689
     },
     "89495": {
-      "sismo_edificacion": 1689
+      "sismo_edificacion": 1653
     },
     "89496": {
       "sismo_edificacion": 1689
@@ -368217,7 +368217,7 @@
       "sismo_edificacion": 299
     },
     "90776": {
-      "sismo_edificacion": 299
+      "sismo_edificacion": 277
     },
     "90777": {
       "sismo_edificacion": 299
@@ -368331,7 +368331,7 @@
       "sismo_edificacion": 211
     },
     "91341": {
-      "sismo_edificacion": 211
+      "sismo_edificacion": 207
     },
     "91342": {
       "sismo_edificacion": 215
@@ -368592,7 +368592,7 @@
       "sismo_edificacion": 511
     },
     "92397": {
-      "sismo_edificacion": 543
+      "sismo_edificacion": 531
     },
     "92398": {
       "sismo_edificacion": 543
@@ -368727,7 +368727,7 @@
       "sismo_edificacion": 544
     },
     "92895": {
-      "sismo_edificacion": 579
+      "sismo_edificacion": 555
     },
     "92897": {
       "sismo_edificacion": 587
@@ -368766,7 +368766,7 @@
       "sismo_edificacion": 1803
     },
     "93204": {
-      "sismo_edificacion": 1761
+      "sismo_edificacion": 1760
     },
     "93205": {
       "sismo_edificacion": 1761
@@ -368808,7 +368808,7 @@
       "sismo_edificacion": 380
     },
     "93355": {
-      "sismo_edificacion": 380
+      "sismo_edificacion": 383
     },
     "93356": {
       "sismo_edificacion": 380
@@ -368817,7 +368817,7 @@
       "sismo_edificacion": 380
     },
     "93360": {
-      "sismo_edificacion": 380
+      "sismo_edificacion": 383
     },
     "93363": {
       "sismo_edificacion": 393
@@ -368835,22 +368835,22 @@
       "sismo_edificacion": 905
     },
     "93669": {
-      "sismo_edificacion": 905
+      "sismo_edificacion": 884
     },
     "93670": {
-      "sismo_edificacion": 884
+      "sismo_edificacion": 905
     },
     "93671": {
       "sismo_edificacion": 884
     },
     "93672": {
-      "sismo_edificacion": 905
+      "sismo_edificacion": 904
     },
     "93675": {
       "sismo_edificacion": 904
     },
     "93677": {
-      "sismo_edificacion": 904
+      "sismo_edificacion": 887
     },
     "93686": {
       "sismo_edificacion": 1114
@@ -369231,7 +369231,7 @@
       "sismo_edificacion": 277
     },
     "95964": {
-      "sismo_edificacion": 277
+      "sismo_edificacion": 299
     },
     "96286": {
       "sismo_edificacion": 1506
@@ -369276,13 +369276,13 @@
       "sismo_edificacion": 774
     },
     "96751": {
-      "sismo_edificacion": 762
+      "sismo_edificacion": 526
     },
     "96753": {
       "sismo_edificacion": 762
     },
     "96754": {
-      "sismo_edificacion": 526
+      "sismo_edificacion": 762
     },
     "96755": {
       "sismo_edificacion": 526
@@ -369870,7 +369870,7 @@
       "sismo_edificacion": 763
     },
     "99498": {
-      "sismo_edificacion": 763
+      "sismo_edificacion": 790
     },
     "99499": {
       "sismo_edificacion": 763
@@ -370044,7 +370044,7 @@
       "sismo_edificacion": 538
     },
     "101140": {
-      "sismo_edificacion": 751
+      "sismo_edificacion": 744
     },
     "101141": {
       "sismo_edificacion": 727
@@ -370074,7 +370074,7 @@
       "sismo_edificacion": 732
     },
     "101365": {
-      "sismo_edificacion": 744
+      "sismo_edificacion": 751
     },
     "101366": {
       "sismo_edificacion": 751
@@ -370200,7 +370200,7 @@
       "sismo_edificacion": 1806
     },
     "102246": {
-      "sismo_edificacion": 1805
+      "sismo_edificacion": 1806
     },
     "102247": {
       "sismo_edificacion": 1805
@@ -370215,7 +370215,7 @@
       "sismo_edificacion": 585
     },
     "102284": {
-      "sismo_edificacion": 692
+      "sismo_edificacion": 683
     },
     "102285": {
       "sismo_edificacion": 732
@@ -370452,7 +370452,7 @@
       "sismo_edificacion": 543
     },
     "103644": {
-      "sismo_edificacion": 1045
+      "sismo_edificacion": 1040
     },
     "103647": {
       "sismo_edificacion": 1045
@@ -370521,7 +370521,7 @@
       "sismo_edificacion": 1803
     },
     "103824": {
-      "sismo_edificacion": 1611
+      "sismo_edificacion": 1803
     },
     "103825": {
       "sismo_edificacion": 1612
@@ -370590,7 +370590,7 @@
       "sismo_edificacion": 1611
     },
     "103851": {
-      "sismo_edificacion": 1611
+      "sismo_edificacion": 1803
     },
     "103852": {
       "sismo_edificacion": 1670
@@ -370620,7 +370620,7 @@
       "sismo_edificacion": 1611
     },
     "103924": {
-      "sismo_edificacion": 1912
+      "sismo_edificacion": 1919
     },
     "103925": {
       "sismo_edificacion": 1912
@@ -370944,7 +370944,7 @@
       "sismo_edificacion": 476
     },
     "104572": {
-      "sismo_edificacion": 584
+      "sismo_edificacion": 569
     },
     "104573": {
       "sismo_edificacion": 569
@@ -371019,7 +371019,7 @@
       "sismo_edificacion": 547
     },
     "105841": {
-      "sismo_edificacion": 503
+      "sismo_edificacion": 493
     },
     "105843": {
       "sismo_edificacion": 1947
@@ -371028,7 +371028,7 @@
       "sismo_edificacion": 1007
     },
     "105954": {
-      "sismo_edificacion": 758
+      "sismo_edificacion": 685
     },
     "105955": {
       "sismo_edificacion": 685
@@ -371184,7 +371184,7 @@
       "sismo_edificacion": 1756
     },
     "106580": {
-      "sismo_edificacion": 1622
+      "sismo_edificacion": 1619
     },
     "106581": {
       "sismo_edificacion": 1583
@@ -371253,7 +371253,7 @@
       "sismo_edificacion": 1670
     },
     "106970": {
-      "sismo_edificacion": 1670
+      "sismo_edificacion": 1806
     },
     "106971": {
       "sismo_edificacion": 1670
@@ -371361,7 +371361,7 @@
       "sismo_edificacion": 674
     },
     "108539": {
-      "sismo_edificacion": 1305
+      "sismo_edificacion": 1260
     },
     "108710": {
       "sismo_edificacion": 418
@@ -371517,7 +371517,7 @@
       "sismo_edificacion": 526
     },
     "112872": {
-      "sismo_edificacion": 750
+      "sismo_edificacion": 747
     },
     "112873": {
       "sismo_edificacion": 750
@@ -371526,7 +371526,7 @@
       "sismo_edificacion": 750
     },
     "112875": {
-      "sismo_edificacion": 750
+      "sismo_edificacion": 747
     },
     "112876": {
       "sismo_edificacion": 750
@@ -371922,7 +371922,7 @@
       "sismo_edificacion": 53
     },
     "118334": {
-      "sismo_edificacion": 413
+      "sismo_edificacion": 406
     },
     "118747": {
       "sismo_edificacion": 295
@@ -372000,7 +372000,7 @@
       "sismo_edificacion": 422
     },
     "119154": {
-      "sismo_edificacion": 422
+      "sismo_edificacion": 409
     },
     "119155": {
       "sismo_edificacion": 409
@@ -372051,13 +372051,13 @@
       "sismo_edificacion": 1803
     },
     "119359": {
-      "sismo_edificacion": 1803
+      "sismo_edificacion": 1805
     },
     "119360": {
       "sismo_edificacion": 1803
     },
     "119361": {
-      "sismo_edificacion": 1805
+      "sismo_edificacion": 1636
     },
     "119364": {
       "sismo_edificacion": 1625
@@ -372192,7 +372192,7 @@
       "sismo_edificacion": 571
     },
     "120291": {
-      "sismo_edificacion": 618
+      "sismo_edificacion": 659
     },
     "120350": {
       "sismo_edificacion": 905
@@ -372201,7 +372201,7 @@
       "sismo_edificacion": 884
     },
     "120352": {
-      "sismo_edificacion": 905
+      "sismo_edificacion": 884
     },
     "120486": {
       "sismo_edificacion": 1521
@@ -372282,7 +372282,7 @@
       "sismo_edificacion": 293
     },
     "121790": {
-      "sismo_edificacion": 1299
+      "sismo_edificacion": 1291
     },
     "123449": {
       "sismo_edificacion": 256
@@ -372426,7 +372426,7 @@
       "sismo_edificacion": 379
     },
     "125262": {
-      "sismo_edificacion": 6
+      "sismo_edificacion": 41
     },
     "125567": {
       "sismo_edificacion": 301
@@ -372438,7 +372438,7 @@
       "sismo_edificacion": 160
     },
     "125658": {
-      "sismo_edificacion": 160
+      "sismo_edificacion": 189
     },
     "125659": {
       "sismo_edificacion": 160
@@ -372465,7 +372465,7 @@
       "sismo_edificacion": 1803
     },
     "126010": {
-      "sismo_edificacion": 1803
+      "sismo_edificacion": 1754
     },
     "126011": {
       "sismo_edificacion": 1612
@@ -372522,13 +372522,13 @@
       "sismo_edificacion": 1260
     },
     "126354": {
-      "sismo_edificacion": 685
+      "sismo_edificacion": 758
     },
     "126356": {
       "sismo_edificacion": 758
     },
     "126357": {
-      "sismo_edificacion": 758
+      "sismo_edificacion": 685
     },
     "126358": {
       "sismo_edificacion": 695

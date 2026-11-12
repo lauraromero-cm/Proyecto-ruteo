@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Debian) (preloaded format=pdflatex 2026.6.16)  20 OCT 2026 17:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Debian) (preloaded format=pdflatex 2026.6.16)  11 NOV 2026 20:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1277,54 +1277,55 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 427.
 
 [6]
-Underfull \hbox (badness 10000) in paragraph at lines 533--534
+Underfull \hbox (badness 10000) in paragraph at lines 554--555
 []\T1/pcr/b/n/10 sitio_web\T1/ptm/m/n/10 : Servi-dor Python
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 533--534
+Underfull \hbox (badness 10000) in paragraph at lines 554--555
 \T1/ptm/m/n/10 (\T1/pcr/m/n/10 ThreadingHTTPServer \T1/ptm/m/n/10 + pool Post-g
 reSQL)
  []
 
-
-Underfull \hbox (badness 1789) in paragraph at lines 546--547
+[7]
+Underfull \hbox (badness 1789) in paragraph at lines 567--568
 []\T1/ptm/m/n/10 Cada archivo \T1/pcr/m/n/10 *.json \T1/ptm/m/n/10 tiene un \T1
 /pcr/m/n/10 *.schema.md \T1/ptm/m/n/10 her-
  []
 
 
-Underfull \hbox (badness 3219) in paragraph at lines 546--547
+Underfull \hbox (badness 3219) in paragraph at lines 567--568
 \T1/ptm/m/n/10 mano que doc-u-menta su ori-gen, cada campo con su
  []
 
 
-Underfull \hbox (badness 2213) in paragraph at lines 546--547
+Underfull \hbox (badness 2213) in paragraph at lines 567--568
 \T1/ptm/m/n/10 tipo y sig-nifi-cado, un ejem-plo real tomado del JSON
  []
 
 
-Underfull \hbox (badness 7540) in paragraph at lines 546--547
+Underfull \hbox (badness 7540) in paragraph at lines 567--568
 \T1/ptm/m/n/10 y cómo se usa en el cál-culo de cos-tos. En to-
  []
 
 
-Underfull \hbox (badness 3229) in paragraph at lines 546--547
+Underfull \hbox (badness 3229) in paragraph at lines 567--568
 \T1/ptm/m/n/10 tal se mantienen 11 archivos \T1/pcr/m/n/10 schema.md\T1/ptm/m/n
 /10 : 3 de in-
  []
 
 
-Underfull \hbox (badness 3386) in paragraph at lines 546--547
+Underfull \hbox (badness 3386) in paragraph at lines 567--568
 \T1/ptm/m/n/10 meta-data (\T1/pcr/m/n/10 viento\T1/ptm/m/n/10 , \T1/pcr/m/n/10 
 tendido_electrico\T1/ptm/m/n/10 , \T1/pcr/m/n/10 relieve\T1/ptm/m/n/10 ,
  []
 
-[7]
-Underfull \hbox (badness 1648) in paragraph at lines 570--571
+
+Underfull \hbox (badness 1648) in paragraph at lines 591--592
 \T1/ptm/m/n/10 remediación adop-tado en este tra-bajo. La necesi-dad de
  []
 
+[8]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -1336,19 +1337,21 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[8] (./informe_tarea2.aux)
+[9
+
+] (./informe_tarea2.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-05-15>
  ***********
 Package rerunfilecheck Info: File `informe_tarea2.out' has not changed.
-(rerunfilecheck)             Checksum: 346D91B803AA3B1600510A82E5BD1989;9389.
+(rerunfilecheck)             Checksum: 97B237AFCD6C3D0D914FFA961081B633;9661.
  ) 
 Here is how much of TeX's memory you used:
- 16459 strings out of 469330
- 259831 string characters out of 5466444
- 968144 words of memory out of 5000000
- 44929 multiletter control sequences out of 15000+600000
+ 16464 strings out of 469330
+ 259898 string characters out of 5466444
+ 968222 words of memory out of 5000000
+ 44931 multiletter control sequences out of 15000+600000
  743712 words of font info for 168 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  84i,12n,93p,1599b,1420s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1367,10 +1370,10 @@ hare/texlive/texmf-dist/fonts/type1/urw/courier/ucrro8a.pfb></usr/share/texlive
 ts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/t
 imes/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pf
 b>
-Output written on informe_tarea2.pdf (8 pages, 249112 bytes).
+Output written on informe_tarea2.pdf (9 pages, 254348 bytes).
 PDF statistics:
- 468 PDF objects out of 1000 (max. 8388607)
- 421 compressed objects within 5 object streams
- 138 named destinations out of 1000 (max. 500000)
- 353 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 478 PDF objects out of 1000 (max. 8388607)
+ 430 compressed objects within 5 object streams
+ 141 named destinations out of 1000 (max. 500000)
+ 361 words of extra memory for PDF output out of 10000 (max. 10000000)
 

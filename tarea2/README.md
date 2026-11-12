@@ -397,3 +397,10 @@ Se probaron combinaciones de pesos y se adoptó el óptimo:
 
 ### 12.5 Métrica de resiliencia por técnica
 La resiliencia de cada ruta es su **supervivencia exacta**: `Π (1 − P_evento)` sobre los eventos distintos que cruza (las amenazas espaciales cuentan una vez por zona). Se usa la misma fórmula para las cuatro técnicas, de modo que son comparables, y la simulación Monte Carlo la valida. La métrica anterior (disyunción × seguridad, sección 11) mide la independencia de una dupla de rutas y depende de la referencia de cada técnica, por lo que no permite comparar técnicas entre sí; se conserva en la API como `resiliencia_disyuncion`.
+
+### 12.6 Distribuciones de probabilidad
+- **Sorteo:** `r ~ Uniforme(0,100)`; la amenaza ocurre si `r < 100·P`, es decir una Bernoulli de parámetro P. Se usa la uniforme porque convierte una probabilidad directamente en un umbral comparable (lo que pide la rúbrica). No se usa una normal: concentraría los valores en torno a un promedio y distorsionaría la probabilidad de falla; con la uniforme `Pr(r < 100·P) = P` exactamente.
+- **Evento por zona:** una zona de ignición, área protegida, foco o línea de tendido es un solo evento con un solo sorteo; sus aristas fallan juntas. Viento y sismo por edificación se sortean por arista/manzana.
+- **Supervivencia exacta:** con eventos independientes, `S = Π(1 − P_i)` (cero fallas en una Poisson-binomial).
+- **Monte Carlo:** el número de supervivientes en N=100 escenarios es Binomial(N, S); error estándar `√(S(1−S)/N)`, hasta ±5 puntos. Por eso la supervivencia simulada fluctúa y la resiliencia mostrada usa el valor exacto.
+- **Limitaciones:** se asume independencia entre eventos distintos (incendio y viento en realidad se correlacionan); las P son de criterio experto, no frecuencias observadas; los coeficientes sísmicos son de orden de magnitud.

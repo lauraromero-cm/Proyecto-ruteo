@@ -493,6 +493,27 @@ Un valor alto indica buen respaldo: si una ruta se corta, la otra no se ve afect
 
 La escala logarítmica de gravedad produce valores intuitivos: $\times$1000 (FIRMS, SNASPE) $\to$ gravedad~1,0; $\times$1.5 (tendido) $\to$ gravedad~0,06; $\times$1.3 (ignición) $\to$ gravedad~0,04.
 
+\subsection{Distribuciones de probabilidad utilizadas}
+\label{sec:distribuciones}
+
+El cálculo de resiliencia y la simulación de fallas usan dos distribuciones, una por cada nivel del modelo.
+
+\textbf{Sorteo: uniforme continua.} Para simular una falla se genera $r \sim U(0,100)$ y la amenaza ocurre si $r < 100\,P$. Esto equivale a una variable de Bernoulli: $\Pr(\text{falla}) = P$, porque en una distribución uniforme la probabilidad de caer bajo el umbral es proporcional a él. Se eligió la uniforme porque es la que transforma directamente una probabilidad en un umbral comparable, y es lo que pide la rúbrica (número aleatorio entre 0 y 100 contra un umbral).
+
+\textbf{Por qué no una normal.} La distribución normal concentra los valores alrededor de un promedio y haría poco probables los extremos; al comparar con un umbral, la probabilidad de falla quedaría distorsionada. En la uniforme todos los valores entre 0 y 100 son igualmente probables, por lo que $\Pr(r < 100\,P) = P$ exactamente. Por eso la distribución normal no interviene en ningún cálculo del modelo.
+
+\textbf{Evento por zona.} Una zona de ignición, un área protegida, un foco FIRMS o una línea de tendido es un único evento: se hace un solo sorteo y vale para todas las aristas de esa zona, que fallan juntas (correlación perfecta dentro de la zona). Si se sortease cada arista por separado, una zona de 50 aristas tendría 50 oportunidades de fallar y la ruta parecería mucho más frágil de lo que es. El viento y el sismo por edificación se sortean por arista o manzana.
+
+\textbf{Supervivencia exacta: Poisson-binomial.} Si una ruta cruza $n$ eventos distintos con probabilidades $P_1,\dots,P_n$, y se asume que son independientes entre sí, la probabilidad de que no ocurra ninguno es
+\begin{equation}
+S = \prod_{i=1}^{n} (1 - P_i)
+\end{equation}
+que es la probabilidad de cero fallas en una suma de Bernoulli de probabilidades distintas (distribución Poisson-binomial). Es el valor al que converge la simulación.
+
+\textbf{Monte Carlo: binomial.} Con $N=100$ escenarios, el número de rutas que sobreviven sigue una $\text{Binomial}(N, S)$, de modo que la tasa simulada tiene error estándar $\sqrt{S(1-S)/N}$, de hasta $\pm 5$ puntos porcentuales. Por eso la fila ``Superv. simulada'' fluctúa entre ejecuciones y la resiliencia mostrada en la leyenda usa el valor exacto, sin ruido.
+
+\textbf{Limitaciones.} (i) Se supone independencia entre eventos distintos, aunque en la realidad un incendio y el viento están correlacionados. (ii) Las probabilidades $P$ son asignadas por criterio experto a partir de cada capa (por ejemplo 0,35 para tendido, 0,80 para FIRMS), no frecuencias observadas. (iii) La intensidad sísmica usa coeficientes de orden de magnitud, no un modelo publicado.
+
 % =====================================================================
 \section{Catálogo de rutas y resultados}
 \label{sec:resultados}
