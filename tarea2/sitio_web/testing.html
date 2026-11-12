@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing de sismos — Ruteo BVLOS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; font-size: 13px; }
+  #map { position: absolute; inset: 0; }
+  .panel { position: absolute; top: 10px; right: 10px; z-index: 1000; width: 340px; max-height: calc(100% - 20px);
+           overflow-y: auto; background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 2px 10px #0004; }
+  h2 { margin: 0 0 4px; font-size: 16px; }
+  .sub { color: #666; margin: 0 0 8px; }
+  label { display: block; margin-top: 8px; font-weight: 600; }
+  input[type=range] { width: 100%; }
+  input[type=number] { width: 60px; }
+  button { width: 100%; margin-top: 6px; padding: 7px; cursor: pointer; border: 0; border-radius: 5px; background: #2980b9; color: #fff; font-weight: 600; }
+  button.sec { background: #7f8c8d; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .presets button { width: auto; display: inline-block; margin: 6px 4px 0 0; padding: 3px 8px; font-weight: normal; background: #ecf0f1; color: #222; }
+  ol.log { padding-left: 18px; margin: 8px 0 0; }
+  ol.log li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; }
+  td, th { border-bottom: 1px solid #ddd; padding: 2px 4px; text-align: right; }
+  td:first-child, th:first-child { text-align: left; }
+  a { color: #2980b9; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel">
+  <h2>🧪 Testing de sismos</h2>
+  <p class="sub">Genera un sismo sintético y mira cómo responde el sistema. <a href="/">← Volver al mapa</a></p>
+
+  <div class="presets">Ejemplos:
+    <button data-p="-33.03,-71.62,6.5,20">M6.5 Valparaíso</button>
+    <button data-p="-32.98,-71.52,5.0,10">M5.0 Viña</button>
+    <button data-p="-33.05,-71.4,7.5,35">M7.5 Quilpué</button>
+    <button data-p="-33.0,-72.3,6.0,25">M6.0 mar</button>
+  </div>
+
+  <label>Epicentro <span style="font-weight:normal;color:#666">(clic en el mapa o arrastra el marcador)</span></label>
+  <div id="lbl-pos">—</div>
+
+  <label>Magnitud: <span id="lbl-mag">6.0</span></label>
+  <input type="range" id="rng-mag" min="3" max="8.5" step="0.1" value="6.0">
+  <label>Profundidad: <span id="lbl-prof">20</span> km</label>
+  <input type="range" id="rng-prof" min="5" max="150" step="5" value="20">
+  <label>Drones por cuartel <input type="number" id="inp-n" value="1" min="1" max="5">
+    &nbsp;Autonomía (km) <input type="number" id="inp-aut" value="30" min="5" max="100"></label>
+
+  <button id="btn-generar">💥 Generar sismo</button>
+  <button id="btn-limpiar" class="sec">Limpiar</button>
+
+  <div id="resultado" style="display:none">
+    <label>Respuesta del sistema</label>
+    <ol class="log" id="log"></ol>
+    <table id="tabla-drones"></table>
+  </div>
+</div>
+<script src="testing.js"></script>
+</body>
+</html>

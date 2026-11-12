@@ -1079,17 +1079,24 @@ class RuteoRequestHandler(SimpleHTTPRequestHandler):
                         return max(lo, min(hi, float(query.get(nombre, [default])[0])))
                     except (TypeError, ValueError):
                         return default
-                sismo_id = int(str(query.get("sismo", ["15"])[0]).replace("sismo_", ""))
                 viento = num("viento_max", VIENTO_MAX_DEFAULT_KMH, *VIENTO_MAX_RANGO)
-                params = (sismo_id, round(viento, 1), int(num("drones_por_cuartel", 1, 1, 5)),
+                if "lat" in query and "lon" in query:  # sismo sintetico (vista de testing)
+                    sismo = {"lat": num("lat", 0, -90, 90), "lon": num("lon", 0, -180, 180),
+                             "magnitud": num("mag", 6.0, 2.0, 9.0), "profundidad_km": num("prof", 10.0, 1.0, 300.0)}
+                    clave = tuple(round(v, 4) for v in sismo.values())
+                else:
+                    sismo = int(str(query.get("sismo", ["15"])[0]).replace("sismo_", ""))
+                    clave = sismo
+                params = (clave, round(viento, 1), int(num("drones_por_cuartel", 1, 1, 5)),
                           num("autonomia_km", 30.0, 5.0, 100.0), num("alcance_camara_m", 150.0, 30.0, 500.0))
                 if params not in CACHE_DESPLIEGUES:
                     conn = get_db_connection()
                     try:
                         t0 = time.time()
                         res = calcular_despliegue_sismo(
-                            conn.cursor(), sismo_id, cost_resiliente_sql({"tipo": "sismo"}, viento),
-                            drones_por_cuartel=params[2], autonomia_km=params[3], alcance_camara_m=params[4])
+                            conn.cursor(), sismo, cost_resiliente_sql({"tipo": "sismo"}, viento),
+                            drones_por_cuartel=params[2], autonomia_km=params[3], alcance_camara_m=params[4],
+                            dano_fn=factor_dano_mmi)
                         res["tiempo_calculo_ms"] = round((time.time() - t0) * 1000, 1)
                     finally:
                         release_db_connection(conn)

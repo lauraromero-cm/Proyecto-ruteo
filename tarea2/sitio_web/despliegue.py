@@ -101,16 +101,24 @@ def listar_sismos(cur):
             for i, m, l in cur.fetchall()]
 
 
-def calcular_despliegue_sismo(cur, sismo_id, costo_sql, drones_por_cuartel=1,
+def calcular_despliegue_sismo(cur, sismo, costo_sql, drones_por_cuartel=1,
                               autonomia_km=AUTONOMIA_KM_DEFAULT,
                               alcance_camara_m=ALCANCE_CAMARA_M_DEFAULT,
-                              velocidad_kmh=VELOCIDAD_KMH_DEFAULT):
-    """costo_sql: expresion de costo por arista (servidor.cost_resiliente_sql)."""
-    cur.execute("SELECT id, magnitud, lugar, ST_X(geom), ST_Y(geom) FROM amenaza_sismos WHERE id = %s", (sismo_id,))
-    s = cur.fetchone()
-    if not s:
-        return {"error": "Sismo no encontrado"}
-    _, mag, lugar, s_lon, s_lat = s
+                              velocidad_kmh=VELOCIDAD_KMH_DEFAULT, dano_fn=None):
+    """costo_sql: expresion de costo por arista (servidor.cost_resiliente_sql).
+    sismo: id de amenaza_sismos, o dict {lon, lat, magnitud, profundidad_km} para un sismo
+    sintetico (vista de testing). dano_fn(mag, prof_km, dist_km) -> 0..1 es opcional y agrega
+    el dano esperado por manzana."""
+    if isinstance(sismo, dict):
+        sismo_id, mag, s_lon, s_lat = None, sismo["magnitud"], sismo["lon"], sismo["lat"]
+        prof, lugar = sismo.get("profundidad_km", 10.0), "Sismo sintético (testing)"
+    else:
+        cur.execute("SELECT id, magnitud, lugar, ST_X(geom), ST_Y(geom), profundidad_km FROM amenaza_sismos WHERE id = %s", (sismo,))
+        s = cur.fetchone()
+        if not s:
+            return {"error": "Sismo no encontrado"}
+        sismo_id, mag, lugar, s_lon, s_lat, prof = s
+        prof = float(prof) if prof is not None else 10.0
     radio = radio_zona_km(float(mag))
 
     # Flota: mismos cuarteles operativos que ofrece /api/origenes
@@ -134,7 +142,8 @@ def calcular_despliegue_sismo(cur, sismo_id, costo_sql, drones_por_cuartel=1,
     zona = {}
     for pid, pers, antig, lon, lat, dist in cur.fetchall():
         zona[pid] = {"id": pid, "poblacion": pers, "antiguedad": round(antig, 2),
-                     "lon": round(lon, 5), "lat": round(lat, 5),
+                     "lon": round(lon, 5), "lat": round(lat, 5), "dist_km": dist,
+                     "dano": round(dano_fn(float(mag), prof, dist), 3) if dano_fn else None,
                      "prioridad": prioridad(pers, antig, dist, radio)}
     if not zona or not drones:
         return {"error": "Sin manzanas pobladas en la zona o sin cuarteles disponibles"}
@@ -201,17 +210,19 @@ def calcular_despliegue_sismo(cur, sismo_id, costo_sql, drones_por_cuartel=1,
     pob_cub = sum(zona[m]["poblacion"] for m in cubiertas_zona)
     pr = sum(z["prioridad"] for z in zona.values())
     pr_cub = sum(zona[m]["prioridad"] for m in cubiertas_zona)
+    dano_pob = {m: (z["dano"] or 0) * z["poblacion"] for m, z in zona.items()}
+    dano_tot = sum(dano_pob.values())
     antiguas = [m for m, z in zona.items() if z["antiguedad"] > UMBRAL_ANTIGUA]
     prim = max(zona.values(), key=lambda z: z["prioridad"])["id"]
     t_prim = (cubiertas[prim][1] / 1000.0 / velocidad_kmh * 60.0) if prim in cubiertas else None
 
     return {
-        "sismo": {"id": sismo_id, "magnitud": float(mag), "lugar": lugar, "lon": s_lon, "lat": s_lat},
+        "sismo": {"id": sismo_id, "magnitud": float(mag), "profundidad_km": prof, "lugar": lugar, "lon": s_lon, "lat": s_lat},
         "parametros": {"radio_km": radio, "autonomia_km": autonomia_km, "drones_por_cuartel": drones_por_cuartel,
                        "alcance_camara_m": alcance_camara_m, "velocidad_kmh": velocidad_kmh},
         "drones": salida_drones,
         "manzanas": [{"id": z["id"], "lon": z["lon"], "lat": z["lat"], "poblacion": z["poblacion"],
-                      "antiguedad": z["antiguedad"], "prioridad": round(z["prioridad"], 1),
+                      "antiguedad": z["antiguedad"], "prioridad": round(z["prioridad"], 1), "dano": z["dano"],
                       "cubierta": z["id"] in cubiertas_zona, "dron": dron_de.get(z["id"])}
                      for z in zona.values()],
         "metricas": {
@@ -220,6 +231,7 @@ def calcular_despliegue_sismo(cur, sismo_id, costo_sql, drones_por_cuartel=1,
             "poblacion_zona": pob, "pct_poblacion_cubierta": round(100.0 * pob_cub / pob, 1) if pob else 0.0,
             "pct_prioridad_cubierta": round(100.0 * pr_cub / pr, 1) if pr else 0.0,
             "pct_antiguas_cubiertas": round(100.0 * len([m for m in antiguas if m in cubiertas_zona]) / len(antiguas), 1) if antiguas else None,
+            "pct_dano_cubierto": round(100.0 * sum(dano_pob[m] for m in cubiertas_zona) / dano_tot, 1) if dano_tot else None,
             "km_totales": round(sum(d["distancia_km"] for d in salida_drones), 1),
             "min_primera_inspeccion_top": round(t_prim, 1) if t_prim is not None else None,
         },
