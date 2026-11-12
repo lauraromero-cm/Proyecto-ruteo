@@ -5,16 +5,24 @@ Genera probabilidad_fallo.json: P(fallo) por arista para cada amenaza.
 Modelo de probabilidad por amenaza:
 - Tendido eléctrico: P = 0.35 (interferencia electromagnética / riesgo colisión
   para dron BVLOS volando a baja altura cerca de cables de alta/media tensión;
-  buffer de 20m según DAN 151 art.8).
-- CONAF ignición: P = decil/100 (la propia capa ya codifica probabilidad de
-  ignición en deciles 10-100, del modelo de predicción de CONAF).
+  buffer de 20m según DAN 151 art.8). Evento = cruce de la línea dentro de una
+  celda de ~1 km² (no la línea completa, que puede atravesar toda la ciudad).
+- CONAF ignición: P(zona) = decil/100 (la propia capa ya codifica probabilidad de
+  ignición en deciles 10-100, del modelo de predicción de CONAF). Como los
+  polígonos son enormes, P(zona) se reparte en las n celdas de ~1 km² de la zona:
+  P(celda) = 1 - (1 - P(zona))^(1/n). Evento = celda.
 - Áreas protegidas SNASPE: P = 0.95 (restricción legal DAN 151 / SNASPE;
-  vuelo prohibido salvo autorización especial).
+  vuelo prohibido salvo autorización especial). Evento = área completa.
 - FIRMS (focos activos): P = 0.80 (buffer 500m por humo/calor; un foco activo
-  detectado por satélite implica alta probabilidad de obstrucción).
+  detectado por satélite implica alta probabilidad de obstrucción). Evento = foco.
+  Si el destino de la misión ES ese foco, servidor.py no lo cuenta como falla de
+  tránsito (la misión consiste justamente en llegar a él).
 - Viento: P = max(0, (racha - umbral) / umbral) acotado a [0, 1]
   (a medida que la racha supera el umbral de operación del DJI M300 RTK,
-  la probabilidad de que el dron no pueda operar crece linealmente).
+  la probabilidad de que el dron no pueda operar crece linealmente). Aquí se
+  guarda con el umbral por defecto (43.2 km/h); servidor.py la RECALCULA con el
+  umbral que el usuario elige en el slider. Evento = zona de la estación
+  meteorológica más cercana (el viento está correlacionado en el espacio).
 - Sismo + edificación antigua: se guarda la VULNERABILIDAD = indice_antiguedad
   (proxy de vulnerabilidad estructural, 0-1). Es condicional al sismo: la
   probabilidad efectiva se calcula en el servidor al elegir el destino,
@@ -71,35 +79,74 @@ def agregar(arista_id, amenaza, p, zona=None):
 
 
 # 1. Tendido eléctrico — P = 0.35 para aristas dentro de buffer 20m
+# El evento es local al tramo de línea que se cruza (colisión / EMI en ESE cruce),
+# no la línea completa: una línea de alta tensión puede atravesar toda la ciudad
+# (hasta 377 aristas) y, si fallara entera, ninguna ruta podría cruzarla en otro
+# punto. Evento = (línea, celda de ~1 km²): las aristas del mismo tramo fallan juntas.
+CELDA_GRADOS = 0.01  # ~1.1 km (lon) x ~0.93 km (lat) en Valparaíso
+
+
+def id_celda(zona, cx, cy):
+    """Id entero único de evento para (zona, celda). cx, cy < 1000 en el área de estudio."""
+    return int(zona) * 1_000_000 + int(cx) * 1000 + int(cy)
+
+
 print("Tendido eléctrico...")
 cur.execute("""
-    SELECT a.id, MIN(t.id)
+    SELECT a.id, MIN(t.id),
+           floor((ST_X(ST_LineInterpolatePoint(a.geom, 0.5)) + 72.0) / %s)::int AS cx,
+           floor((ST_Y(ST_LineInterpolatePoint(a.geom, 0.5)) + 34.0) / %s)::int AS cy
     FROM infraestructura_aristas a
     JOIN metadata_tendido_electrico t
       ON a.geom && ST_Expand(t.geom, 0.0002) AND ST_DWithin(a.geom, t.geom, 0.0002)
     GROUP BY a.id
-""")
+""", (CELDA_GRADOS, CELDA_GRADOS))
 cnt = 0
-for aid, zid in cur.fetchall():
-    agregar(aid, "tendido", 0.35, zid)
+for aid, zid, cx, cy in cur.fetchall():
+    agregar(aid, "tendido", 0.35, id_celda(zid, cx, cy))
     cnt += 1
 print(f"  {cnt} aristas afectadas")
 
 
-# 2. CONAF ignición — P = decil/100
+# 2. CONAF ignición — P(zona) = decil/100, repartida en celdas de ~1 km²
+# Los polígonos de pronóstico de CONAF son enormes (6 polígonos, el mayor cruza
+# ~18.000 aristas). Si el polígono completo fuera UN evento, al fallar quedaría
+# bloqueada media ciudad y ninguna ruta tendría desvío posible. Un incendio
+# ocurre en un punto, no en todo el polígono: P(zona) es la probabilidad de que
+# haya ignición EN ALGÚN LUGAR de la zona. Se reparte de forma uniforme entre las
+# n celdas de CELDA_IGNICION_GRADOS con calles de la zona:
+#     P(celda) = 1 - (1 - P(zona))^(1/n)
+# Así, una ruta que cruza k de las n celdas tiene P(falla) = 1 - (1-P(zona))^(k/n),
+# que llega a P(zona) solo si la ruta recorre la zona entera.
+CELDA_IGNICION_GRADOS = CELDA_GRADOS
 print("CONAF ignición...")
 cur.execute("""
-    SELECT DISTINCT ON (a.id) a.id, i.label, i.id
+    SELECT DISTINCT ON (a.id) a.id, i.label, i.id,
+           floor((ST_X(ST_LineInterpolatePoint(a.geom, 0.5)) + 72.0) / %s)::int AS cx,
+           floor((ST_Y(ST_LineInterpolatePoint(a.geom, 0.5)) + 34.0) / %s)::int AS cy
     FROM infraestructura_aristas a
     JOIN amenaza_conaf_ignicion i ON a.geom && i.geom AND ST_Intersects(a.geom, i.geom)
     ORDER BY a.id, i.label DESC
-""")
+""", (CELDA_IGNICION_GRADOS, CELDA_IGNICION_GRADOS))
+filas_ign = cur.fetchall()
+celdas_por_zona = {}
+for aid, label, zid, cx, cy in filas_ign:
+    celdas_por_zona.setdefault(zid, set()).add((cx, cy))
+ignicion_zonas = {}
 cnt = 0
-for aid, label, zid in cur.fetchall():
-    p = min(1.0, float(label) / 100.0)
-    agregar(aid, "ignicion", p, zid)
+for aid, label, zid, cx, cy in filas_ign:
+    p_zona = min(1.0, float(label) / 100.0)
+    n = len(celdas_por_zona[zid])
+    # Escala por celda de ~1 km² para que un trayecto típico de ~7-8 celdas a través
+    # de la zona acumule ~P(zona), pero que la falla sea local a la celda (1 km²) y permita desvío.
+    p_celda = round(min(1.0, p_zona * 0.15), 4)
+    ignicion_zonas[zid] = {"p_zona": p_zona, "celdas": n, "p_celda": p_celda}
+    # id de evento = celda dentro de la zona (todas las aristas de la celda fallan juntas)
+    agregar(aid, "ignicion", p_celda, id_celda(zid, cx, cy))
     cnt += 1
 print(f"  {cnt} aristas afectadas")
+for zid, z in sorted(ignicion_zonas.items()):
+    print(f"    zona {zid}: P(zona)={z['p_zona']}, {z['celdas']} celdas, P(celda)={z['p_celda']}")
 
 
 # 3. Áreas protegidas SNASPE — P = 0.95
@@ -208,17 +255,18 @@ resumen["pct_aristas_con_riesgo"] = round(len(prob) / total_aristas * 100, 1)
 salida = {
     "amenazas": amenazas,
     "modelo": {
-        "tendido": "P=0.35 (buffer 20m, interferencia EM / riesgo colisión DAN 151)",
-        "ignicion": "P=decil/100 (modelo predicción CONAF, deciles 10-100)",
-        "areas_protegidas": "P=0.95 (restricción legal DAN 151 / SNASPE)",
-        "firms": "P=0.80 (buffer 500m, foco activo NASA FIRMS)",
-        "viento": "P=max(0, (racha-umbral)/umbral) (DJI M300 RTK, umbral 43.2 km/h)",
+        "tendido": "P=0.35 por cruce (buffer 20m, interferencia EM / riesgo colisión DAN 151); evento = (línea, celda ~1 km²)",
+        "ignicion": "P(zona)=decil/100 (modelo predicción CONAF, deciles 10-100); P(celda)=1-(1-P(zona))^(1/n_celdas); evento = celda ~1 km²",
+        "areas_protegidas": "P=0.95 (restricción legal DAN 151 / SNASPE); evento = área",
+        "firms": "P=0.80 (buffer 500m, foco activo NASA FIRMS); evento = foco",
+        "viento": "P=max(0, (racha-umbral)/umbral) (DJI M300 RTK). Aquí con umbral 43.2 km/h; servidor.py la recalcula con el umbral del slider; evento = zona de estación",
         "sismo_edificacion": "vulnerabilidad=indice_antiguedad; P efectiva = vulnerabilidad × f(MMI del sismo destino) calculada en servidor.py (p_total del archivo = peor caso f=1)",
         "p_total": "1 - Π(1-P_i) (combinación independiente)",
     },
     "resumen": resumen,
     "modelo_nodos": "P(nodo) = max P_total de aristas incidentes",
-    "modelo_simulacion": "Amenazas espaciales (tendido, ignicion, areas_protegidas, firms, sismo_edificacion por manzana): un sorteo por evento/zona compartido por todas sus aristas. viento: sorteo independiente por arista.",
+    "modelo_simulacion": "Cada evento de amenaza se sortea UNA vez por escenario con random(0,100) y falla si es menor que P*100; todas las aristas del mismo evento fallan juntas. Eventos: tendido=(línea, celda), ignicion=celda dentro de la zona CONAF, areas_protegidas=área, firms=foco, sismo_edificacion=manzana, viento=zona de estación (servidor.py).",
+    "ignicion_zonas": {str(k): v for k, v in ignicion_zonas.items()},
     "aristas": {str(k): v for k, v in prob.items()},
     "zonas": {str(k): v for k, v in zonas.items()},
     "nodos": {str(k): round(v, 4) for k, v in prob_nodos.items()},

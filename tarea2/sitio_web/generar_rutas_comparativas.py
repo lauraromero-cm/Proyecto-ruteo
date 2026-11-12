@@ -7,6 +7,7 @@ Exporta rutas_catalogo.json y rutas_comparativas.geojson para el visor web.
 import json
 import os
 import psycopg2
+from modelo_riesgo import P_TENDIDO, cost_resiliente_sql, costo_base_sql
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 CONN = dict(
@@ -22,7 +23,7 @@ cur = conn.cursor()
 
 # 1. Asegurar columna cost_resiliente e indices espaciales
 print("Actualizando ponderaciones de amenazas y metadata en infraestructura vial...")
-cur.execute("""
+cur.execute(f"""
 ALTER TABLE infraestructura_aristas ADD COLUMN IF NOT EXISTS cost_resiliente double precision;
 UPDATE infraestructura_aristas SET cost_resiliente = length_m;
 
@@ -31,17 +32,22 @@ CREATE INDEX IF NOT EXISTS idx_ignicion_geom ON amenaza_conaf_ignicion USING gis
 CREATE INDEX IF NOT EXISTS idx_asp_geom ON amenaza_conaf_areas_protegidas USING gist(geom);
 CREATE INDEX IF NOT EXISTS idx_firms_geom ON amenaza_firms USING gist(geom);
 
-UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.2
+-- Multiplicadores derivados de la probabilidad de fallo (ver modelo_riesgo.py):
+-- 1/(1-P). Tendido P=0.35 -> x1.54. Ignición P=decil/100 del polígono -> x1.11-x1.67.
+UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * (1.0 / (1.0 - {P_TENDIDO}))
 WHERE id IN (
     SELECT a.id FROM infraestructura_aristas a
     JOIN metadata_tendido_electrico t ON a.geom && ST_Expand(t.geom, 0.0002) AND ST_DWithin(a.geom, t.geom, 0.0002)
 );
 
-UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1.1
-WHERE id IN (
-    SELECT a.id FROM infraestructura_aristas a
-    JOIN amenaza_conaf_ignicion i ON a.geom && i.geom AND ST_Intersects(a.geom, i.geom)
-);
+UPDATE infraestructura_aristas a SET cost_resiliente = a.cost_resiliente * (1.0 / (1.0 - LEAST(0.95, sub.label / 100.0)))
+FROM (
+    SELECT a2.id, max(i.label)::double precision AS label
+    FROM infraestructura_aristas a2
+    JOIN amenaza_conaf_ignicion i ON a2.geom && i.geom AND ST_Intersects(a2.geom, i.geom)
+    GROUP BY a2.id
+) sub
+WHERE a.id = sub.id;
 
 UPDATE infraestructura_aristas SET cost_resiliente = cost_resiliente * 1000.0
 WHERE id IN (
@@ -110,35 +116,12 @@ SET viento_racha_kmh = viento_racha_interpolada_kmh(ST_LineInterpolatePoint(a.ge
 """)
 conn.commit()
 
-PESO_ANTIGUEDAD = 0.3  # penalizacion leve y condicional (ver justificacion en RESULTADOS.md);
-# nunca domina sobre tendido electrico (x1.5) ni CONAF (x1000), que son riesgos fisicos directos.
-
 VIENTO_MAX_DEFAULT_KMH = 43.2  # restriccion por defecto (punto 6.2): 12 m/s, el
 # limite de resistencia al viento para despegue/aterrizaje del DJI Matrice 300
 # RTK (dron de referencia del proyecto; enterprise.dji.com/matrice-300). Se usa
 # cuando el operador no ingresa un valor propio. El catalogo precalculado
 # siempre usa este valor; el sitio dinamico (servidor.py) permite cambiarlo,
 # acotado al limite fisico en vuelo del mismo dron (15 m/s = 54 km/h).
-
-
-def cost_resiliente_sql(dest, viento_max_kmh=VIENTO_MAX_DEFAULT_KMH):
-    """Expresion SQL de costo para la ruta 'resiliente':
-    - agrega el riesgo de escombros por edificacion antigua SOLO si el
-      destino es un sismo (ponderacion condicional, punto 5).
-    - aplica la restriccion de viento operacional del usuario (o el
-      default de 43.2 km/h): si la racha PROMEDIO de la zona
-      (viento_racha_kmh, ver seccion anterior) supera el umbral, la
-      arista se penaliza x1000 (punto 6). Nunca excluye literalmente la
-      arista (costo finito), por lo que siempre existe una ruta aunque
-      toda la zona este ventosa.
-    """
-    base = "cost_resiliente"
-    if dest.get("tipo") == "sismo":
-        base = f"({base} * (1 + {PESO_ANTIGUEDAD} * factor_antiguedad_zona))"
-    return (
-        f"(CASE WHEN viento_racha_kmh > {float(viento_max_kmh)} "
-        f"THEN ({base}) * 1000.0 ELSE {base} END)"
-    )
 
 # 2. Obtener lista de Origenes Clave (Cuarteles / Comisarías de todas las comunas)
 cur.execute("""
@@ -187,7 +170,7 @@ for r in filas_cuarteles:
 # del dron, calculado con racha_media_kmh - ver justificacion en la seccion
 # anterior). Funciones SQL en db/schema.sql.
 cur.execute("""
-SELECT s.id, s.usgs_id, s.magnitud, s.lugar, ST_X(s.geom) AS lon, ST_Y(s.geom) AS lat
+SELECT s.id, s.usgs_id, s.magnitud, s.lugar, ST_X(s.geom) AS lon, ST_Y(s.geom) AS lat, s.profundidad_km
 FROM amenaza_sismos s
 CROSS JOIN LATERAL (
     SELECT ST_Distance(s.geom::geography, n.geom::geography) AS d
@@ -204,7 +187,7 @@ filas_sismos = cur.fetchall()
 
 DESTINOS = []
 for r in filas_sismos:
-    s_id, usgs, mag, lug, lon, lat = r
+    s_id, usgs, mag, lug, lon, lat, prof_km = r
     cur.execute("SELECT id FROM infraestructura_nodos ORDER BY geom <-> ST_SetSRID(ST_MakePoint(%s, %s), 4326) LIMIT 1", (lon, lat))
     dest_nodo = cur.fetchone()[0]
     key = f"sismo_{s_id}"
@@ -214,6 +197,7 @@ for r in filas_sismos:
         "tipo": "sismo",
         "descripcion": f"Sismo M{mag} ({lug})",
         "magnitud": float(mag),
+        "profundidad_km": float(prof_km or 10.0),
         "lugar": lug,
         "lon": round(float(lon), 5),
         "lat": round(float(lat), 5),
@@ -244,14 +228,6 @@ for r in filas_firms:
     })
 
 print(f"Generando catálogo para {len(ORIGENES)} orígenes x {len(DESTINOS)} destinos = {len(ORIGENES) * len(DESTINOS)} pares...")
-
-
-def costo_base_sql(dest):
-    """Costo de la arista SIN amenazas ni viento: solo distancia, mas el
-    sesgo de antiguedad si el destino es un sismo (que el ruteo tambien usa)."""
-    if dest.get("tipo") == "sismo":
-        return f"(length_m * (1 + {PESO_ANTIGUEDAD} * factor_antiguedad_zona))"
-    return "length_m"
 
 
 def calcular_metricas(edges1, edges2, dist1, dist2, dest, viento_max_kmh=VIENTO_MAX_DEFAULT_KMH):

@@ -11,6 +11,28 @@ function cargarGeoJSON(url, callback) {
     .catch((err) => console.warn("No se pudo cargar", url, err));
 }
 
+// Creación de paneles (Panes) con jerarquía estricta de Z-Index para que las rutas
+// siempre brillen por encima del mapa base, polígonos CONAF y tendido eléctrico.
+map.createPane("amenazasPane");
+map.getPane("amenazasPane").style.zIndex = 410;
+
+map.createPane("respaldoPane");
+map.getPane("respaldoPane").style.zIndex = 445;
+
+map.createPane("rutasPane");
+map.getPane("rutasPane").style.zIndex = 460;
+map.getPane("rutasPane").classList.add("leaflet-rutas-pane");
+
+map.createPane("desviosPane");
+map.getPane("desviosPane").style.zIndex = 470;
+map.getPane("desviosPane").classList.add("leaflet-desvios-pane");
+
+map.createPane("fallasPane");
+map.getPane("fallasPane").style.zIndex = 480;
+
+map.createPane("marcadoresRutaPane");
+map.getPane("marcadoresRutaPane").style.zIndex = 490;
+
 // Grupos de capas
 let capasRutas = {
   dijkstra: L.featureGroup().addTo(map),
@@ -18,6 +40,7 @@ let capasRutas = {
   optimizacion_lp: L.featureGroup().addTo(map),
   aco: L.featureGroup().addTo(map),
 };
+let capaRespaldoK2 = L.featureGroup(); // Opcional (desactivada por defecto para no saturar las 4 rutas principales)
 let capaMarcadoresRuta = L.featureGroup().addTo(map);
 
 let capaCarabineros = L.featureGroup().addTo(map);
@@ -273,11 +296,22 @@ function actualizarRuta(origenKey, destinoKey) {
 }
 
 let ultimoResultado = null;
+let rutaEnfocadaActiva = "todas";
 const capaFallas = L.featureGroup().addTo(map);
+const capasDesvios = {
+  dijkstra: L.featureGroup().addTo(map),
+  resiliente: L.featureGroup().addTo(map),
+  optimizacion_lp: L.featureGroup().addTo(map),
+  aco: L.featureGroup().addTo(map),
+};
+function limpiarDesvios() {
+  Object.values(capasDesvios).forEach((g) => g.clearLayers());
+}
 
 function renderizarRuta(rutaData) {
   ultimoResultado = rutaData;
   capaFallas.clearLayers();
+  limpiarDesvios();
   const _sr = document.getElementById("sim-resultado"); if (_sr) _sr.innerHTML = "";
   if (!rutaData) return;
 
@@ -286,70 +320,118 @@ function renderizarRuta(rutaData) {
   capasRutas.resiliente.clearLayers();
   capasRutas.optimizacion_lp.clearLayers();
   capasRutas.aco.clearLayers();
+  capaRespaldoK2.clearLayers();
   capaMarcadoresRuta.clearLayers();
 
   const orig = rutaData.origen;
   const dest = rutaData.destino;
 
-  // 1. Dibujar Rutas Dijkstra (k=2)
+  // Helper para dibujar rutas con borde oscuro de alto contraste + núcleo neón brillante
+  function agregarTrazoNeon(grupo, geom, optsCore, popupHtml, paneName = "rutasPane") {
+    const casingWeight = (optsCore.weight || 6) + 4.5;
+    const casing = L.geoJSON(geom, {
+      pane: paneName,
+      interactive: false,
+      style: {
+        color: "#090d16",
+        weight: casingWeight,
+        opacity: optsCore.casingOpacity ?? 0.88,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: optsCore.casingDashArray || null,
+        dashOffset: optsCore.dashOffset || null,
+      },
+    });
+    const core = L.geoJSON(geom, {
+      pane: paneName,
+      style: {
+        color: optsCore.color,
+        weight: optsCore.weight || 6,
+        opacity: optsCore.opacity ?? 1.0,
+        lineCap: "round",
+        lineJoin: "round",
+        dashArray: optsCore.dashArray || null,
+        dashOffset: optsCore.dashOffset || null,
+      },
+    }).bindPopup(popupHtml);
+    grupo.addLayer(casing);
+    grupo.addLayer(core);
+  }
+
+  // 1. Dibujar Ruta Dijkstra Principal (Rojo Carmesí Neón) y Respaldo k=2
   if (rutaData.dijkstra_1 && rutaData.dijkstra_1.geom) {
-    const l1 = L.geoJSON(rutaData.dijkstra_1.geom, {
-      style: { color: "#e74c3c", weight: 4.5, opacity: 0.85 },
-    }).bindPopup(`<b>Dijkstra Ruta 1 (Distancia Pura)</b><br>Distancia: ${Math.round(rutaData.dijkstra_1.distancia_m)} m<br>Tramos: ${rutaData.dijkstra_1.tramos}`);
-    capasRutas.dijkstra.addLayer(l1);
+    agregarTrazoNeon(
+      capasRutas.dijkstra,
+      rutaData.dijkstra_1.geom,
+      { color: "#ff1744", weight: 6.5, opacity: 1.0 },
+      `<b>Dijkstra Ruta 1 (Distancia Pura)</b><br>Distancia: ${Math.round(rutaData.dijkstra_1.distancia_m)} m<br>Tramos: ${rutaData.dijkstra_1.tramos}`
+    );
   }
 
   if (rutaData.dijkstra_2 && rutaData.dijkstra_2.geom) {
     const l2 = L.geoJSON(rutaData.dijkstra_2.geom, {
-      style: { color: "#e67e22", weight: 3.5, opacity: 0.9, dashArray: "6, 6" },
-    }).bindPopup(`<b>Dijkstra Ruta 2 (Bypass Distancia)</b><br>Distancia: ${Math.round(rutaData.dijkstra_2.distancia_m)} m<br>Tramos: ${rutaData.dijkstra_2.tramos}`);
-    capasRutas.dijkstra.addLayer(l2);
+      pane: "respaldoPane",
+      style: { color: "#ff9100", weight: 3.5, opacity: 0.8, dashArray: "6, 6" },
+    }).bindPopup(`<b>Dijkstra Ruta 2 (Bypass Distancia k=2)</b><br>Distancia: ${Math.round(rutaData.dijkstra_2.distancia_m)} m<br>Tramos: ${rutaData.dijkstra_2.tramos}`);
+    capaRespaldoK2.addLayer(l2);
   }
 
-  // 2. Dibujar Rutas Resilientes (k=2)
+  // 2. Dibujar Ruta Resiliente Principal (Cian Eléctrico Brillante) y Respaldo k=2
   if (rutaData.resiliente_1 && rutaData.resiliente_1.geom) {
-    const r1 = L.geoJSON(rutaData.resiliente_1.geom, {
-      style: { color: "#2980b9", weight: 5.5, opacity: 0.9 },
-    }).bindPopup(`<b>Resiliente Ruta 1 (Corredor Seguro)</b><br>Distancia: ${Math.round(rutaData.resiliente_1.distancia_m)} m<br>Tramos: ${rutaData.resiliente_1.tramos}<br><i>Esquiva tendido eléctrico y áreas protegidas</i>`);
-    capasRutas.resiliente.addLayer(r1);
+    agregarTrazoNeon(
+      capasRutas.resiliente,
+      rutaData.resiliente_1.geom,
+      { color: "#00d2ff", weight: 7.0, opacity: 1.0 },
+      `<b>Resiliente Ruta 1 (Corredor Seguro)</b><br>Distancia: ${Math.round(rutaData.resiliente_1.distancia_m)} m<br>Tramos: ${rutaData.resiliente_1.tramos}<br><i>Esquiva tendido eléctrico y áreas protegidas</i>`
+    );
   }
 
   if (rutaData.resiliente_2 && rutaData.resiliente_2.geom) {
     const r2 = L.geoJSON(rutaData.resiliente_2.geom, {
-      style: { color: "#27ae60", weight: 4, opacity: 0.95, dashArray: "6, 6" },
-    }).bindPopup(`<b>Resiliente Ruta 2 (Bypass Seguro)</b><br>Distancia: ${Math.round(rutaData.resiliente_2.distancia_m)} m<br>Tramos: ${rutaData.resiliente_2.tramos}<br><i>Camino alternativo disjunto seguro</i>`);
-    capasRutas.resiliente.addLayer(r2);
+      pane: "respaldoPane",
+      style: { color: "#38bdf8", weight: 3.5, opacity: 0.85, dashArray: "6, 6" },
+    }).bindPopup(`<b>Resiliente Ruta 2 (Bypass Seguro k=2)</b><br>Distancia: ${Math.round(rutaData.resiliente_2.distancia_m)} m<br>Tramos: ${rutaData.resiliente_2.tramos}<br><i>Camino alternativo disjunto seguro</i>`);
+    capaRespaldoK2.addLayer(r2);
   }
 
-  // 3. Ruta Programación Lineal (Simplex)
+  // 3. Ruta Programación Lineal — Simplex (Magenta Neón intercalado para verse junto a Resiliente)
   if (rutaData.optimizacion_lp && rutaData.optimizacion_lp.geom) {
-    const lp = L.geoJSON(rutaData.optimizacion_lp.geom, {
-      style: { color: "#9b59b6", weight: 4.5, opacity: 0.85, dashArray: "8, 4" },
-    }).bindPopup(`<b>Programación Lineal — Simplex</b><br>Distancia: ${Math.round(rutaData.optimizacion_lp.distancia_m)} m<br>Tramos: ${rutaData.optimizacion_lp.tramos}<br>Iteraciones Simplex: ${rutaData.optimizacion_lp.simplex?.iteraciones_simplex ?? "—"}<br>Variables/restricciones: ${rutaData.optimizacion_lp.simplex?.variables ?? "—"} / ${rutaData.optimizacion_lp.simplex?.restricciones ?? "—"}<br><i>mín costo s.a. conservación de flujo</i>`);
-    capasRutas.optimizacion_lp.addLayer(lp);
+    agregarTrazoNeon(
+      capasRutas.optimizacion_lp,
+      rutaData.optimizacion_lp.geom,
+      { color: "#f000ff", weight: 5.5, opacity: 1.0, dashArray: "14, 14", casingDashArray: "14, 14", casingOpacity: 0.75 },
+      `<b>Programación Lineal — Simplex</b><br>Distancia: ${Math.round(rutaData.optimizacion_lp.distancia_m)} m<br>Tramos: ${rutaData.optimizacion_lp.tramos}<br>Iteraciones Simplex: ${rutaData.optimizacion_lp.simplex?.iteraciones_simplex ?? "—"}<br>Variables/restricciones: ${rutaData.optimizacion_lp.simplex?.variables ?? "—"} / ${rutaData.optimizacion_lp.simplex?.restricciones ?? "—"}<br><i>mín costo s.a. conservación de flujo</i>`
+    );
   }
 
-  // 4. Ruta Metaheurística ACO
+  // 4. Ruta Metaheurística ACO (Verde Lima Fluorescente con desfase para distinguir solapamientos)
   if (rutaData.aco && rutaData.aco.geom) {
-    const aco = L.geoJSON(rutaData.aco.geom, {
-      style: { color: "#16a085", weight: 4.5, opacity: 0.85, dashArray: "3, 8" },
-    }).bindPopup(`<b>Metaheurística ACO (Ant Colony)</b><br>Distancia: ${Math.round(rutaData.aco.distancia_m)} m<br>Tramos: ${rutaData.aco.tramos}<br><i>20 hormigas × 30 iteraciones</i>`);
-    capasRutas.aco.addLayer(aco);
+    agregarTrazoNeon(
+      capasRutas.aco,
+      rutaData.aco.geom,
+      { color: "#39ff14", weight: 5.5, opacity: 1.0, dashArray: "8, 12", casingDashArray: "8, 12", dashOffset: "10" },
+      `<b>Metaheurística ACO (Ant Colony)</b><br>Distancia: ${Math.round(rutaData.aco.distancia_m)} m<br>Tramos: ${rutaData.aco.tramos}<br><i>20 hormigas × 30 iteraciones</i>`
+    );
   }
+
+  // Aplicar estado de enfoque activo si el usuario eligió destacar una técnica
+  aplicarEnfoqueVisual(rutaEnfocadaActiva);
 
   // 5. Marcadores Destacados de Inicio y Destino
   L.circleMarker([orig.lat, orig.lon], {
+    pane: "marcadoresRutaPane",
     radius: 10,
-    color: "#1a365d",
-    fillColor: "#2980b9",
+    color: "#ffffff",
+    fillColor: "#0077ff",
     fillOpacity: 1,
     weight: 3,
   }).bindPopup(`<b>BASE DE OPERACIÓN DRON (ORIGEN)</b><br><b>${orig.nombre}</b><br>Comuna: ${orig.comuna}<br>Punto de carga habilitado`).addTo(capaMarcadoresRuta);
 
   L.circleMarker([dest.lat, dest.lon], {
+    pane: "marcadoresRutaPane",
     radius: 11,
-    color: "#78281f",
-    fillColor: dest.tipo === "incendio" ? "#d35400" : "#c0392b",
+    color: "#ffffff",
+    fillColor: dest.tipo === "incendio" ? "#ff6d00" : "#ff1744",
     fillOpacity: 1,
     weight: 3,
   }).bindPopup(`<b>OBJETIVO DE EMERGENCIA (DESTINO)</b><br><b>${dest.descripcion}</b><br>Coordenadas: ${dest.lat}, ${dest.lon}`).addTo(capaMarcadoresRuta);
@@ -519,20 +601,22 @@ cargarGeoJSON("data/sismos.geojson", (geojson) => {
   }).addTo(capaSismos);
 });
 
-// 4. Capa Tendido Eléctrico
+// 4. Capa Tendido Eléctrico (en amenazasPane, tono pizarra sutil para no competir con las rutas)
 cargarGeoJSON("data/tendido_electrico.geojson", (geojson) => {
   L.geoJSON(geojson, {
-    style: { color: "#8e44ad", weight: 2.5, opacity: 0.7, dashArray: "4, 4" },
+    pane: "amenazasPane",
+    style: { color: "#64748b", weight: 1.8, opacity: 0.5, dashArray: "3, 5" },
     onEachFeature: (f, layer) => {
-      layer.bindPopup(`<b>Línea de Tendido Eléctrico (${f.properties.tipo})</b><br>Riesgo físico de colisión BVLOS<br>Penalización en ruta resiliente: +50% costo`);
+      layer.bindPopup(`<b>Línea de Tendido Eléctrico (${f.properties.tipo})</b><br>Riesgo físico de colisión BVLOS<br>Penalización en ruta resiliente: x1.54 costo`);
     },
   }).addTo(capaTendido);
 });
 
-// 5. Capa CONAF Áreas Protegidas
+// 5. Capa CONAF Áreas Protegidas (en amenazasPane, relleno translúcido suave)
 cargarGeoJSON("data/conaf_areas_protegidas.geojson", (geojson) => {
   L.geoJSON(geojson, {
-    style: { color: "#27ae60", fillColor: "#2ecc71", fillOpacity: 0.25, weight: 2 },
+    pane: "amenazasPane",
+    style: { color: "#15803d", fillColor: "#22c55e", fillOpacity: 0.14, weight: 1.5 },
     onEachFeature: (f, layer) => {
       layer.bindPopup(`<b>${f.properties.nombre}</b><br>${f.properties.categoria}<br>Zona de Exclusión DAN 151 / SNASPE<br>Costo de penalización: x1000`);
     },
@@ -587,26 +671,117 @@ cargarGeoJSON("data/viento.geojson", (geojson) => {
 });
 
 // Control de Checkboxes de Capas
-function toggleCapa(id, grupo) {
+function toggleCapa(id, grupo, grupoExtra = null) {
   const chk = document.getElementById(id);
   if (chk) {
     chk.addEventListener("change", (e) => {
-      if (e.target.checked) map.addLayer(grupo);
-      else map.removeLayer(grupo);
+      if (e.target.checked) {
+        map.addLayer(grupo);
+        if (grupoExtra) map.addLayer(grupoExtra);
+      } else {
+        map.removeLayer(grupo);
+        if (grupoExtra) map.removeLayer(grupoExtra);
+      }
     });
   }
 }
 
-toggleCapa("chk-capa-dijkstra", capasRutas.dijkstra);
-toggleCapa("chk-capa-resil", capasRutas.resiliente);
-toggleCapa("chk-capa-lp", capasRutas.optimizacion_lp);
-toggleCapa("chk-capa-aco", capasRutas.aco);
+toggleCapa("chk-capa-dijkstra", capasRutas.dijkstra, capasDesvios.dijkstra);
+toggleCapa("chk-capa-resil", capasRutas.resiliente, capasDesvios.resiliente);
+toggleCapa("chk-capa-lp", capasRutas.optimizacion_lp, capasDesvios.optimizacion_lp);
+toggleCapa("chk-capa-aco", capasRutas.aco, capasDesvios.aco);
+toggleCapa("chk-capa-k2", capaRespaldoK2);
 toggleCapa("chk-capa-carabineros", capaCarabineros);
 toggleCapa("chk-capa-sismos", capaSismos);
 toggleCapa("chk-capa-tendido", capaTendido);
 toggleCapa("chk-capa-conaf", capaCONAF);
 toggleCapa("chk-capa-firms", capaFIRMS);
 toggleCapa("chk-capa-viento", capaViento);
+
+// Sistema de Enfoque / Spotlight para distinguir y evaluar cada una de las 4 rutas sin confusión
+function aplicarEnfoqueVisual(keyEnfoque) {
+  const estilosBase = {
+    dijkstra: { weight: 6.5, dashArray: null },
+    resiliente: { weight: 7.0, dashArray: null },
+    optimizacion_lp: { weight: 5.5, dashArray: "14, 14" },
+    aco: { weight: 5.5, dashArray: "8, 12" },
+  };
+  Object.entries(capasRutas).forEach(([k, grupo]) => {
+    const esFoco = keyEnfoque === "todas" || keyEnfoque === k;
+    const base = estilosBase[k];
+    const sublayers = grupo.getLayers();
+    sublayers.forEach((layer, idx) => {
+      if (layer._esDescartada) {
+        layer.setStyle({ opacity: esFoco ? 0.35 : 0.06 });
+        return;
+      }
+      const esCasing = idx === 0;
+      if (esFoco) {
+        const extra = keyEnfoque === k ? 2.0 : 0.0;
+        layer.setStyle({
+          opacity: esCasing ? 0.92 : 1.0,
+          weight: (esCasing ? base.weight + 4.5 : base.weight) + extra,
+          dashArray: keyEnfoque === k ? null : base.dashArray,
+        });
+        if (keyEnfoque === k && layer.bringToFront) layer.bringToFront();
+      } else {
+        layer.setStyle({
+          opacity: esCasing ? 0.08 : 0.14,
+          weight: esCasing ? base.weight + 2 : base.weight - 1,
+          dashArray: base.dashArray,
+        });
+      }
+    });
+  });
+
+  // Aplicar también sobre las rutas alternativas recalculadas (capasDesvios)
+  Object.entries(capasDesvios).forEach(([k, grupo]) => {
+    const esFoco = keyEnfoque === "todas" || keyEnfoque === k;
+    const base = estilosBase[k];
+    const sublayers = grupo.getLayers();
+    sublayers.forEach((layer, idx) => {
+      const esCasing = idx === 0;
+      if (esFoco) {
+        const extra = keyEnfoque === k ? 2.0 : 0.0;
+        layer.setStyle({
+          opacity: esCasing ? 0.92 : 1.0,
+          weight: (esCasing ? base.weight + 4.5 : base.weight) + extra,
+        });
+        if (keyEnfoque === k && layer.bringToFront) layer.bringToFront();
+      } else {
+        layer.setStyle({
+          opacity: esCasing ? 0.06 : 0.12,
+          weight: esCasing ? base.weight + 1 : base.weight - 1.5,
+        });
+      }
+    });
+  });
+}
+
+window.enfocarRuta = function (key) {
+  rutaEnfocadaActiva = key;
+  document.querySelectorAll("#bar-enfoque .pill-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.getAttribute("data-focus") === key);
+  });
+  aplicarEnfoqueVisual(key);
+};
+
+// Hover rápido sobre las filas de la leyenda para previsualizar cada ruta
+document.querySelectorAll(".route-row").forEach((row) => {
+  const rKey = row.getAttribute("data-route");
+  row.addEventListener("mouseenter", () => aplicarEnfoqueVisual(rKey));
+  row.addEventListener("mouseleave", () => aplicarEnfoqueVisual(rutaEnfocadaActiva));
+});
+
+// Selector de modo de contraste del mapa base
+const selMapaModo = document.getElementById("sel-mapa-modo");
+if (selMapaModo) {
+  selMapaModo.addEventListener("change", (e) => {
+    const mapEl = document.getElementById("map");
+    mapEl.classList.remove("map-atenuado", "map-oscuro", "map-normal");
+    mapEl.classList.add(e.target.value);
+  });
+}
 
 // Control de Slider de Viento (restricción de usuario, punto 6 de la rúbrica)
 const rngViento = document.getElementById("rng-viento");
@@ -626,54 +801,217 @@ if (rngViento) {
 }
 
 
-// Punto 7: sorteo aleatorio de fallas (random 0-100 vs umbral P(fallo)*100)
+// Punto 7, 8 y 9: sorteo aleatorio [0, 100] a lo largo de la ruta (0% = inicio, 100% = destino),
+// descarte del tramo original restante tras el punto de falla, recálculo por calles alternativas
+// y re-evaluación de las métricas comparativas de las 4 técnicas.
+const btnSimReset = document.getElementById("btn-sim-reset");
+if (btnSimReset) {
+  btnSimReset.addEventListener("click", () => {
+    if (ultimoResultado) {
+      renderizarRuta(ultimoResultado);
+    } else {
+      capaFallas.clearLayers();
+      limpiarDesvios();
+      const sr = document.getElementById("sim-resultado");
+      if (sr) sr.innerHTML = "";
+    }
+  });
+}
+
 document.getElementById("btn-sim").addEventListener("click", () => {
   if (!ultimoResultado) return;
   capaFallas.clearLayers();
-  const colores = { dijkstra: "#e74c3c", resiliente: "#2980b9", optimizacion_lp: "#9b59b6", aco: "#16a085" };
-  const nombres = { dijkstra: "Dijkstra", resiliente: "Resiliente", optimizacion_lp: "LP Simplex", aco: "ACO" };
-  const etiquetaAm = { tendido: "línea de tendido", ignicion: "zona de ignición", areas_protegidas: "área protegida", firms: "foco FIRMS", viento: "viento", sismo_edificacion: "manzana con edificación antigua" };
+  limpiarDesvios();
 
-  // Un solo escenario: cada evento de amenaza (zona compartida o arista) se sortea una vez
-  // y es el mismo para las 4 rutas, de modo que la comparación entre técnicas es justa.
-  const sorteos = {};
-  const sortear = (clave) => (clave in sorteos ? sorteos[clave] : (sorteos[clave] = Math.random() * 100));
-  const aristasFalladas = {};
-  let html = "";
-  for (const k of Object.keys(nombres)) {
-    const aristas = (ultimoResultado.aristas_vulnerables || {})[k] || [];
-    const rutaExiste = ultimoResultado[k === "dijkstra" ? "dijkstra_1" : k === "resiliente" ? "resiliente_1" : k]?.geom;
-    if (!rutaExiste) continue;
-    const eventosFallidos = {};
-    let aristasFallan = 0;
-    aristas.forEach(a => {
-      let falla = false;
-      for (const [am, p] of Object.entries(a.amenazas)) {
-        const zid = (a.zonas || {})[am];
-        const clave = zid !== undefined ? `${am}:${zid}` : `${am}:arista${a.id}`;
-        const r = sortear(clave);
-        const umbral = p * 100;
-        if (r < umbral) {
-          falla = true;
-          eventosFallidos[clave] = am;
-          const f = (aristasFalladas[a.id] = aristasFalladas[a.id] || { geom: a.geom, motivos: {}, tecnicas: new Set() });
-          f.motivos[clave] = `${etiquetaAm[am] || am}: aleatorio ${r.toFixed(1)} &lt; umbral ${umbral.toFixed(1)}`;
-          f.tecnicas.add(nombres[k]);
+  const colores = { dijkstra: "#ff1744", resiliente: "#0088cc", optimizacion_lp: "#c000d6", aco: "#00a846" };
+  const coloresTrazo = { dijkstra: "#ff1744", resiliente: "#00d2ff", optimizacion_lp: "#f000ff", aco: "#39ff14" };
+  const nombres = { dijkstra: "Dijkstra", resiliente: "Resiliente", optimizacion_lp: "LP Simplex", aco: "ACO" };
+  const etiquetaAm = {
+    tendido: "cruce de tendido eléctrico",
+    ignicion: "celda de ignición CONAF",
+    areas_protegidas: "área protegida SNASPE",
+    firms: "foco activo FIRMS",
+    viento: "racha de viento sobre umbral",
+    sismo_edificacion: "manzana con edificación antigua",
+  };
+
+  // Sorteo aleatorio entre 0 y 100 de progreso en la ruta (acotado al tramo en vuelo [20%, 82%]
+  // para que exista tanto tramo recorrido como tramo restante a recalcular por vía alternativa).
+  const pctSorteo = Math.round((20 + Math.random() * 62) * 10) / 10;
+  const pctRestanteEst = (100 - pctSorteo).toFixed(1);
+
+  const srEl = document.getElementById("sim-resultado");
+  srEl.innerHTML = `<div style="color:#2b6cb0; font-weight:600;">🎲 Sorteo de falla en ruta: <b>${pctSorteo}%</b> del trayecto (resta <b>${pctRestanteEst}%</b>).<br><span style="font-weight:normal; font-style:italic; color:#4a5568;">Descartando resto de ruta original y recalculando calles alternativas y métricas...</span></div>`;
+
+  fetch(`/api/desvio_falla?origen=${encodeURIComponent(origenActivo)}&destino=${encodeURIComponent(destinoActivo)}&viento_max=${encodeURIComponent(vientoMaxActivo)}&pct_fallo=${encodeURIComponent(pctSorteo)}`)
+    .then(r => (r.ok ? r.json() : null))
+    .then(desvData => {
+      if (!desvData || !desvData.desvios) {
+        srEl.innerHTML = `<div style="color:#c53030;">No fue posible recalcular el desvío.</div>`;
+        return;
+      }
+
+      const desvios = desvData.desvios;
+      const mRec = desvData.metricas_recalculadas || {};
+      const simRec = desvData.simulacion_recalculada || {};
+
+      // Limpiar trazos previos de las 4 rutas para reemplazarlos por:
+      // (a) Tramo ya recorrido (0% -> X%) en trazo continuo neón
+      // (b) Tramo original descartado (X% -> 100%) en línea tenue gris/roja tachada
+      // (c) Nueva ruta alternativa recalculada (X% -> 100%) en trazo neón punteado brillante
+      Object.values(capasRutas).forEach(g => g.clearLayers());
+      capaFallas.clearLayers();
+      limpiarDesvios();
+
+      const puntosVistos = new Set();
+      let html = `<div style="background:#edf2f7; padding:5px 8px; border-radius:5px; margin-bottom:6px; font-size:11px; color:#1a202c;">` +
+        `<b>🎲 Sorteo aleatorio [0–100]: ${desvData.pct_fallo_sorteado}% del camino</b><br>` +
+        `Desde el punto de quiebre se <b>descarta el resto de la ruta original</b> y se toma una calle alternativa recalculando las métricas:</div>`;
+
+      for (const k of Object.keys(nombres)) {
+        const d = desvios[k];
+        if (!d) continue;
+        const grupoBase = capasRutas[k];
+        const grupoDesv = capasDesvios[k];
+
+        // 1. Tramo ya recorrido antes de la falla (0% -> X%)
+        if (d.geom_recorrida) {
+          const casingRec = L.geoJSON(d.geom_recorrida, {
+            pane: "rutasPane",
+            interactive: false,
+            style: { color: "#090d16", weight: 10.5, opacity: 0.9, lineCap: "round", lineJoin: "round" },
+          });
+          const coreRec = L.geoJSON(d.geom_recorrida, {
+            pane: "rutasPane",
+            style: { color: coloresTrazo[k], weight: 6, opacity: 1.0, lineCap: "round", lineJoin: "round" },
+          }).bindPopup(
+            `<b>${nombres[k]} — Tramo ya recorrido (0% → ${d.pct_recorrido}%)</b><br>` +
+            `Distancia recorrida antes del fallo: <b>${(d.distancia_recorrida_m / 1000).toFixed(2)} km</b> (${d.tramos_recorridos} tramos)`
+          );
+          grupoBase.addLayer(casingRec);
+          grupoBase.addLayer(coreRec);
+        }
+
+        // 2. Resto de la ruta original preestablecida DESCARTADA (X% -> 100%)
+        if (d.geom_descartada) {
+          const descLayer = L.geoJSON(d.geom_descartada, {
+            pane: "respaldoPane",
+            style: { color: coloresTrazo[k], weight: 3, opacity: 0.28, dashArray: "3, 7" },
+          }).bindPopup(
+            `<b>✗ ${nombres[k]} — Tramo Original DESCARTADO (${d.pct_recorrido}% → 100%)</b><br>` +
+            `Este ${d.pct_restante}% restante de la ruta preestablecida fue descartado tras la falla en la arista #${d.arista_fallada_id}.`
+          );
+          descLayer._esDescartada = true;
+          grupoBase.addLayer(descLayer);
+        }
+
+        // 3. Marcador y tramo de falla en el punto de quiebre (X% de la ruta)
+        if (d.geom_falla) {
+          L.geoJSON(d.geom_falla, { pane: "fallasPane", style: { color: "#000000", weight: 12, opacity: 0.95 } }).addTo(capaFallas);
+          L.geoJSON(d.geom_falla, { pane: "fallasPane", style: { color: "#ffea00", weight: 6, opacity: 1.0, dashArray: "5, 5" } })
+            .bindPopup(
+              `<b>⚠ FALLA EN EL ${d.pct_recorrido}% DE LA RUTA (${nombres[k]})</b><br>` +
+              `Arista bloqueada: <b>#${d.arista_fallada_id}</b><br>` +
+              `Amenaza: <b>${etiquetaAm[d.amenaza] || d.amenaza}</b> (sorteo <b>${d.aleatorio_umbral}</b> &lt; umbral <b>${d.umbral_pct}%</b>)<br>` +
+              `Resta por recorrer: <b>${d.pct_restante}%</b> → recalculado por calle alternativa`
+            )
+            .addTo(capaFallas);
+        }
+
+        if (d.punto_quiebre && d.punto_quiebre.length === 2) {
+          const pKey = `${d.punto_quiebre[0].toFixed(4)}_${d.punto_quiebre[1].toFixed(4)}`;
+          if (!puntosVistos.has(pKey)) {
+            puntosVistos.add(pKey);
+            L.circleMarker(d.punto_quiebre, {
+              pane: "fallasPane",
+              radius: 9,
+              color: "#000000",
+              weight: 3,
+              fillColor: "#ffea00",
+              fillOpacity: 1.0,
+            }).bindPopup(
+              `<b>⚠ PUNTO DE QUIEBRE Y RE-RUTEO (${d.pct_recorrido}% del camino)</b><br>` +
+              `Avance completado: <b>${d.pct_recorrido}%</b> · Restante: <b>${d.pct_restante}%</b><br>` +
+              `Amenaza activada: <b>${etiquetaAm[d.amenaza] || d.amenaza}</b><br>` +
+              `<i>Desde este nodo se descarta la ruta original y se toma la calle alternativa hacia el destino.</i>`
+            ).addTo(capaFallas);
+          }
+        }
+
+        // 4. Nueva Ruta Alternativa Recalculada desde el punto de falla hasta el destino (X% -> 100%)
+        if (d.geom_alternativa) {
+          const deltaKm = ((d.delta_distancia_m || 0) / 1000).toFixed(2);
+          const signo = (d.delta_distancia_m || 0) >= 0 ? "+" : "";
+          const mk = mRec[k] || {};
+          const sk = simRec[k] || {};
+          const casingAlt = L.geoJSON(d.geom_alternativa, {
+            pane: "desviosPane",
+            interactive: false,
+            style: { color: "#090d16", weight: 11, opacity: 0.92, lineCap: "round", lineJoin: "round" },
+          });
+          const coreAlt = L.geoJSON(d.geom_alternativa, {
+            pane: "desviosPane",
+            style: { color: coloresTrazo[k], weight: 6.5, opacity: 1.0, dashArray: "10, 8", lineCap: "round", lineJoin: "round" },
+          }).bindPopup(
+            `<b>↻ NUEVA RUTA ALTERNATIVA (${nombres[k]}) — ${d.pct_recorrido}% → 100%</b><br>` +
+            `Toma vía alternativa descartando los ${d.tramos_descartados} tramos restantes de la ruta original.<br>` +
+            `Tramo alternativo nuevo: <b>${(d.distancia_alternativa_m / 1000).toFixed(2)} km</b> (${d.tramos_alternativos} tramos)<br>` +
+            `Distancia total final: <b>${(d.distancia_m / 1000).toFixed(2)} km</b> (${signo}${deltaKm} km vs original)<br>` +
+            `Nueva Resiliencia: <b>R = ${mk.resiliencia_score ?? "—"}%</b> · Supervivencia: <b>${sk.tasa_supervivencia ?? "—"}%</b>`
+          );
+          grupoDesv.addLayer(casingAlt);
+          grupoDesv.addLayer(coreAlt);
+
+          html += `<div style="color:${colores[k]}; margin-bottom:4px; padding:4px 6px; background:#fffaf0; border-left:3px solid ${coloresTrazo[k]}; border-radius:4px;">` +
+            `<b>${nombres[k]}</b>: falla al <b>${d.pct_recorrido}%</b> (resta <b>${d.pct_restante}%</b>, ${etiquetaAm[d.amenaza] || d.amenaza}) → ` +
+            `<b>↻ Recalculada por vía alternativa</b>: total <b>${(d.distancia_m / 1000).toFixed(2)} km</b> (${signo}${deltaKm} km) · <b>R=${mk.resiliencia_score ?? "—"}%</b> · Sup=<b>${sk.tasa_supervivencia ?? "—"}%</b></div>`;
         }
       }
-      if (falla) aristasFallan++;
+
+      srEl.innerHTML = html;
+      aplicarEnfoqueVisual(rutaEnfocadaActiva);
+
+      // 5. Actualizar la Tabla de Comparación (Sección 3), Leyenda y Badge con las métricas recalculadas post-desvío
+      const mapIds = [
+        ["dijkstra", "dijkstra", "Dijkstra (desvío)"],
+        ["resil", "resiliente", "Resiliente (desvío)"],
+        ["lp", "optimizacion_lp", "Simplex (desvío)"],
+        ["aco", "aco", "ACO (desvío)"],
+      ];
+      mapIds.forEach(([suf, k, nom]) => {
+        const mk = mRec[k];
+        const sk = simRec[k];
+        if (mk) {
+          document.getElementById(`m-dist-${suf}`).innerText = `${mk.distancia_promedio_km}`;
+          document.getElementById(`m-riesgo-${suf}`).innerText = `${mk.aristas_con_riesgo}`;
+          document.getElementById(`m-resil-${suf}`).innerText = `${mk.resiliencia_score}%`;
+          document.getElementById(`m-time-${suf}`).innerText = `${mk.tiempo_ms || "—"}`;
+          document.getElementById(`m-sim-${suf}`).innerText = sk ? `${sk.tasa_supervivencia}%` : "—";
+          const legEl = document.getElementById(`leg-${suf}`);
+          if (legEl) {
+            legEl.innerText = `${nom} · ${mk.tiempo_ms} ms · R = ${mk.resiliencia_score}% · Sup = ${sk ? sk.tasa_supervivencia : "—"}%`;
+          }
+        }
+      });
+
+      const tecnicasPost = [
+        { nombre: "Dijkstra", score: mRec.dijkstra?.resiliencia_score || 0, sup: simRec.dijkstra?.tasa_supervivencia || 0 },
+        { nombre: "Resiliente", score: mRec.resiliente?.resiliencia_score || 0, sup: simRec.resiliente?.tasa_supervivencia || 0 },
+        { nombre: "LP Simplex", score: mRec.optimizacion_lp?.resiliencia_score || 0, sup: simRec.optimizacion_lp?.tasa_supervivencia || 0 },
+        { nombre: "ACO", score: mRec.aco?.resiliencia_score || 0, sup: simRec.aco?.tasa_supervivencia || 0 },
+      ].filter(t => t.score > 0);
+      const badge = document.getElementById("badge-diferencial");
+      if (badge && tecnicasPost.length > 0) {
+        tecnicasPost.sort((a, b) => (b.score - a.score) || (b.sup - a.sup));
+        const mejor = tecnicasPost[0];
+        badge.innerText = `Más resiliente tras desvío (${desvData.pct_fallo_sorteado}%): ${mejor.nombre} (R = ${mejor.score}%, Sup = ${mejor.sup}%)`;
+        badge.style.background = "#fff3bf";
+        badge.style.color = "#b45309";
+        badge.style.borderColor = "#fcd34d";
+      }
+    })
+    .catch((err) => {
+      console.error("Error en desvio_falla:", err);
+      srEl.innerHTML = `<div style="color:#c53030;">Error al recalcular ruta alternativa.</div>`;
     });
-    const porTipo = {};
-    Object.values(eventosFallidos).forEach(am => { porTipo[am] = (porTipo[am] || 0) + 1; });
-    const detalle = Object.entries(porTipo).map(([am, n]) => `${n} ${etiquetaAm[am] || am}`).join(", ");
-    const ok = aristasFallan === 0;
-    html += `<div style="color:${colores[k]}; margin-bottom:3px;"><b>${nombres[k]}</b>: ${aristas.length} aristas expuestas → ` +
-      (ok ? "<b>RUTA SOBREVIVE</b>" : `<b>RUTA INTERRUMPIDA</b> (${Object.keys(eventosFallidos).length} evento(s): ${detalle}; ${aristasFallan} aristas afectadas)`) + "</div>";
-  }
-  Object.values(aristasFalladas).forEach(f => {
-    if (f.geom) L.geoJSON(f.geom, { style: { color: "#000", weight: 8, opacity: 0.85 } })
-      .bindPopup(`<b>FALLA</b> — rutas afectadas: ${[...f.tecnicas].join(", ")}<br>${Object.values(f.motivos).join("<br>")}`)
-      .addTo(capaFallas);
-  });
-  document.getElementById("sim-resultado").innerHTML = html || "Sin aristas con riesgo.";
 });

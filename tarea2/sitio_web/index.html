@@ -41,9 +41,44 @@
     margin-top: 4px; font-size: 10.5px; color: #718096; font-style: italic;
   }
   
-  .layer-item { display: flex; align-items: center; justify-content: space-between; margin: 4px 0; font-size: 12px; }
+  .layer-item { display: flex; align-items: center; justify-content: space-between; margin: 4px 0; font-size: 12px; padding: 3px 5px; border-radius: 5px; transition: background 0.15s; }
+  .layer-item.route-row:hover { background: #edf2f7; cursor: pointer; }
   .swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
-  .line-swatch { width: 18px; height: 4px; display: inline-block; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+  .line-swatch { width: 22px; height: 6px; display: inline-block; margin-right: 6px; vertical-align: middle; border-radius: 3px; border: 1.5px solid #0f172a; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+
+  /* Contraste del mapa base para que las rutas brillen y resalten */
+  #map.map-atenuado .leaflet-tile-pane {
+    filter: saturate(0.32) brightness(0.92) contrast(1.04);
+    transition: filter 0.25s ease;
+  }
+  #map.map-oscuro .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) brightness(0.88) contrast(1.05) saturate(0.45);
+    transition: filter 0.25s ease;
+  }
+  #map.map-normal .leaflet-tile-pane {
+    filter: none;
+    transition: filter 0.25s ease;
+  }
+
+  /* Resplandor (glow) en los paneles SVG de rutas y desvíos */
+  .leaflet-rutas-pane svg {
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
+  }
+  #map.map-oscuro .leaflet-rutas-pane svg {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45)) drop-shadow(0 0 10px rgba(0, 210, 255, 0.35));
+  }
+  .leaflet-desvios-pane svg {
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.75));
+  }
+
+  .pill-bar { display: flex; gap: 4px; flex-wrap: wrap; margin: 5px 0 8px; }
+  .pill-btn {
+    flex: 1; min-width: 54px; padding: 4px 6px; font-size: 10.5px; font-weight: 700;
+    border: 1px solid #cbd5e0; border-radius: 5px; background: #f8fafc; color: #334155;
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .pill-btn:hover { background: #e2e8f0; }
+  .pill-btn.active { background: #1e293b; color: #fff; border-color: #0f172a; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
   
   .table-metric { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }
   .table-metric th, .table-metric td { padding: 5px 6px; text-align: left; border-bottom: 1px solid #edf2f7; }
@@ -69,7 +104,7 @@
 </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map" class="map-atenuado"></div>
 
 <div class="panel">
   <h2>
@@ -109,10 +144,10 @@
     <thead>
       <tr>
         <th>Métrica</th>
-        <th style="color:#e74c3c;">Dijkstra</th>
-        <th style="color:#2980b9;">Resiliente</th>
-        <th style="color:#9b59b6;">LP Simplex</th>
-        <th style="color:#16a085;">ACO</th>
+        <th style="color:#ff1744; cursor:pointer;" onclick="window.enfocarRuta('dijkstra')" title="Clic para destacar Dijkstra">Dijkstra</th>
+        <th style="color:#0088cc; cursor:pointer;" onclick="window.enfocarRuta('resiliente')" title="Clic para destacar Resiliente">Resiliente</th>
+        <th style="color:#c000d6; cursor:pointer;" onclick="window.enfocarRuta('optimizacion_lp')" title="Clic para destacar LP Simplex">LP Simplex</th>
+        <th style="color:#00a846; cursor:pointer;" onclick="window.enfocarRuta('aco')" title="Clic para destacar ACO">ACO</th>
       </tr>
     </thead>
     <tbody>
@@ -132,10 +167,10 @@
       </tr>
       <tr style="font-weight:700; background:#f8fafc;">
         <td title="Score: disyunción × seguridad × 100">Resiliencia (R)</td>
-        <td class="num" id="m-resil-dijkstra" style="color:#e74c3c;">—</td>
-        <td class="num" id="m-resil-resil" style="color:#2980b9;">—</td>
-        <td class="num" id="m-resil-lp" style="color:#9b59b6;">—</td>
-        <td class="num" id="m-resil-aco" style="color:#16a085;">—</td>
+        <td class="num" id="m-resil-dijkstra" style="color:#ff1744;">—</td>
+        <td class="num" id="m-resil-resil" style="color:#0088cc;">—</td>
+        <td class="num" id="m-resil-lp" style="color:#c000d6;">—</td>
+        <td class="num" id="m-resil-aco" style="color:#00a846;">—</td>
       </tr>
       <tr>
         <td title="Tiempo de cómputo del algoritmo">Tiempo (ms)</td>
@@ -159,29 +194,52 @@
   </div>
 
   <div class="section-title">4. Capas de Rutas (4 técnicas)</div>
-  <div class="layer-item">
-    <span><span class="line-swatch" style="background:#e74c3c;"></span><span class="line-swatch" style="background:#e67e22;"></span> Dijkstra (distancia pura, k=2)</span>
+  <div style="font-size:10.5px; color:#4a5568; margin-bottom:3px;"><b>Enfocar ruta en el mapa:</b> (o pasa el cursor sobre cada fila)</div>
+  <div class="pill-bar" id="bar-enfoque">
+    <button type="button" class="pill-btn active" data-focus="todas" onclick="window.enfocarRuta('todas')">Todas</button>
+    <button type="button" class="pill-btn" data-focus="dijkstra" onclick="window.enfocarRuta('dijkstra')" style="border-bottom:3px solid #ff1744;">Dijkstra</button>
+    <button type="button" class="pill-btn" data-focus="resiliente" onclick="window.enfocarRuta('resiliente')" style="border-bottom:3px solid #00d2ff;">Resiliente</button>
+    <button type="button" class="pill-btn" data-focus="optimizacion_lp" onclick="window.enfocarRuta('optimizacion_lp')" style="border-bottom:3px solid #f000ff;">Simplex</button>
+    <button type="button" class="pill-btn" data-focus="aco" onclick="window.enfocarRuta('aco')" style="border-bottom:3px solid #39ff14;">ACO</button>
+  </div>
+  <div class="layer-item route-row" data-route="dijkstra">
+    <span><span class="line-swatch" style="background:#ff1744;"></span> <b>Dijkstra</b> (distancia pura — Rojo Neón)</span>
     <input type="checkbox" id="chk-capa-dijkstra" checked>
   </div>
   <div class="leg" id="leg-dijkstra">—</div>
-  <div class="layer-item">
-    <span><span class="line-swatch" style="background:#2980b9;"></span><span class="line-swatch" style="background:#27ae60;"></span> Resiliente (multi-amenaza, k=2)</span>
+  <div class="layer-item route-row" data-route="resiliente">
+    <span><span class="line-swatch" style="background:#00d2ff;"></span> <b>Resiliente</b> (multi-amenaza — Cian Eléctrico)</span>
     <input type="checkbox" id="chk-capa-resil" checked>
   </div>
   <div class="leg" id="leg-resil">—</div>
-  <div class="layer-item">
-    <span><span class="line-swatch" style="background:#9b59b6;"></span> Programación Lineal — Simplex (PuLP/CBC)</span>
+  <div class="layer-item route-row" data-route="optimizacion_lp">
+    <span><span class="line-swatch" style="background:repeating-linear-gradient(90deg,#f000ff 0 8px,#0f172a 8px 12px);"></span> <b>Programación Lineal — Simplex</b> (Magenta)</span>
     <input type="checkbox" id="chk-capa-lp" checked>
   </div>
   <div class="leg" id="leg-lp">—</div>
-  <div class="layer-item">
-    <span><span class="line-swatch" style="background:#16a085;"></span> Metaheurística ACO (Ant Colony)</span>
+  <div class="layer-item route-row" data-route="aco">
+    <span><span class="line-swatch" style="background:#39ff14;"></span> <b>Metaheurística ACO</b> (Verde Lima Neón)</span>
     <input type="checkbox" id="chk-capa-aco" checked>
   </div>
   <div class="leg" id="leg-aco">—</div>
-  <div class="section-title">5. Simulación de fallas aleatorias</div>
-  <div style="font-size:11px; color:#4a5568; margin-bottom:6px;">Por cada arista con P(fallo) &gt; 0 se sortea un número aleatorio en [0,100]; si es menor que P×100, la arista falla.</div>
-  <button id="btn-sim" style="width:100%; padding:7px; border:none; border-radius:6px; background:#c0392b; color:#fff; font-weight:700; cursor:pointer;">Sortear fallas</button>
+  <div class="layer-item" style="margin-top:4px; font-size:11px; color:#64748b;">
+    <span><span class="line-swatch" style="background:#ff9100; height:3px; border:none; box-shadow:none;"></span><span class="line-swatch" style="background:#38bdf8; height:3px; border:none; box-shadow:none;"></span> Mostrar rutas secundarias de respaldo (k=2)</span>
+    <input type="checkbox" id="chk-capa-k2">
+  </div>
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px; font-size:11px; color:#4a5568;">
+    <span><b>Contraste del mapa base:</b></span>
+    <select id="sel-mapa-modo" style="font-size:11px; padding:2px 6px; border:1px solid #cbd5e0; border-radius:4px; background:#fff;">
+      <option value="map-atenuado" selected>Mapa Atenuado (Alto Contraste)</option>
+      <option value="map-oscuro">Modo Radar Oscuro (Noche)</option>
+      <option value="map-normal">Mapa Clásico Original</option>
+    </select>
+  </div>
+  <div class="section-title">5. Simulación de fallas aleatorias y desvío</div>
+  <div style="font-size:11px; color:#4a5568; margin-bottom:6px;">Sorteo aleatorio [0–100] a lo largo de la ruta (0% = inicio, 100% = destino) por evento de amenaza. Desde el punto de falla se <b>descarta el resto de la ruta original</b>, se recalcula por vías alternativas y se actualizan las métricas.</div>
+  <div style="display:flex; gap:6px;">
+    <button id="btn-sim" style="flex:1; padding:7px; border:none; border-radius:6px; background:#c0392b; color:#fff; font-weight:700; cursor:pointer;">Sortear fallas y desviar</button>
+    <button id="btn-sim-reset" style="padding:7px 10px; border:1px solid #cbd5e0; border-radius:6px; background:#f7fafc; color:#4a5568; font-weight:600; cursor:pointer;" title="Restaurar rutas y métricas originales">Restaurar</button>
+  </div>
   <div id="sim-resultado" style="font-size:11.5px; margin-top:6px;"></div>
 
   <div class="section-title">6. Capas de Datos y Amenazas</div>
@@ -194,7 +252,7 @@
     <input type="checkbox" id="chk-capa-sismos" checked>
   </div>
   <div class="layer-item">
-    <span><span class="line-swatch" style="background:#8e44ad;"></span> Tendido Eléctrico (100 líneas)</span>
+    <span><span class="line-swatch" style="background:#64748b; height:3px; border:1px dashed #334155; box-shadow:none;"></span> Tendido Eléctrico (100 líneas)</span>
     <input type="checkbox" id="chk-capa-tendido" checked>
   </div>
   <div class="layer-item">
